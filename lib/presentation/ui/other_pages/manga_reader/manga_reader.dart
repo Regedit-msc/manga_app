@@ -17,6 +17,17 @@ class MangaReader extends StatefulWidget {
 }
 
 class _MangaReaderState extends State<MangaReader> {
+  ValueNotifier<bool> isLoading = ValueNotifier(true);
+
+  Future preLoadImages(List<String> listOfUrls) async {
+    await Future.wait(
+        listOfUrls.map((image) => cacheImage(context, image)).toList());
+    isLoading.value = false;
+  }
+
+  Future cacheImage(BuildContext context, String image) =>
+      precacheImage(CachedNetworkImageProvider(image), context);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +38,7 @@ class _MangaReaderState extends State<MangaReader> {
             variables: {
               'chapterUrl': widget.chapterList.chapterUrl,
             },
-            pollInterval: Duration(seconds: 10),
+            pollInterval: const Duration(seconds: 10),
           ),
           builder: (QueryResult result, {refetch, fetchMore}) {
             if (result.hasException) {
@@ -35,22 +46,37 @@ class _MangaReaderState extends State<MangaReader> {
             }
 
             if (result.isLoading) {
-              return Text('Loading');
+              return const Text('Loading');
             }
 
             final mangaToRead = result.data!["getMangaReader"];
             GetMangaReader mangaReader = GetMangaReader.fromMap(mangaToRead);
-            return PageView(
-              scrollDirection: Axis.vertical,
-              children: [
-                ...List.generate(mangaReader.data.images.length, (index) {
-                  return CachedNetworkImage(
-                    imageUrl: mangaReader.data.images[index],
-                    fit: BoxFit.cover,
-                  );
-                })
-              ],
-            );
+            preLoadImages(mangaReader.data.images);
+            return ValueListenableBuilder(
+                valueListenable: isLoading,
+                builder: (context, bool val, child) {
+                  return !val
+                      ? PageView(
+                          scrollDirection: Axis.vertical,
+                          children: [
+                            ...List.generate(mangaReader.data.images.length,
+                                (index) {
+                              return CachedNetworkImage(
+                                fadeInDuration: Duration(microseconds: 100),
+                                imageUrl: mangaReader.data.images[index],
+                                fit: BoxFit.cover,
+                              );
+                            })
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: const [
+                            Text("Loading From cache"),
+                          ],
+                        );
+                });
           }),
     );
   }

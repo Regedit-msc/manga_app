@@ -89,11 +89,15 @@ class _MangaInfoState extends State<MangaInfo> {
                                     children: [
                                       Flexible(
                                         child: Text(
-                                            mangaInfo!.data.summary.length > 200
+                                            mangaInfo!.data != null
                                                 ? mangaInfo.data.summary
-                                                        .substring(0, 200) +
-                                                    "..."
-                                                : mangaInfo.data.summary,
+                                                            .length >
+                                                        200
+                                                    ? mangaInfo.data.summary
+                                                            .substring(0, 200) +
+                                                        "..."
+                                                    : mangaInfo.data.summary
+                                                : '',
                                             style: ThemeText.whiteBodyText2
                                                 ?.copyWith(
                                               fontSize: Sizes.dimen_14.sp,

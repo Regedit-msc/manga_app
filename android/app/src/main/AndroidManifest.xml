@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.regedit.webcomic.webcomic">
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
         android:label="webcomic"
         android:icon="@mipmap/ic_launcher">

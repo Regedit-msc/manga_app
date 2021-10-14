@@ -54,8 +54,7 @@ class _HomeViewState extends State<HomeView> {
           }
 
           final mangaInfo = result.data!["getNewestManga"];
-          if (mangaInfo != null &&
-              mangaInfo.runtimeType.hashCode == 511784431) {
+          if (mangaInfo != null) {
             GetNewestManga newestManga = GetNewestManga.fromMap(mangaInfo);
             context
                 .read<MangaSlideShowCubit>()
@@ -89,7 +88,6 @@ class _HomeViewState extends State<HomeView> {
                                 image: DecorationImage(
                                   image: imageProvider,
                                   fit: BoxFit.fill,
-
                                 ),
                               ),
                             ),
