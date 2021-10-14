@@ -6,6 +6,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/manga_reader_model.dart';
+import 'package:webcomic/presentation/themes/colors.dart';
 
 class MangaReader extends StatefulWidget {
   final ChapterList chapterList;
@@ -18,7 +19,7 @@ class MangaReader extends StatefulWidget {
 
 class _MangaReaderState extends State<MangaReader> {
   ValueNotifier<bool> isLoading = ValueNotifier(true);
-
+  bool showAppBar = false;
   Future preLoadImages(List<String> listOfUrls) async {
     await Future.wait(
         listOfUrls.map((image) => cacheImage(context, image)).toList());
@@ -31,14 +32,33 @@ class _MangaReaderState extends State<MangaReader> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: showAppBar
+          ? PreferredSize(
+              preferredSize:
+                  Size(MediaQuery.of(context).size.width, kToolbarHeight),
+              child: TweenAnimationBuilder(
+                curve: Curves.easeInOut,
+                duration: Duration(seconds: 1),
+                tween: Tween<double>(begin: 0.0, end: 1.0),
+                builder: (context, double _val, Widget? child) {
+                  return Opacity(
+                    opacity: _val,
+                    child: child,
+                  );
+                },
+                child: AppBar(
+                  // automaticallyImplyLeading: false,
+                  backgroundColor: AppColor.vulcan,
+                ),
+              ))
+          : null,
       body: Query(
           options: QueryOptions(
             document: parseString(MANGA_READER),
             variables: {
               'chapterUrl': widget.chapterList.chapterUrl,
             },
-            pollInterval: const Duration(seconds: 10),
+            pollInterval: const Duration(minutes: 5),
           ),
           builder: (QueryResult result, {refetch, fetchMore}) {
             if (result.hasException) {
@@ -56,18 +76,35 @@ class _MangaReaderState extends State<MangaReader> {
                 valueListenable: isLoading,
                 builder: (context, bool val, child) {
                   return !val
-                      ? PageView(
+                      ? SingleChildScrollView(
                           scrollDirection: Axis.vertical,
-                          children: [
-                            ...List.generate(mangaReader.data.images.length,
-                                (index) {
-                              return CachedNetworkImage(
-                                fadeInDuration: Duration(microseconds: 100),
-                                imageUrl: mangaReader.data.images[index],
-                                fit: BoxFit.cover,
-                              );
-                            })
-                          ],
+                          child: Column(
+                            children: [
+                              ...List.generate(mangaReader.data.images.length,
+                                  (index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    if (mounted) {
+                                      setState(() {
+                                        showAppBar = !showAppBar;
+                                      });
+                                      Future.delayed(Duration(seconds: 10), () {
+                                        if (!mounted) return;
+                                        setState(() {
+                                          showAppBar = false;
+                                        });
+                                      });
+                                    }
+                                  },
+                                  child: CachedNetworkImage(
+                                    fadeInDuration: Duration(microseconds: 100),
+                                    imageUrl: mangaReader.data.images[index],
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              })
+                            ],
+                          ),
                         )
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,

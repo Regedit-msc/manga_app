@@ -42,7 +42,7 @@ class _HomeViewState extends State<HomeView> {
           body: Query(
         options: QueryOptions(
           document: parseString(GET_NEWEST_MANGA),
-          pollInterval: Duration(seconds: 10),
+          pollInterval: Duration(minutes: 10),
         ),
         builder: (QueryResult result, {refetch, fetchMore}) {
           if (result.hasException) {
@@ -106,14 +106,19 @@ class _HomeViewState extends State<HomeView> {
                         padding: EdgeInsets.all(10.0),
                         child: SlideShowIndicator(),
                       )),
-                  const Align(
+                  Align(
                     alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.all(10.0),
-                      child: Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: Sizes.dimen_40,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, Routes.mangaSearch);
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(10.0),
+                        child: Icon(
+                          Icons.search,
+                          color: Colors.white,
+                          size: Sizes.dimen_40,
+                        ),
                       ),
                     ),
                   )

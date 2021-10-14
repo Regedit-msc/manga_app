@@ -48,3 +48,17 @@ query MangaReader(\$chapterUrl: String!) {
   }
 }
 ''';
+
+const MANGA_SEARCH = '''
+query MangaSearch(\$term: String!) {
+  mangaSearch(term: \$term) {
+    message
+    success
+    data {
+      mangaUrl
+      title
+      imageUrl
+    }
+  }
+}
+''';

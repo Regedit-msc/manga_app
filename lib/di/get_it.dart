@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/api_constants.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 
 final getItInstance = GetIt.I;
@@ -17,5 +18,8 @@ Future init() async {
   );
   getItInstance.registerFactory(
     () => MangaSlideShowCubit(),
+  );
+  getItInstance.registerFactory(
+    () => MangaResultsCubit(),
   );
 }

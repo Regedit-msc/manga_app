@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
@@ -24,6 +25,10 @@ class MangaInfo extends StatefulWidget {
 class _MangaInfoState extends State<MangaInfo> {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.black,
+      statusBarColor: Colors.transparent,
+    ));
     return Scaffold(
       body: Query(
           options: QueryOptions(
@@ -31,7 +36,7 @@ class _MangaInfoState extends State<MangaInfo> {
             variables: {
               'mangaUrl': widget.mangaDetails.mangaUrl ?? '',
             },
-            pollInterval: Duration(seconds: 10),
+            pollInterval: const Duration(minutes: 20),
           ),
           builder: (QueryResult result, {refetch, fetchMore}) {
             GetMangaInfo? mangaInfo;

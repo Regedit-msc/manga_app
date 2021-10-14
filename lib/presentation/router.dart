@@ -5,6 +5,7 @@ import 'package:webcomic/data/models/newest_manga_model.dart';
 import 'package:webcomic/presentation/ui/base/base_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_info/manga_info_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_reader/manga_reader.dart';
+import 'package:webcomic/presentation/ui/other_pages/search/search_view.dart';
 
 class CRouter {
   CRouter._();
@@ -13,6 +14,7 @@ class CRouter {
         Routes.mangaInfo: (context) =>
             MangaInfo(mangaDetails: setting.arguments as Datum),
         Routes.mangaReader: (context) =>
-            MangaReader(chapterList: setting.arguments as ChapterList)
+            MangaReader(chapterList: setting.arguments as ChapterList),
+        Routes.mangaSearch: (context) => const Search()
       };
 }
