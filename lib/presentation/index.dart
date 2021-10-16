@@ -9,8 +9,10 @@ import 'package:webcomic/presentation/router.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 
 final _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -25,9 +27,13 @@ class _IndexState extends State<Index> {
   late BottomNavigationCubit _bottomNavigationCubit;
   late MangaSlideShowCubit _mangaSlideShowCubit;
   late MangaResultsCubit _mangaResultsCubit;
+  late ChaptersReadCubit _chaptersReadCubit;
+  late RecentsCubit _recentsCubit;
   @override
   void initState() {
     super.initState();
+    _recentsCubit = getItInstance<RecentsCubit>();
+    _chaptersReadCubit = getItInstance<ChaptersReadCubit>();
     _bottomNavigationCubit = getItInstance<BottomNavigationCubit>();
     _mangaSlideShowCubit = getItInstance<MangaSlideShowCubit>();
     _mangaResultsCubit = getItInstance<MangaResultsCubit>();
@@ -35,9 +41,11 @@ class _IndexState extends State<Index> {
 
   @override
   void dispose() {
+    _recentsCubit.close();
     _bottomNavigationCubit.close();
     _mangaSlideShowCubit.close();
     _mangaResultsCubit.close();
+    _chaptersReadCubit.close();
     super.dispose();
   }
 
@@ -52,6 +60,8 @@ class _IndexState extends State<Index> {
               value: _bottomNavigationCubit),
           BlocProvider<MangaSlideShowCubit>.value(value: _mangaSlideShowCubit),
           BlocProvider<MangaResultsCubit>.value(value: _mangaResultsCubit),
+          BlocProvider<RecentsCubit>.value(value: _recentsCubit),
+          BlocProvider<ChaptersReadCubit>.value(value: _chaptersReadCubit),
         ],
         child: MaterialApp(
           navigatorKey: _navigatorKey,
