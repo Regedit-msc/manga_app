@@ -92,15 +92,17 @@ class GetMangaInfoData {
 
   factory GetMangaInfoData.fromMap(Map<String, dynamic> json) =>
       GetMangaInfoData(
-          mangaImage: json["mangaImage"],
-          author: json["author"],
-          chapterNo: json["chapterNo"],
-          views: json["views"],
-          status: json["status"],
-          description: json["description"],
-          summary: json["summary"],
-          chapterList: List<ChapterList>.from(
-              json["chapterList"].map((x) => ChapterList.fromMap(x))),
+          mangaImage: json["mangaImage"] ?? '',
+          author: json["author"] ?? "",
+          chapterNo: json["chapterNo"] ?? "",
+          views: json["views"] ?? "",
+          status: json["status"] ?? "",
+          description: json["description"] ?? "",
+          summary: json["summary"] ?? "",
+          chapterList: json["chapterList"].length > 0
+              ? List<ChapterList>.from(
+                  json["chapterList"].map((x) => ChapterList.fromMap(x)))
+              : [],
           genres:
               List<Genre>.from(json["genres"].map((x) => Genre.fromMap(x))));
 

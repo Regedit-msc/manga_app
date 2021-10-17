@@ -97,3 +97,20 @@ query MostClicked {
 }
 
 ''';
+
+const MANGA_BY_GENRE = '''
+query MangaBuGenre(\$genreUrl: String!) {
+  getMangaByGenre(genreUrl: \$genreUrl) {
+    message
+    success
+    data {
+      mangaUrl
+      mangaTitle
+      mangaImage
+      author
+      summary
+      stats
+    }
+  }
+}
+''';

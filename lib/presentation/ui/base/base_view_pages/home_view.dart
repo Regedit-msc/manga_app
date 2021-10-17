@@ -10,7 +10,8 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
-import 'package:webcomic/data/models/newest_manga_model.dart';
+import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
+import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_home_widget.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_slideshow_indicator_widget.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_clicked.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewed.dart';
@@ -69,7 +70,8 @@ class _HomeViewState extends State<HomeView>
 
           final mangaInfo = result.data!["getNewestManga"];
           if (mangaInfo != null) {
-            GetNewestManga newestManga = GetNewestManga.fromMap(mangaInfo);
+            newestMMdl.GetNewestManga newestManga =
+                newestMMdl.GetNewestManga.fromMap(mangaInfo);
             context
                 .read<MangaSlideShowCubit>()
                 .setNoOfItems(newestManga.data!.length);
@@ -103,7 +105,7 @@ class _HomeViewState extends State<HomeView>
                                   onTap: () {
                                     Navigator.of(context).pushNamed(
                                         Routes.mangaInfo,
-                                        arguments: Datum(
+                                        arguments: newestMMdl.Datum(
                                             title:
                                                 newestManga.data![index].title,
                                             mangaUrl: newestManga
@@ -164,6 +166,26 @@ class _HomeViewState extends State<HomeView>
                           ),
                           MostViewedManga(),
                           MostClickedManga(),
+                          SizedBox(
+                            height: Sizes.dimen_10.h,
+                          ),
+                          Text(
+                            "CATEGORIES",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: Sizes.dimen_18.sp),
+                          ),
+                          MangaByGenreHome(genre: "Action"),
+                          MangaByGenreHome(genre: "Martial Arts"),
+                          MangaByGenreHome(genre: "Romance"),
+                          MangaByGenreHome(genre: "Comedy"),
+                          MangaByGenreHome(genre: "School Life"),
+                          MangaByGenreHome(genre: "Sports"),
+                          MangaByGenreHome(genre: "Adult"),
+                          MangaByGenreHome(genre: "Harem"),
+                          MangaByGenreHome(genre: "Isekai"),
+                          MangaByGenreHome(genre: "Slice of life"),
                         ],
                       ),
                     )
