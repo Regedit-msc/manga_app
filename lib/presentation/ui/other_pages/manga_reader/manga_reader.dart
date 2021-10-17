@@ -19,6 +19,7 @@ class MangaReader extends StatefulWidget {
 
 class _MangaReaderState extends State<MangaReader> {
   ValueNotifier<bool> isLoading = ValueNotifier(true);
+  final ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
   bool showAppBar = false;
   Future preLoadImages(List<String> listOfUrls) async {
     await Future.wait(
@@ -76,34 +77,44 @@ class _MangaReaderState extends State<MangaReader> {
                 valueListenable: isLoading,
                 builder: (context, bool val, child) {
                   return !val
-                      ? SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
-                          child: Column(
-                            children: [
-                              ...List.generate(mangaReader.data.images.length,
-                                  (index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    if (mounted) {
-                                      setState(() {
-                                        showAppBar = !showAppBar;
-                                      });
-                                      Future.delayed(Duration(seconds: 10), () {
-                                        if (!mounted) return;
-                                        setState(() {
-                                          showAppBar = false;
-                                        });
-                                      });
-                                    }
-                                  },
-                                  child: CachedNetworkImage(
-                                    fadeInDuration: Duration(microseconds: 100),
-                                    imageUrl: mangaReader.data.images[index],
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              })
-                            ],
+                      ? InteractiveViewer(
+                          scaleEnabled: true,
+                          minScale: 0.5,
+                          maxScale: 1.0,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: Container(
+                              child: Column(
+                                children: [
+                                  ...List.generate(
+                                      mangaReader.data.images.length, (index) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        if (mounted) {
+                                          setState(() {
+                                            showAppBar = !showAppBar;
+                                          });
+                                          Future.delayed(Duration(seconds: 10),
+                                              () {
+                                            if (!mounted) return;
+                                            setState(() {
+                                              showAppBar = false;
+                                            });
+                                          });
+                                        }
+                                      },
+                                      child: CachedNetworkImage(
+                                        fadeInDuration:
+                                            const Duration(microseconds: 100),
+                                        imageUrl:
+                                            mangaReader.data.images[index],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    );
+                                  })
+                                ],
+                              ),
+                            ),
                           ),
                         )
                       : Row(
