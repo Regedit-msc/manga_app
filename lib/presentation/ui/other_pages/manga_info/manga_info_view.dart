@@ -171,9 +171,10 @@ class _MangaInfoState extends State<MangaInfo> {
                                                     .chapterList[index]
                                                     .chapterUrl) !=
                                         -1
-                                    ? Colors.brown
+                                    ? Color(0xff231942)
                                     : Colors.transparent),
                             child: ListTile(
+                              isThreeLine: true,
                               onTap: () async {
                                 final DatabaseHelper dbInstance =
                                     getItInstance<DatabaseHelper>();
@@ -230,15 +231,36 @@ class _MangaInfoState extends State<MangaInfo> {
                                         dateUploaded: mangaInfo.data
                                             .chapterList[index].dateUploaded));
                               },
+                              subtitle: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  mangaInfo!
+                                      .data.chapterList[index].dateUploaded,
+                                  style: TextStyle(color: Color(0xffF4E8C1)),
+                                ),
+                              ),
                               leading: Container(
                                   padding: EdgeInsets.all(8),
                                   width: 100,
                                   child: CircleAvatar(
-                                    backgroundImage: NetworkImage(
+                                    backgroundImage: CachedNetworkImageProvider(
                                         widget.mangaDetails.imageUrl ?? ''),
                                   )),
-                              title: Text(mangaInfo!
-                                  .data.chapterList[index].chapterTitle),
+                              title: Text(mangaInfo
+                                      .data.chapterList[index].chapterTitle
+                                      .replaceAll("-", " ")
+                                      .split(" ")[mangaInfo.data
+                                              .chapterList[index].chapterTitle
+                                              .split("-")
+                                              .indexWhere((element) =>
+                                                  element == "chapter") +
+                                          1]
+                                      .replaceFirst("c", "C") +
+                                  " " +
+                                  mangaInfo.data.chapterList[index].chapterTitle
+                                          .replaceAll("-", " ")
+                                          .split(" ")[
+                                      mangaInfo.data.chapterList[index].chapterTitle.split("-").indexWhere((element) => element == "chapter") + 2]),
                             ),
                           );
                         }),
@@ -247,7 +269,7 @@ class _MangaInfoState extends State<MangaInfo> {
                     childCount: result.isLoading
                         ? 1
                         : mangaInfo != null
-                            ? int.parse(mangaInfo.data.chapterNo)
+                            ? mangaInfo.data.chapterList.length
                             : 20,
                   ),
                 ),

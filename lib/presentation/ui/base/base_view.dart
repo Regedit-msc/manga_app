@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
 import 'package:webcomic/data/services/database/db.dart';
@@ -62,6 +63,18 @@ class _BaseViewState extends State<BaseView> {
     context.read<ChaptersReadCubit>().setResults(chaptersRead ?? []);
   }
 
+  List<String> bottomNavAssets = [
+    "assets/naruto_no_color.svg",
+    "assets/goku.svg",
+    "assets/naruto.svg",
+  ];
+
+  List<String> bottomNavItemActive = [
+    "assets/home.svg",
+    "assets/recents.svg",
+    "assets/sign.svg"
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,14 +88,21 @@ class _BaseViewState extends State<BaseView> {
             currentIndex: idx,
             onTap: (int index) {
               context.read<BottomNavigationCubit>().setPage(index);
+              if (index == 0) return;
               context.read<MangaSlideShowCubit>().setIndex(1);
             },
             backgroundColor: Colors.black54,
             items: [
               ...List.generate(bottomNavBarItems.length, (index) {
                 return BottomNavigationBarItem(
-                    icon: bottomNavBarItems[index].icon,
-                    label: bottomNavBarItems[index].name);
+                    icon: callSvg(
+                        idx == index
+                            ? bottomNavItemActive[index]
+                            : bottomNavAssets[index],
+                        color: index != idx ? Colors.white : null,
+                        width: 30.0,
+                        height: 30.0),
+                    label: '');
               })
             ],
           );

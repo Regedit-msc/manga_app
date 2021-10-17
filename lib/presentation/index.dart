@@ -72,7 +72,7 @@ class _IndexState extends State<Index> {
               visualDensity: VisualDensity.adaptivePlatformDensity,
               textTheme: ThemeText.getTextTheme(),
               appBarTheme: const AppBarTheme(elevation: 0)),
-          darkTheme: ThemeData.dark(),
+          // darkTheme: ThemeData.dark(),
           initialRoute: Routes.initRoute,
           onGenerateRoute: (RouteSettings settings) {
             final routes = CRouter.getRoutes(settings);

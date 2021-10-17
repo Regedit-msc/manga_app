@@ -69,16 +69,16 @@ class GetMangaInfo {
 }
 
 class GetMangaInfoData {
-  GetMangaInfoData({
-    required this.mangaImage,
-    required this.author,
-    required this.chapterNo,
-    required this.views,
-    required this.status,
-    required this.description,
-    required this.summary,
-    required this.chapterList,
-  });
+  GetMangaInfoData(
+      {required this.mangaImage,
+      required this.author,
+      required this.chapterNo,
+      required this.views,
+      required this.status,
+      required this.description,
+      required this.summary,
+      required this.chapterList,
+      required this.genres});
 
   String mangaImage;
   String author;
@@ -88,19 +88,21 @@ class GetMangaInfoData {
   String description;
   String summary;
   List<ChapterList> chapterList;
+  List<Genre> genres;
 
   factory GetMangaInfoData.fromMap(Map<String, dynamic> json) =>
       GetMangaInfoData(
-        mangaImage: json["mangaImage"],
-        author: json["author"],
-        chapterNo: json["chapterNo"],
-        views: json["views"],
-        status: json["status"],
-        description: json["description"],
-        summary: json["summary"],
-        chapterList: List<ChapterList>.from(
-            json["chapterList"].map((x) => ChapterList.fromMap(x))),
-      );
+          mangaImage: json["mangaImage"],
+          author: json["author"],
+          chapterNo: json["chapterNo"],
+          views: json["views"],
+          status: json["status"],
+          description: json["description"],
+          summary: json["summary"],
+          chapterList: List<ChapterList>.from(
+              json["chapterList"].map((x) => ChapterList.fromMap(x))),
+          genres:
+              List<Genre>.from(json["genres"].map((x) => Genre.fromMap(x))));
 
   Map<String, dynamic> toMap() => {
         "mangaImage": mangaImage,
@@ -111,6 +113,7 @@ class GetMangaInfoData {
         "description": description,
         "summary": summary,
         "chapterList": List<dynamic>.from(chapterList.map((x) => x.toMap())),
+        "genres": List<dynamic>.from(genres.map((x) => x.toMap()))
       };
 }
 
@@ -135,5 +138,25 @@ class ChapterList {
         "chapterUrl": chapterUrl,
         "chapterTitle": chapterTitle,
         "dateUploaded": dateUploaded,
+      };
+}
+
+class Genre {
+  Genre({
+    required this.genreUrl,
+    required this.genre,
+  });
+
+  final String genreUrl;
+  final String genre;
+
+  factory Genre.fromMap(Map<String, dynamic> json) => Genre(
+        genreUrl: json["genreUrl"],
+        genre: json["genre"],
+      );
+
+  Map<String, dynamic> toMap() => {
+        "genreUrl": genreUrl,
+        "genre": genre,
       };
 }

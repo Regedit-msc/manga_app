@@ -51,17 +51,44 @@ class _SearchState extends State<Search> {
         body: Column(
           children: [
             Expanded(
-              flex: 1,
+              flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  margin: const EdgeInsets.only(top: 40.0),
-                  child: TextField(
-                    onChanged: (v) {
-                      if (v.length < 3) return;
-                      onSearchChanged(v, client);
-                    },
-                  ),
+                padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Expanded(
+                    //     flex: 1,
+                    //     child: GestureDetector(
+                    //       onTap: () {
+                    //         Navigator.pop(context);
+                    //       },
+                    //       child: Icon(
+                    //         Icons.arrow_back,
+                    //         color: Colors.white,
+                    //       ),
+                    //     )),
+                    Expanded(
+                      flex: 6,
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: (v) {
+                          if (v.length < 3) return;
+                          onSearchChanged(v, client);
+                        },
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        decoration: const InputDecoration(
+                            enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white)),
+                            border: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white)),
+                            focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white)),
+                            fillColor: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -30,6 +30,10 @@ query MangaInfo(\$mangaUrl: String!) {
         chapterTitle
         dateUploaded
       }
+      genres{
+        genreUrl
+        genre
+      }
     }
   }
 }
@@ -61,4 +65,35 @@ query MangaSearch(\$term: String!) {
     }
   }
 }
+''';
+
+const MOST_VIEWED = '''
+query MostViewed {
+  getMostViewedManga {
+    message
+    success
+    data {
+      mangaUrl
+      imageUrl
+      title
+      status
+    }
+  }
+}
+''';
+
+const MOST_CLICKED = '''
+query MostClicked {
+  getMostClickedManga {
+    message
+    success
+    data {
+      mangaUrl
+      imageUrl
+      title
+      score
+    }
+  }
+}
+
 ''';

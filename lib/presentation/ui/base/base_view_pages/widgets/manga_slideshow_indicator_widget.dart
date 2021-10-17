@@ -12,7 +12,7 @@ class SlideShowIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: Sizes.dimen_60.w,
+      width: Sizes.dimen_50.w,
       height: Sizes.dimen_10.h,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(Sizes.dimen_12),
@@ -26,12 +26,14 @@ class SlideShowIndicator extends StatelessWidget {
               text: TextSpan(children: [
                 TextSpan(
                     text: "${mangaSlideShowState.index}",
-                    style: ThemeText.whiteBodyText2
-                        ?.copyWith(fontSize: Sizes.dimen_10.sp)),
+                    style: ThemeText.whiteBodyText2?.copyWith(
+                        fontSize: Sizes.dimen_10.sp,
+                        fontWeight: FontWeight.bold)),
                 TextSpan(
                     text: "  / ${mangaSlideShowState.noOfItems}",
                     style: ThemeText.whiteBodyText2?.copyWith(
                         fontSize: Sizes.dimen_10.sp,
+                        fontWeight: FontWeight.bold,
                         color: Color.fromRGBO(161, 164, 182, 0.95)))
               ]),
             ),
