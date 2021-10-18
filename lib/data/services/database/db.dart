@@ -41,7 +41,8 @@ class DatabaseHelper {
     CREATE TABLE ${Subscribe.tblName}(
     ${Subscribe.colMangaUrl} TEXT PRIMARY KEY,
     ${Subscribe.colImageUrl} TEXT NOT NULL,
-    ${Subscribe.colTitle}  TEXT NOT NULL
+    ${Subscribe.colTitle}  TEXT NOT NULL,
+    ${Subscribe.colDateSubscribed}  TEXT NOT NULL
     )
    ''');
     await db.execute('''
@@ -117,6 +118,22 @@ class DatabaseHelper {
       }
     } catch (e) {
       await insertRecentlyRead(mangaRead);
+    }
+  }
+
+  Future<void> updateOrInsertSubscription(Subscribe mangaInfo) async {
+    final db = await instance.database;
+    try {
+      dynamic res = await db.rawQuery('''
+       SELECT ${Subscribe.colMangaUrl} FROM ${Subscribe.tblName} WHERE ${Subscribe.colMangaUrl}="${mangaInfo.mangaUrl}"
+    ''');
+      if (res.length == 0) {
+        await insertSubscription(mangaInfo);
+      } else {
+        await deleteSubscription(mangaInfo.mangaUrl);
+      }
+    } catch (e) {
+      await insertSubscription(mangaInfo);
     }
   }
 

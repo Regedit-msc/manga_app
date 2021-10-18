@@ -1,8 +1,16 @@
+import 'dart:convert';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    as ln;
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
+import 'package:webcomic/data/services/api/gql_api.dart';
+import 'package:webcomic/data/services/notification/notification_service.dart';
+import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/fade_page_route_builder.dart';
 import 'package:webcomic/presentation/router.dart';
@@ -13,6 +21,9 @@ import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+
+import '../main.dart';
 
 final _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -29,6 +40,7 @@ class _IndexState extends State<Index> {
   late MangaResultsCubit _mangaResultsCubit;
   late ChaptersReadCubit _chaptersReadCubit;
   late RecentsCubit _recentsCubit;
+  late SubsCubit _subsCubit;
   @override
   void initState() {
     super.initState();
@@ -37,6 +49,19 @@ class _IndexState extends State<Index> {
     _bottomNavigationCubit = getItInstance<BottomNavigationCubit>();
     _mangaSlideShowCubit = getItInstance<MangaSlideShowCubit>();
     _mangaResultsCubit = getItInstance<MangaResultsCubit>();
+    _subsCubit = getItInstance<SubsCubit>();
+    var initializationSettingsAndroid =
+        ln.AndroidInitializationSettings('@drawable/logo');
+    var initializationSettingsIOs = ln.IOSInitializationSettings();
+    var initSetttings = ln.InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
+
+    flutterLocalNotificationsPlugin.initialize(initSetttings,
+        onSelectNotification: onSelectNotification);
+
+    setUpFcmToken();
+
+    initFcmNotifications();
   }
 
   @override
@@ -46,7 +71,32 @@ class _IndexState extends State<Index> {
     _mangaSlideShowCubit.close();
     _mangaResultsCubit.close();
     _chaptersReadCubit.close();
+    _subsCubit.close();
     super.dispose();
+  }
+
+  void setUpFcmToken() async {
+    if (getItInstance<SharedServiceImpl>().getAddedToken()) {
+      FirebaseMessaging.instance.onTokenRefresh
+          .listen(getItInstance<GQLRawApiServiceImpl>().updateToken);
+    } else {
+      await getItInstance<GQLRawApiServiceImpl>().addToken();
+    }
+  }
+
+  void initFcmNotifications() async {
+    FirebaseMessaging.onMessage.listen((RemoteMessage? message) async {
+      print("onMessage");
+      RemoteNotification? notification = message!.notification;
+      await NotificationService.showNotification(
+          notification!.body,
+          notification.title,
+          json.encode({
+            "title": message.notification!.title,
+            "body": message.notification!.body,
+            "imageUrl": message.notification!.android!.imageUrl
+          }));
+    });
   }
 
   @override
@@ -62,6 +112,7 @@ class _IndexState extends State<Index> {
           BlocProvider<MangaResultsCubit>.value(value: _mangaResultsCubit),
           BlocProvider<RecentsCubit>.value(value: _recentsCubit),
           BlocProvider<ChaptersReadCubit>.value(value: _chaptersReadCubit),
+          BlocProvider<SubsCubit>.value(value: _subsCubit),
         ],
         child: MaterialApp(
           navigatorKey: _navigatorKey,
@@ -89,4 +140,8 @@ class _IndexState extends State<Index> {
       ),
     );
   }
+}
+
+void onSelectNotification(String? payload) {
+  print("$payload");
 }

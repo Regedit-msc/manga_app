@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
+import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
 import 'package:webcomic/data/services/database/db.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
@@ -12,6 +13,7 @@ import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigati
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 
 class BaseView extends StatefulWidget {
   const BaseView({Key? key}) : super(key: key);
@@ -59,8 +61,10 @@ class _BaseViewState extends State<BaseView> {
     final DatabaseHelper dbInstance = getItInstance<DatabaseHelper>();
     List<RecentlyRead>? recents = await dbInstance.getRecentReads();
     List<ChapterRead>? chaptersRead = await dbInstance.getChaptersRead();
+    List<Subscribe>? subscribed = await dbInstance.getSubscriptions();
     context.read<RecentsCubit>().setResults(recents ?? []);
     context.read<ChaptersReadCubit>().setResults(chaptersRead ?? []);
+    context.read<SubsCubit>().setSubs(subscribed ?? []);
   }
 
   List<String> bottomNavAssets = [

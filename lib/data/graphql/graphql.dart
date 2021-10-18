@@ -114,3 +114,22 @@ query MangaBuGenre(\$genreUrl: String!) {
   }
 }
 ''';
+
+const ADD_TOKEN = '''
+mutation AddToken(\$token: String!, \$userId: String!) {
+  addFcmToken(token: \$token, userID: \$userId) {
+    message
+    success
+    tokenID
+  }
+}
+''';
+
+const SUBSCRIBE = '''
+mutation SubscribeToManga(\$tokenId: String!, \$mangaTitle: String!) {
+  subscribe(tokenID: \$tokenId, mangaTitle: \$mangaTitle) {
+    message
+    success
+  }
+}
+''';

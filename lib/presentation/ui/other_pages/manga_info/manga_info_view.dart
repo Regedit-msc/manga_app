@@ -13,6 +13,7 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
+import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart';
 import 'package:webcomic/data/services/database/db.dart';
@@ -20,6 +21,7 @@ import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 
 class MangaInfo extends StatefulWidget {
   final Datum mangaDetails;
@@ -57,10 +59,43 @@ class _MangaInfoState extends State<MangaInfo> {
             return CustomScrollView(
               slivers: <Widget>[
                 SliverAppBar(
-                  actions: const [
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(Icons.add),
+                  actions: [
+                    GestureDetector(
+                      onTap: () async {
+                        final DatabaseHelper dbInstance =
+                            getItInstance<DatabaseHelper>();
+                        List<Subscribe> subs =
+                            context.read<SubsCubit>().state.subs;
+                        Subscribe newSub = Subscribe(
+                            imageUrl: widget.mangaDetails.imageUrl ?? '',
+                            dateSubscribed: DateTime.now().toString(),
+                            title: widget.mangaDetails.title ?? '',
+                            mangaUrl: widget.mangaDetails.mangaUrl ?? '');
+                        int indexOfCurrentMangaIfSubbed = subs.indexWhere(
+                            (element) =>
+                                element.mangaUrl ==
+                                widget.mangaDetails.mangaUrl);
+                        if (indexOfCurrentMangaIfSubbed != -1) {
+                          subs.removeWhere((element) =>
+                              element.mangaUrl == widget.mangaDetails.mangaUrl);
+                          context.read<SubsCubit>().setSubs(subs);
+                        } else {
+                          context.read<SubsCubit>().setSubs([...subs, newSub]);
+                        }
+                        await dbInstance.updateOrInsertSubscription(newSub);
+                      },
+                      child: BlocBuilder<SubsCubit, SubsState>(
+                        builder: (context, subsState) {
+                          int indexOfCurrentMangaIfSubbed = subsState.subs.indexWhere(
+                                  (element) =>
+                              element.mangaUrl ==
+                                  widget.mangaDetails.mangaUrl);
+                          return Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: indexOfCurrentMangaIfSubbed == -1? Icon(Icons.add): Icon(Icons.close),
+                          );
+                        }
+                      ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(8.0),
