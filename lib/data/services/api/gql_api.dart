@@ -68,7 +68,7 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
     final MutationOptions options = MutationOptions(
       document: parseString(SUBSCRIBE),
       variables: <String, dynamic>{
-        'tokenID': userToken,
+        'tokenId': userToken,
         'mangaTitle': mangaTitle
       },
     );

@@ -11,7 +11,6 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/home_view.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/recents_view.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
-import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 
@@ -22,7 +21,10 @@ class BaseView extends StatefulWidget {
   _BaseViewState createState() => _BaseViewState();
 }
 
-class _BaseViewState extends State<BaseView> {
+class _BaseViewState extends State<BaseView>
+    with AutomaticKeepAliveClientMixin {
+  PageController? _pageController;
+
   List<BottomNavItems> bottomNavBarItems = [
     BottomNavItems(
         name: "FOR YOU",
@@ -54,6 +56,7 @@ class _BaseViewState extends State<BaseView> {
   @override
   void initState() {
     doSetUp();
+    _pageController = PageController();
     super.initState();
   }
 
@@ -80,7 +83,14 @@ class _BaseViewState extends State<BaseView> {
   ];
 
   @override
+  void dispose() {
+    _pageController!.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       bottomNavigationBar: BlocBuilder<BottomNavigationCubit, int>(
         builder: (context, idx) {
@@ -92,8 +102,7 @@ class _BaseViewState extends State<BaseView> {
             currentIndex: idx,
             onTap: (int index) {
               context.read<BottomNavigationCubit>().setPage(index);
-              if (index == 0) return;
-              context.read<MangaSlideShowCubit>().setIndex(1);
+              _pageController!.jumpToPage(index);
             },
             backgroundColor: Colors.black54,
             items: [
@@ -113,10 +122,18 @@ class _BaseViewState extends State<BaseView> {
         },
       ),
       body: BlocBuilder<BottomNavigationCubit, int>(builder: (context, idx) {
-        return pagesForBottomNav[idx];
+        return PageView(
+            controller: _pageController,
+            onPageChanged: (int index) {
+              context.read<BottomNavigationCubit>().setPage(index);
+            },
+            children: pagesForBottomNav);
       }),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class BottomNavItems {

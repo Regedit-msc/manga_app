@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:webcomic/data/common/constants/routes_constants.dart';
+import 'package:webcomic/data/common/constants/size_constants.dart';
+import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart';
@@ -157,26 +159,31 @@ class _RecentsViewState extends State<RecentsView>
                       child: Column(
                         children: [
                           ...List.generate(subsState.subs.length, (index) {
-                            return ListTile(
-                              onTap: () async {
-                                Navigator.pushNamed(context, Routes.mangaInfo,
-                                    arguments: Datum(
-                                        title: subsState.subs[index].title,
-                                        mangaUrl:
-                                            subsState.subs[index].mangaUrl,
-                                        imageUrl:
-                                            subsState.subs[index].imageUrl));
-                              },
-                              trailing: Text(
-                                timeago.format(DateTime.parse(
-                                    subsState.subs[index].dateSubscribed)),
-                                style: const TextStyle(color: Colors.cyan),
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                  top: Sizes.dimen_8.h,
+                                  bottom: Sizes.dimen_8.h),
+                              child: ListTile(
+                                onTap: () async {
+                                  Navigator.pushNamed(context, Routes.mangaInfo,
+                                      arguments: Datum(
+                                          title: subsState.subs[index].title,
+                                          mangaUrl:
+                                              subsState.subs[index].mangaUrl,
+                                          imageUrl:
+                                              subsState.subs[index].imageUrl));
+                                },
+                                trailing: Text(
+                                  timeago.format(DateTime.parse(
+                                      subsState.subs[index].dateSubscribed)),
+                                  style: const TextStyle(color: Colors.cyan),
+                                ),
+                                leading: CircleAvatar(
+                                  backgroundImage: CachedNetworkImageProvider(
+                                      subsState.subs[index].imageUrl),
+                                ),
+                                title: Text(subsState.subs[index].title),
                               ),
-                              leading: CircleAvatar(
-                                backgroundImage: CachedNetworkImageProvider(
-                                    subsState.subs[index].imageUrl),
-                              ),
-                              title: Text(subsState.subs[index].title),
                             );
                           })
                         ],

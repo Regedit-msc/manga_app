@@ -16,8 +16,10 @@ import 'package:webcomic/data/models/local_data_models/recently_read_model.dart'
 import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart';
+import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/database/db.dart';
 import 'package:webcomic/di/get_it.dart';
+import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
@@ -60,47 +62,89 @@ class _MangaInfoState extends State<MangaInfo> {
               slivers: <Widget>[
                 SliverAppBar(
                   actions: [
-                    GestureDetector(
-                      onTap: () async {
-                        final DatabaseHelper dbInstance =
-                            getItInstance<DatabaseHelper>();
-                        List<Subscribe> subs =
-                            context.read<SubsCubit>().state.subs;
-                        Subscribe newSub = Subscribe(
-                            imageUrl: widget.mangaDetails.imageUrl ?? '',
-                            dateSubscribed: DateTime.now().toString(),
-                            title: widget.mangaDetails.title ?? '',
-                            mangaUrl: widget.mangaDetails.mangaUrl ?? '');
-                        int indexOfCurrentMangaIfSubbed = subs.indexWhere(
-                            (element) =>
-                                element.mangaUrl ==
-                                widget.mangaDetails.mangaUrl);
-                        if (indexOfCurrentMangaIfSubbed != -1) {
-                          subs.removeWhere((element) =>
-                              element.mangaUrl == widget.mangaDetails.mangaUrl);
-                          context.read<SubsCubit>().setSubs(subs);
-                        } else {
-                          context.read<SubsCubit>().setSubs([...subs, newSub]);
-                        }
-                        await dbInstance.updateOrInsertSubscription(newSub);
-                      },
-                      child: BlocBuilder<SubsCubit, SubsState>(
-                        builder: (context, subsState) {
-                          int indexOfCurrentMangaIfSubbed = subsState.subs.indexWhere(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          final DatabaseHelper dbInstance =
+                          getItInstance<DatabaseHelper>();
+                          List<Subscribe> subs =
+                              context.read<SubsCubit>().state.subs;
+                          Subscribe newSub = Subscribe(
+                              imageUrl: widget.mangaDetails.imageUrl ?? '',
+                              dateSubscribed: DateTime.now().toString(),
+                              title: widget.mangaDetails.title ?? '',
+                              mangaUrl: widget.mangaDetails.mangaUrl ?? '');
+                          int indexOfCurrentMangaIfSubbed = subs.indexWhere(
                                   (element) =>
                               element.mangaUrl ==
                                   widget.mangaDetails.mangaUrl);
-                          return Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: indexOfCurrentMangaIfSubbed == -1? Icon(Icons.add): Icon(Icons.close),
-                          );
-                        }
+                          if (indexOfCurrentMangaIfSubbed != -1) {
+                            subs.removeWhere((element) =>
+                            element.mangaUrl == widget.mangaDetails.mangaUrl);
+                            context.read<SubsCubit>().setSubs(subs);
+                          } else {
+                            context.read<SubsCubit>().setSubs([...subs, newSub]);
+                          }
+                          await getItInstance<GQLRawApiServiceImpl>().subscribe(widget.mangaDetails.title?? '');
+                          await dbInstance.updateOrInsertSubscription(newSub);
+                        },
+                        child: BlocBuilder<SubsCubit, SubsState>(
+                            builder: (context, subsState) {
+                              int indexOfCurrentMangaIfSubbed = subsState.subs.indexWhere(
+                                      (element) =>
+                                  element.mangaUrl ==
+                                      widget.mangaDetails.mangaUrl);
+                              return Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: indexOfCurrentMangaIfSubbed != -1?
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(Sizes.dimen_20.sp),
+                                    color: Colors.white
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text('UNSUBSCRIBE',
+                                    style: TextStyle(
+                                      fontSize: Sizes.dimen_10.sp,
+                                      color: AppColor.vulcan,
+                                      fontWeight: FontWeight.bold
+                                    ),
+
+                                    ),
+                                  ),
+                                ):
+
+                                Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(Sizes.dimen_20.sp),
+                                      color: Colors.white
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text('SUBSCRIBE',
+                                      style: TextStyle(
+                                          fontSize: Sizes.dimen_10.sp,
+                                          color: AppColor.vulcan,
+                                          fontWeight: FontWeight.bold
+                                      ),
+
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(Icons.info),
-                    )
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(Icons.info),
+                      )
+                    ],
+                  )
                   ],
                   elevation: 0.0,
                   pinned: true,
