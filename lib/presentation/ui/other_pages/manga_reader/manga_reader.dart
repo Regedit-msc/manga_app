@@ -48,7 +48,6 @@ class _MangaReaderState extends State<MangaReader> {
                   );
                 },
                 child: AppBar(
-                  // automaticallyImplyLeading: false,
                   backgroundColor: AppColor.vulcan,
                 ),
               ))
