@@ -25,6 +25,11 @@ query MangaInfo(\$mangaUrl: String!) {
       status
       description
       summary
+      recommendations{
+        title
+        mangaUrl
+        mangaImage
+      }
       chapterList {
         chapterUrl
         chapterTitle
@@ -48,6 +53,7 @@ query MangaReader(\$chapterUrl: String!) {
     data {
       chapter
       images
+      chapterList
     }
   }
 }

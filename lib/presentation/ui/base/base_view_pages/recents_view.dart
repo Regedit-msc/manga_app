@@ -99,6 +99,12 @@ class _RecentsViewState extends State<RecentsView>
                                     .updateOrInsertRecentlyRead(recentlyRead);
                                 Navigator.pushNamed(context, Routes.mangaReader,
                                     arguments: ChapterList(
+                                      mangaImage: recentState
+                                          .recents[index].imageUrl,
+                                      mangaTitle: recentState
+                                          .recents[index].title,
+                                      mangaUrl: recentState
+                                          .recents[index].mangaUrl,
                                         chapterUrl: recentState
                                             .recents[index].chapterUrl,
                                         chapterTitle: recentState

@@ -66,22 +66,24 @@ class GetMangaReader {
 }
 
 class GetMangaReaderData {
-  GetMangaReaderData({
-    required this.chapter,
-    required this.images,
-  });
+  GetMangaReaderData(
+      {required this.chapter, required this.images, this.chapterList});
 
   String chapter;
+  List<String>? chapterList;
   List<String> images;
 
   factory GetMangaReaderData.fromMap(Map<String, dynamic> json) =>
       GetMangaReaderData(
-        chapter: json["chapter"],
-        images: List<String>.from(json["images"].map((x) => x)),
-      );
+          chapter: json["chapter"],
+          images: List<String>.from(json["images"].map((x) => x)),
+          chapterList: json["chapterList"] != null
+              ? List<String>.from(json["chapterList"].map((x) => x))
+              : []);
 
   Map<String, dynamic> toMap() => {
         "chapter": chapter,
         "images": List<dynamic>.from(images.map((x) => x)),
+        "chapterList": List<dynamic>.from(chapterList!.map((x) => x)),
       };
 }
