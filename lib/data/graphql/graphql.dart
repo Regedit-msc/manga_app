@@ -139,3 +139,18 @@ mutation SubscribeToManga(\$tokenId: String!, \$mangaTitle: String!) {
   }
 }
 ''';
+
+const MANGA_UPDATE = '''
+query MangaUpdate(\$page: Int!) {
+  getMangaPage(page: \$page) {
+    message
+    success
+    data {
+      mangaUrl
+      imageUrl
+      title
+      status
+    }
+  }
+}
+''';

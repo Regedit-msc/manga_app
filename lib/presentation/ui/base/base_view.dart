@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:webcomic/data/common/constants/categories.dart';
+import 'package:webcomic/data/common/constants/controllers.dart';
+import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
@@ -13,6 +17,7 @@ import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigati
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+import 'package:webcomic/presentation/ui/other_pages/categories/category_view.dart';
 
 class BaseView extends StatefulWidget {
   const BaseView({Key? key}) : super(key: key);
@@ -22,9 +27,7 @@ class BaseView extends StatefulWidget {
 }
 
 class _BaseViewState extends State<BaseView>
-    with AutomaticKeepAliveClientMixin {
-  PageController? _pageController;
-
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   List<BottomNavItems> bottomNavBarItems = [
     BottomNavItems(
         name: "FOR YOU",
@@ -48,6 +51,7 @@ class _BaseViewState extends State<BaseView>
   List<Widget> pagesForBottomNav = [
     const HomeView(),
     const RecentsView(),
+    CategoryView(category: Categories.ALL),
     const Scaffold(
       backgroundColor: AppColor.violet,
     )
@@ -56,7 +60,8 @@ class _BaseViewState extends State<BaseView>
   @override
   void initState() {
     doSetUp();
-    _pageController = PageController();
+    baseViewPageController = PageController();
+    WidgetsBinding.instance!.addObserver(this);
     super.initState();
   }
 
@@ -74,23 +79,55 @@ class _BaseViewState extends State<BaseView>
     "assets/naruto_no_color.svg",
     "assets/goku.svg",
     "assets/naruto.svg",
+    "assets/subscribed.svg"
   ];
 
   List<String> bottomNavItemActive = [
     "assets/home.svg",
     "assets/recents.svg",
-    "assets/sign.svg"
+    "assets/sign.svg",
+    "assets/subscribed.svg"
   ];
 
   @override
   void dispose() {
-    _pageController!.dispose();
+    baseViewPageController!.dispose();
+    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    final Brightness brightness =
+        WidgetsBinding.instance!.platformDispatcher.platformBrightness;
+    if (brightness == Brightness.light) {
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        statusBarIconBrightness: Brightness.dark,
+        statusBarColor: Colors.white,
+      ));
+    } else {
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+          statusBarIconBrightness: Brightness.light,
+          statusBarColor: Colors.black));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    // if (context.isLightMode()) {
+    //   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
+    //     statusBarIconBrightness: Brightness.dark,
+    //     statusBarBrightness: Brightness.dark,
+    //     systemNavigationBarIconBrightness: Brightness.dark,
+    //   ));
+    // }
+    if (context.isLightMode()) {
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        statusBarIconBrightness: Brightness.dark,
+        statusBarColor: Colors.white,
+      ));
+    }
     return Scaffold(
       bottomNavigationBar: BlocBuilder<BottomNavigationCubit, int>(
         builder: (context, idx) {
@@ -102,9 +139,10 @@ class _BaseViewState extends State<BaseView>
             currentIndex: idx,
             onTap: (int index) {
               context.read<BottomNavigationCubit>().setPage(index);
-              _pageController!.jumpToPage(index);
+              baseViewPageController!.jumpToPage(index);
             },
-            backgroundColor: Colors.black54,
+            backgroundColor:
+                context.isLightMode() ? Colors.white : Colors.black54,
             items: [
               ...List.generate(bottomNavBarItems.length, (index) {
                 return BottomNavigationBarItem(
@@ -112,7 +150,11 @@ class _BaseViewState extends State<BaseView>
                         idx == index
                             ? bottomNavItemActive[index]
                             : bottomNavAssets[index],
-                        color: index != idx ? Colors.white : null,
+                        color: index != idx
+                            ? context.isLightMode()
+                                ? AppColor.vulcan
+                                : Colors.white
+                            : null,
                         width: 30.0,
                         height: 30.0),
                     label: '');
@@ -123,7 +165,7 @@ class _BaseViewState extends State<BaseView>
       ),
       body: BlocBuilder<BottomNavigationCubit, int>(builder: (context, idx) {
         return PageView(
-            controller: _pageController,
+            controller: baseViewPageController,
             onPageChanged: (int index) {
               context.read<BottomNavigationCubit>().setPage(index);
             },

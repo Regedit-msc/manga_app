@@ -20,10 +20,22 @@ class ThemeText {
         fontSize: Sizes.dimen_24.sp,
         color: Colors.white,
       );
+  static TextStyle? get _darkHeadline5 => _poppinsTextTheme.headline5?.copyWith(
+        fontSize: Sizes.dimen_24.sp,
+        color: Colors.black,
+      );
 
+  static TextStyle? get _darkHeadline6 => _poppinsTextTheme.headline6?.copyWith(
+        fontSize: Sizes.dimen_20.sp,
+        color: Colors.black,
+      );
   static TextStyle? get whiteSubtitle1 => _poppinsTextTheme.subtitle1?.copyWith(
         fontSize: Sizes.dimen_16.sp,
         color: Colors.white,
+      );
+  static TextStyle? get darkSubtitle1 => _poppinsTextTheme.subtitle1?.copyWith(
+        fontSize: Sizes.dimen_16.sp,
+        color: Colors.black,
       );
 
   static TextStyle? get _whiteButton => _poppinsTextTheme.button?.copyWith(
@@ -31,8 +43,19 @@ class ThemeText {
         color: Colors.white,
       );
 
+  static TextStyle? get _darkButton => _poppinsTextTheme.button?.copyWith(
+        fontSize: Sizes.dimen_14.sp,
+        color: Colors.black,
+      );
   static TextStyle? get whiteBodyText2 => _poppinsTextTheme.bodyText2?.copyWith(
         color: Colors.white,
+        fontSize: Sizes.dimen_14.sp,
+        wordSpacing: 0.25,
+        letterSpacing: 0.25,
+        height: 1.5,
+      );
+  static TextStyle? get darkBodyText2 => _poppinsTextTheme.bodyText2?.copyWith(
+        color: Colors.black,
         fontSize: Sizes.dimen_14.sp,
         wordSpacing: 0.25,
         letterSpacing: 0.25,
@@ -71,6 +94,14 @@ class ThemeText {
         caption: _darkCaption,
       );
 
+  static getTextLightTheme() => TextTheme(
+        headline5: _darkHeadline5,
+        headline6: _darkHeadline6,
+        subtitle1: darkSubtitle1,
+        bodyText2: darkBodyText2,
+        button: _darkButton,
+        caption: _lightCaption,
+      );
   static getLightTextTheme() => TextTheme(
         headline5: _vulcanHeadline5,
         headline6: _vulcanHeadline6,

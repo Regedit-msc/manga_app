@@ -1,16 +1,24 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:webcomic/data/common/constants/controllers.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
+import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
-import 'package:webcomic/data/models/newest_manga_model.dart';
+import 'package:webcomic/data/models/manga_updates_model.dart'
+    as mangaUpdateMdl;
+import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/data/services/database/db.dart';
 import 'package:webcomic/di/get_it.dart';
+import 'package:webcomic/presentation/anims/cont_scale_animation.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
+import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_updates_tab.dart';
+import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 
@@ -23,17 +31,16 @@ class RecentsView extends StatefulWidget {
 
 class _RecentsViewState extends State<RecentsView>
     with TickerProviderStateMixin {
-  TabController? _tabController;
-
   @override
   void initState() {
-    _tabController = TabController(initialIndex: 0, vsync: this, length: 2);
+    recentsViewController =
+        TabController(initialIndex: 0, vsync: this, length: 5);
     super.initState();
   }
 
   @override
   void dispose() {
-    _tabController!.dispose();
+    recentsViewController!.dispose();
     super.dispose();
   }
 
@@ -41,22 +48,34 @@ class _RecentsViewState extends State<RecentsView>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0.0,
-        backgroundColor: AppColor.vulcan,
+        title: Text("My comics"),
+        backgroundColor: context.isLightMode() ? Colors.white : AppColor.vulcan,
         bottom: TabBar(
-          controller: _tabController,
+          isScrollable: true,
+          controller: recentsViewController,
           tabs: [
             Tab(
-              child: Text("RECENTS"),
+              child: Text(
+                "RECENTS",
+              ),
             ),
             Tab(
               child: Text("SUBSCRIPTIONS"),
+            ),
+            Tab(
+              child: Text("UPDATES"),
+            ),
+            Tab(
+              child: Text("DOWNLOADS"),
+            ),
+            Tab(
+              child: Text("NOTIFICATIONS"),
             ),
           ],
         ),
       ),
       body: TabBarView(
-        controller: _tabController,
+        controller: recentsViewController,
         children: [
           BlocBuilder<RecentsCubit, RecentsState>(
               builder: (context, recentState) {
@@ -99,12 +118,12 @@ class _RecentsViewState extends State<RecentsView>
                                     .updateOrInsertRecentlyRead(recentlyRead);
                                 Navigator.pushNamed(context, Routes.mangaReader,
                                     arguments: ChapterList(
-                                      mangaImage: recentState
-                                          .recents[index].imageUrl,
-                                      mangaTitle: recentState
-                                          .recents[index].title,
-                                      mangaUrl: recentState
-                                          .recents[index].mangaUrl,
+                                        mangaImage:
+                                            recentState.recents[index].imageUrl,
+                                        mangaTitle:
+                                            recentState.recents[index].title,
+                                        mangaUrl:
+                                            recentState.recents[index].mangaUrl,
                                         chapterUrl: recentState
                                             .recents[index].chapterUrl,
                                         chapterTitle: recentState
@@ -142,7 +161,10 @@ class _RecentsViewState extends State<RecentsView>
                                             .indexWhere((element) =>
                                                 element == "chapter") +
                                         2],
-                                style: TextStyle(color: Colors.white70),
+                                style: TextStyle(
+                                    color: context.isLightMode()
+                                        ? Colors.black54.withOpacity(0.5)
+                                        : Colors.white70),
                               ),
                             );
                           })
@@ -155,8 +177,10 @@ class _RecentsViewState extends State<RecentsView>
             );
           }),
           BlocBuilder<SubsCubit, SubsState>(builder: (context, subsState) {
+            List<mangaUpdateMdl.Datum>? mangaUpdates =
+                context.read<MangaUpdatesCubit>().state.updates;
             return Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(4.0),
               child: Column(
                 children: [
                   Expanded(
@@ -169,26 +193,75 @@ class _RecentsViewState extends State<RecentsView>
                               padding: EdgeInsets.only(
                                   top: Sizes.dimen_8.h,
                                   bottom: Sizes.dimen_8.h),
-                              child: ListTile(
-                                onTap: () async {
-                                  Navigator.pushNamed(context, Routes.mangaInfo,
-                                      arguments: Datum(
-                                          title: subsState.subs[index].title,
-                                          mangaUrl:
-                                              subsState.subs[index].mangaUrl,
-                                          imageUrl:
-                                              subsState.subs[index].imageUrl));
-                                },
-                                trailing: Text(
-                                  timeago.format(DateTime.parse(
-                                      subsState.subs[index].dateSubscribed)),
-                                  style: const TextStyle(color: Colors.cyan),
-                                ),
-                                leading: CircleAvatar(
-                                  backgroundImage: CachedNetworkImageProvider(
-                                      subsState.subs[index].imageUrl),
-                                ),
-                                title: Text(subsState.subs[index].title),
+                              child: Stack(
+                                children: [
+                                  ListTile(
+                                    onTap: () async {
+                                      Navigator.pushNamed(
+                                          context, Routes.mangaInfo,
+                                          arguments: newestMMdl.Datum(
+                                              title:
+                                                  subsState.subs[index].title,
+                                              mangaUrl: subsState
+                                                  .subs[index].mangaUrl,
+                                              imageUrl: subsState
+                                                  .subs[index].imageUrl));
+                                    },
+                                    trailing: Text(
+                                      timeago.format(DateTime.parse(subsState
+                                          .subs[index].dateSubscribed)),
+                                      style:
+                                          const TextStyle(color: Colors.cyan),
+                                    ),
+                                    leading: CircleAvatar(
+                                      radius: Sizes.dimen_30.w,
+                                      backgroundImage:
+                                          CachedNetworkImageProvider(
+                                              subsState.subs[index].imageUrl),
+                                    ),
+                                    title: Text(
+                                      subsState.subs[index].title,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  mangaUpdates!.take(50).toList().indexWhere(
+                                              (element) =>
+                                                  element.title.toLowerCase() ==
+                                                  subsState.subs[index].title
+                                                      .toLowerCase()) !=
+                                          -1
+                                      ? Align(
+                                          alignment: Alignment.topLeft,
+                                          child: ContinuousScaleAnim(
+                                            child: Padding(
+                                              padding: EdgeInsets.all(
+                                                  Sizes.dimen_4.w),
+                                              child: Container(
+                                                // width: Sizes.dimen_20.w,
+                                                // height: Sizes.dimen_20.h,
+
+                                                decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: AppColor.royalBlue),
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(
+                                                      Sizes.dimen_4.w),
+                                                  child: Text(
+                                                    "UP",
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            Sizes.dimen_14.sp,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : Container()
+                                ],
                               ),
                             );
                           })
@@ -199,7 +272,10 @@ class _RecentsViewState extends State<RecentsView>
                 ],
               ),
             );
-          })
+          }),
+          MangaUpdatesTabView(),
+          Container(),
+          Container(),
         ],
       ),
     );

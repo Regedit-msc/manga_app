@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,15 +8,20 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
+import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_home_widget.dart';
+import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_tabular.dart';
+import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_genre_card.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_slideshow_indicator_widget.dart';
+import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_updates_home.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_clicked.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewed.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
+import 'package:webcomic/presentation/ui/loading/loading.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -65,7 +71,7 @@ class _HomeViewState extends State<HomeView>
           }
 
           if (result.isLoading) {
-            return Text('Loading');
+            return Loading();
           }
 
           final mangaInfo = result.data!["getNewestManga"];
@@ -90,49 +96,54 @@ class _HomeViewState extends State<HomeView>
                       height: Sizes.dimen_120.h,
                       child: Stack(
                         children: [
-                          PageView(
-                            controller: _controller,
-                            pageSnapping: true,
-                            onPageChanged: (int index) {
-                              context
-                                  .read<MangaSlideShowCubit>()
-                                  .setIndex(index + 1);
-                            },
-                            children: [
-                              ...List.generate(newestManga.data!.length,
-                                  (index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).pushNamed(
-                                        Routes.mangaInfo,
-                                        arguments: newestMMdl.Datum(
-                                            title:
-                                                newestManga.data![index].title,
-                                            mangaUrl: newestManga
-                                                .data![index].mangaUrl,
-                                            imageUrl: newestManga
-                                                .data![index].imageUrl));
-                                  },
-                                  child: CachedNetworkImage(
-                                    imageUrl:
-                                        newestManga.data![index].imageUrl ?? '',
-                                    imageBuilder: (context, imageProvider) =>
-                                        Container(
-                                      decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: imageProvider,
-                                          fit: BoxFit.cover,
-                                        ),
+                          CarouselSlider.builder(
+                            options: CarouselOptions(
+                                height: Sizes.dimen_120.h,
+                                viewportFraction: 1.0,
+                                // enlargeCenterPage: false,
+                                autoPlayCurve: Curves.easeIn,
+                                autoPlay: true,
+                                autoPlayInterval: Duration(seconds: 2),
+                                autoPlayAnimationDuration:
+                                    Duration(milliseconds: 200),
+                                onPageChanged: (i, reason) {
+                                  context
+                                      .read<MangaSlideShowCubit>()
+                                      .setIndex(i + 1);
+                                }),
+                            itemBuilder: (_, index, __) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).pushNamed(
+                                      Routes.mangaInfo,
+                                      arguments: newestMMdl.Datum(
+                                          title: newestManga.data![index].title,
+                                          mangaUrl:
+                                              newestManga.data![index].mangaUrl,
+                                          imageUrl: newestManga
+                                              .data![index].imageUrl));
+                                },
+                                child: CachedNetworkImage(
+                                  imageUrl:
+                                      newestManga.data![index].imageUrl ?? '',
+                                  imageBuilder: (context, imageProvider) =>
+                                      Container(
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: imageProvider,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
-                                    placeholder: (context, url) => Center(
-                                        child: CircularProgressIndicator()),
-                                    errorWidget: (context, url, error) =>
-                                        Icon(Icons.error),
                                   ),
-                                );
-                              })
-                            ],
+                                  placeholder: (ctx, string) {
+                                    return Loading();
+                                  },
+                                  errorWidget: (context, url, error) =>
+                                      Icon(Icons.error),
+                                ),
+                              );
+                            },
+                            itemCount: newestManga.data!.length,
                           ),
                           const Align(
                               alignment: Alignment.bottomRight,
@@ -164,28 +175,68 @@ class _HomeViewState extends State<HomeView>
                           SizedBox(
                             height: Sizes.dimen_10.h,
                           ),
+                          MangaUpdatesHome(),
                           MostViewedManga(),
                           MostClickedManga(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "Genres",
+                                  style: TextStyle(
+                                      color: context.isLightMode()
+                                          ? Colors.black
+                                          : Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: Sizes.dimen_18.sp),
+                                ),
+                              ),
+                            ],
+                          ),
                           SizedBox(
-                            height: Sizes.dimen_10.h,
+                            height: Sizes.dimen_2.h,
                           ),
-                          Text(
-                            "CATEGORIES",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: Sizes.dimen_18.sp),
+                          MangaByGenreTabular(genre: "All"),
+                          SingleChildScrollView(
+                            physics: BouncingScrollPhysics(),
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                Column(
+                                  children: [
+                                    MangaByGenreCard(genre: "Action"),
+                                    MangaByGenreCard(genre: "Martial Arts"),
+                                    MangaByGenreCard(genre: "Tragedy"),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    MangaByGenreCard(genre: "Adult"),
+                                    MangaByGenreCard(genre: "Horror"),
+                                    MangaByGenreCard(genre: "Mecha"),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    MangaByGenreCard(genre: "Sports"),
+                                    MangaByGenreCard(genre: "Isekai"),
+                                    MangaByGenreCard(genre: "Romance"),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    MangaByGenreCard(genre: "Comedy"),
+                                    MangaByGenreCard(genre: "School Life"),
+                                    MangaByGenreCard(genre: "Sci Fi"),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                          MangaByGenreHome(genre: "Action"),
-                          MangaByGenreHome(genre: "Martial Arts"),
-                          MangaByGenreHome(genre: "Romance"),
-                          MangaByGenreHome(genre: "Comedy"),
-                          MangaByGenreHome(genre: "School Life"),
-                          MangaByGenreHome(genre: "Sports"),
-                          MangaByGenreHome(genre: "Adult"),
-                          MangaByGenreHome(genre: "Harem"),
-                          MangaByGenreHome(genre: "Isekai"),
-                          MangaByGenreHome(genre: "Slice of life"),
+                          MangaByGenreTabular(genre: "Shounen"),
+                          MangaByGenreHome(genre: "Fantasy")
                         ],
                       ),
                     )

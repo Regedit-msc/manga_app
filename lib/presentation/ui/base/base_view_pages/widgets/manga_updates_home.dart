@@ -1,82 +1,85 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:webcomic/data/common/constants/controllers.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
-import 'package:webcomic/data/models/most_viewed_model.dart';
+import 'package:webcomic/data/models/manga_updates_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 
-class MostViewedManga extends StatefulWidget {
-  const MostViewedManga({Key? key}) : super(key: key);
+class MangaUpdatesHome extends StatefulWidget {
+  const MangaUpdatesHome({Key? key}) : super(key: key);
 
   @override
-  _MostViewedMangaState createState() => _MostViewedMangaState();
+  _MangaUpdatesHomeState createState() => _MangaUpdatesHomeState();
 }
 
-class _MostViewedMangaState extends State<MostViewedManga> {
-  Color getColor(String status) {
-    switch (status.toLowerCase()) {
-      case "ongoing":
-        return Color(0xff320E3B);
-      case "completed":
-        return Colors.red;
-      default:
-        return Colors.transparent;
-    }
-  }
-
-  IconData getIcon(String status) {
-    switch (status.toLowerCase()) {
-      case "ongoing":
-        return Icons.access_alarm;
-      case "completed":
-        return Icons.clear;
-      default:
-        return Icons.access_time_outlined;
-    }
-  }
-
+class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Query(
         options: QueryOptions(
-          document: parseString(MOST_VIEWED),
-          pollInterval: Duration(minutes: 60),
-        ),
+            document: parseString(MANGA_UPDATE),
+            pollInterval: null,
+            variables: {"page": 1}),
         builder: (QueryResult result, {refetch, fetchMore}) {
           if (result.hasException) {
             return Text(result.exception.toString());
           }
 
           if (result.isLoading) {
-            return Loading();
+            return Text('Loading');
           }
 
-          final mangaInfo = result.data!["getMostViewedManga"];
+          final mangaInfo = result.data!["getMangaPage"];
           if (mangaInfo != null) {
-            GetMostViewedManga newestManga =
-                GetMostViewedManga.fromMap(mangaInfo);
+            GetMangaPage newestManga = GetMangaPage.fromMap(mangaInfo);
+            context.read<MangaUpdatesCubit>().setUpdates(newestManga.data);
             return Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    "Most Viewed Today",
-                    style: TextStyle(
-                        color:
-                            context.isLightMode() ? Colors.black : Colors.white,
-                        fontSize: Sizes.dimen_16.sp,
-                        fontWeight: FontWeight.bold),
+                ScaleAnim(
+                  onTap: () {
+                    baseViewPageController!.animateToPage(1,
+                        duration: Duration(microseconds: 400),
+                        curve: Curves.easeIn);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "UPDATES",
+                          style: TextStyle(
+                              color: context.isLightMode()
+                                  ? Colors.black
+                                  : Colors.white,
+                              fontSize: Sizes.dimen_16.sp,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.arrow_forward_ios,
+                          color: context.isLightMode()
+                              ? Colors.black
+                              : Colors.white,
+                          size: Sizes.dimen_16.sp,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(
@@ -89,18 +92,19 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                     child: Row(
                       children: [
                         ...List.generate(newestManga.data.length, (index) {
-                          return ScaleAnim(
-                            onTap: () {
-                              Navigator.of(context).pushNamed(Routes.mangaInfo,
-                                  arguments: newestMMdl.Datum(
-                                      title: newestManga.data[index].title,
-                                      mangaUrl:
-                                          newestManga.data[index].mangaUrl,
-                                      imageUrl:
-                                          newestManga.data[index].imageUrl));
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ScaleAnim(
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                    Routes.mangaInfo,
+                                    arguments: newestMMdl.Datum(
+                                        title: newestManga.data[index].title,
+                                        mangaUrl:
+                                            newestManga.data[index].mangaUrl,
+                                        imageUrl:
+                                            newestManga.data[index].imageUrl));
+                              },
                               child: Container(
                                 width: Sizes.dimen_150.w,
                                 height: Sizes.dimen_120.h,
@@ -144,7 +148,7 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                                               .center,
                                                       children: [
                                                         Text(
-                                                          "MOST VIEWED",
+                                                          "LATEST UPDATE",
                                                           style: TextStyle(
                                                               color:
                                                                   Colors.white,

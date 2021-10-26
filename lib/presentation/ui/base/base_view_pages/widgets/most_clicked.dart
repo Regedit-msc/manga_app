@@ -6,9 +6,11 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
+import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/most_clicked_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
+import 'package:webcomic/presentation/ui/loading/loading.dart';
 
 class MostClickedManga extends StatefulWidget {
   const MostClickedManga({Key? key}) : super(key: key);
@@ -54,7 +56,7 @@ class _MostClickedMangaState extends State<MostClickedManga> {
           }
 
           if (result.isLoading) {
-            return Text('Loading');
+            return Loading();
           }
 
           final mangaInfo = result.data!["getMostClickedManga"];
@@ -70,7 +72,8 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                   child: Text(
                     "Most Clicked Today",
                     style: TextStyle(
-                        color: Colors.white,
+                        color:
+                            context.isLightMode() ? Colors.black : Colors.white,
                         fontSize: Sizes.dimen_16.sp,
                         fontWeight: FontWeight.bold),
                   ),
@@ -118,28 +121,43 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                                     .data[index].imageUrl),
                                           ),
                                         ),
-                                        Align(
-                                          alignment: Alignment.bottomCenter,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(
-                                                      Sizes.dimen_10),
-                                                  topRight: Radius.circular(
-                                                      Sizes.dimen_10)),
-                                              color: getColor(newestManga
-                                                  .data[index].score),
-                                            ),
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  getIcon(newestManga
-                                                      .data[index].score),
-                                                  color: Colors.white,
-                                                )),
-                                          ),
-                                        ),
+                                        index == 0
+                                            ? Align(
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Container(
+                                                    width: Sizes.dimen_120.w,
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: Colors.white),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10.0),
+                                                      color: Colors.transparent,
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Text(
+                                                          "MOST CLICKED",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : Container()
                                       ],
                                     ),
                                   ),
