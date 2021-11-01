@@ -344,7 +344,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                           .saveUserDetails(
                                                               jsonEncode(
                                                                   userData));
-                                                      // TODO: Show success dialog
+                                                      getItInstance<SnackbarServiceImpl>().showSnack(context, "Sign up successful. A new collection tab has been unlocked. Check it out!");
+                                                      Navigator.pop(context);
                                                       print(authResult
                                                           .toString());
                                                       context.read<ShowCollectionCubit>().setShowCollection(true);
@@ -354,7 +355,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                           .user!.uid).set({"details": jsonEncode(userData)});
                                                       await  getItInstance<SharedServiceImpl>().setFirestoreUserId(authResult
                                                           .user!.uid);
-                                                      Navigator.pop(context);
+
 
                                                     },
                                                     child: Row(

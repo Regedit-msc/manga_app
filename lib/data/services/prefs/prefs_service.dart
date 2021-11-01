@@ -13,7 +13,9 @@ abstract class SharedService {
   Future<void> setFirestoreUserId(String userId);
   String getFirestoreUserId();
   String? getUnSplashLinks();
+  bool firstTimeOnCollections();
   Future<void> saveUnsplashLinks(String links);
+  Future<void> setFirstTimeOnCollectionsToFalse();
 }
 
 class SharedServiceImpl extends SharedService {
@@ -84,5 +86,15 @@ class SharedServiceImpl extends SharedService {
   @override
   Future<void> saveUnsplashLinks(String links) async {
     await prefs.setString("UNSPLASH_LINKS", links);
+  }
+
+  @override
+  bool firstTimeOnCollections() {
+    return prefs.getBool("FIRST_TIME_ON_COLLECTIONS") ?? true;
+  }
+
+  @override
+  Future<void> setFirstTimeOnCollectionsToFalse() async {
+    await prefs.setBool("FIRST_TIME_ON_COLLECTIONS", false);
   }
 }
