@@ -88,7 +88,6 @@ class _HomeViewState extends State<HomeView>
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(

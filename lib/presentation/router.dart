@@ -3,9 +3,15 @@ import 'package:page_transition/page_transition.dart';
 import 'package:webcomic/data/common/constants/categories.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
+import 'package:webcomic/data/models/manga_info_with_datum.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart';
 import 'package:webcomic/presentation/ui/base/base_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/categories/category_view.dart';
+import 'package:webcomic/presentation/ui/other_pages/collections/add_to_collection.dart';
+import 'package:webcomic/presentation/ui/other_pages/collections/collection_main_view.dart';
+import 'package:webcomic/presentation/ui/other_pages/collections/collection_search.dart';
+import 'package:webcomic/presentation/ui/other_pages/collections/collection_subcollection_view.dart';
+import 'package:webcomic/presentation/ui/other_pages/collections/create_collection.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_info/manga_info_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_info/summary/summary_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_reader/manga_reader.dart';
@@ -48,6 +54,37 @@ class CustomRouter {
             child: MangaReader(chapterList: setting.arguments as ChapterList),
             type: PageTransitionType.fade,
             settings: setting);
+      case Routes.addToCollection:
+        return PageTransition(
+            child: AddToCollection(
+                mangaInfo: setting.arguments as MangaInfoWithDatum),
+            type: PageTransitionType.fade,
+            settings: setting);
+      case Routes.createCollection:
+        return PageTransition(
+            child: CreateCollection(
+                fromAddToCollectionPage: setting.arguments as bool),
+            type: PageTransitionType.fade,
+            settings: setting);
+      case Routes.addCollectionSearch:
+        return PageTransition(
+            child:
+                AddCollectionMangaSearchView(index: setting.arguments as int),
+            type: PageTransitionType.fade,
+            settings: setting);
+      case Routes.collectionMain:
+        return PageTransition(
+            child:
+                CollectionMainView(collectionId: setting.arguments as String),
+            type: PageTransitionType.fade,
+            settings: setting);
+      case Routes.subCollection:
+        final data = setting.arguments as SubcollectionFields;
+        return PageTransition(
+            child:
+            CollectionSubcollectionView(collectionId: data.collectionId, subCollectionId: data.subcollectionId,),
+            type: PageTransitionType.fade,
+            settings: setting);
       case Routes.mangaSearch:
         return PageTransition(
             child: Search(), type: PageTransitionType.fade, settings: setting);
@@ -65,4 +102,12 @@ class CustomRouter {
         break;
     }
   }
+}
+
+class SubcollectionFields{
+  final String  collectionId;
+
+  final String  subcollectionId;
+
+  SubcollectionFields({ required this.collectionId, required this.subcollectionId});
 }

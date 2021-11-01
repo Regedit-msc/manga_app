@@ -13,6 +13,7 @@ import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/services/api/gql_api.dart';
+import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/notification/notification_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/di/get_it.dart';
@@ -22,15 +23,16 @@ import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/themes/theme_controller.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 
 import '../main.dart';
-
-final _navigatorKey = GlobalKey<NavigatorState>();
 
 class Index extends StatefulWidget {
   const Index({Key? key}) : super(key: key);
@@ -47,17 +49,24 @@ class _IndexState extends State<Index> {
   late RecentsCubit _recentsCubit;
   late SubsCubit _subsCubit;
   late MangaUpdatesCubit _mangaUpdatesCubit;
+  late ShowCollectionCubit _showCollectionCubit;
+  late UserFromGoogleCubit _userFromGoogleCubit;
+  late CollectionCardsCubit _collectionCardsCubit;
   @override
   void initState() {
     super.initState();
+    // FlutterBranchSdk.validateSDKIntegration();
     _recentsCubit = getItInstance<RecentsCubit>();
     _mangaUpdatesCubit = getItInstance<MangaUpdatesCubit>();
     _mangaSlideShowCubit = getItInstance<MangaSlideShowCubit>();
+    _showCollectionCubit = getItInstance<ShowCollectionCubit>();
     _chaptersReadCubit = getItInstance<ChaptersReadCubit>();
     _bottomNavigationCubit = getItInstance<BottomNavigationCubit>();
     _mangaSlideShowCubit = getItInstance<MangaSlideShowCubit>();
     _mangaResultsCubit = getItInstance<MangaResultsCubit>();
     _subsCubit = getItInstance<SubsCubit>();
+    _userFromGoogleCubit = getItInstance<UserFromGoogleCubit>();
+    _collectionCardsCubit = getItInstance<CollectionCardsCubit>();
     var initializationSettingsAndroid =
         ln.AndroidInitializationSettings('@drawable/logo');
     var initializationSettingsIOs = ln.IOSInitializationSettings();
@@ -81,6 +90,9 @@ class _IndexState extends State<Index> {
     _chaptersReadCubit.close();
     _subsCubit.close();
     _mangaUpdatesCubit.close();
+    _showCollectionCubit.close();
+    _userFromGoogleCubit.close();
+    _collectionCardsCubit.close();
     super.dispose();
   }
 
@@ -132,11 +144,16 @@ class _IndexState extends State<Index> {
           BlocProvider<ChaptersReadCubit>.value(value: _chaptersReadCubit),
           BlocProvider<SubsCubit>.value(value: _subsCubit),
           BlocProvider<MangaUpdatesCubit>.value(value: _mangaUpdatesCubit),
+          BlocProvider<UserFromGoogleCubit>.value(value: _userFromGoogleCubit),
+          BlocProvider<ShowCollectionCubit>.value(value: _showCollectionCubit),
+          BlocProvider<CollectionCardsCubit>.value(
+              value: _collectionCardsCubit),
         ],
         child: AnimatedBuilder(
           builder: (context, widget) {
             return MaterialApp(
-              navigatorKey: _navigatorKey,
+              navigatorKey:
+                  getItInstance<NavigationServiceImpl>().navigationKey,
               debugShowCheckedModeBanner: false,
               title: 'Manga App',
               themeMode: getItInstance<ThemeController>().themeMode,
@@ -154,7 +171,7 @@ class _IndexState extends State<Index> {
                         fontWeight: FontWeight.w700,
                         fontSize: Sizes.dimen_14.sp)),
                 appBarTheme: AppBarTheme(
-                    iconTheme: IconThemeData(color: Colors.white),
+                    iconTheme: IconThemeData(color: Colors.black),
                     elevation: 0.0,
                     backgroundColor: Colors.white,
                     titleTextStyle: TextStyle(
@@ -175,17 +192,6 @@ class _IndexState extends State<Index> {
                     backgroundColor: AppColor.vulcan,
                   )),
               initialRoute: Routes.initRoute,
-              // onGenerateRoute: (RouteSettings settings) {
-              //   final routes = CRouter.getRoutes(settings);
-              //   final WidgetBuilder? builder = routes[settings.name];
-              //   return FadePageRouteBuilder(
-              //     builder: builder!,
-              //     settings: settings,
-              //   );
-              // },
-              // builder: (context, child) {
-              //   return child!;
-              // },
               onGenerateRoute: (settings) =>
                   CustomRouter.generateRoutes(settings),
             );

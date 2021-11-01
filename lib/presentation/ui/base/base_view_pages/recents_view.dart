@@ -8,6 +8,8 @@ import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
+import 'package:webcomic/data/common/screen_util/screen_util.dart';
+import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/manga_updates_model.dart'
@@ -86,90 +88,122 @@ class _RecentsViewState extends State<RecentsView>
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
-                      child: Column(
-                        children: [
-                          ...List.generate(recentState.recents.length, (index) {
-                            return ListTile(
-                              onTap: () async {
-                                final DatabaseHelper dbInstance =
-                                    getItInstance<DatabaseHelper>();
-                                RecentlyRead recentlyRead = RecentlyRead(
-                                    title: recentState.recents[index].title,
-                                    mangaUrl:
-                                        recentState.recents[index].mangaUrl,
-                                    imageUrl:
-                                        recentState.recents[index].imageUrl,
-                                    chapterUrl:
-                                        recentState.recents[index].chapterUrl,
-                                    chapterTitle:
-                                        recentState.recents[index].chapterTitle,
-                                    mostRecentReadDate:
-                                        DateTime.now().toString());
-                                List<RecentlyRead> recents =
-                                    context.read<RecentsCubit>().state.recents;
-                                List<RecentlyRead> withoutCurrentRead = recents
-                                    .where((element) =>
-                                        element.mangaUrl !=
-                                        recentlyRead.mangaUrl)
-                                    .toList();
-                                context.read<RecentsCubit>().setResults(
-                                    [...withoutCurrentRead, recentlyRead]);
-                                await dbInstance
-                                    .updateOrInsertRecentlyRead(recentlyRead);
-                                Navigator.pushNamed(context, Routes.mangaReader,
-                                    arguments: ChapterList(
-                                        mangaImage:
-                                            recentState.recents[index].imageUrl,
-                                        mangaTitle:
-                                            recentState.recents[index].title,
-                                        mangaUrl:
-                                            recentState.recents[index].mangaUrl,
-                                        chapterUrl: recentState
-                                            .recents[index].chapterUrl,
-                                        chapterTitle: recentState
-                                            .recents[index].chapterTitle,
-                                        dateUploaded: recentState.recents[index]
-                                            .mostRecentReadDate));
-                              },
-                              trailing: Text(
-                                timeago.format(DateTime.parse(recentState
-                                    .recents[index].mostRecentReadDate)),
-                                style: const TextStyle(color: Colors.cyan),
-                              ),
-                              isThreeLine: true,
-                              leading: CircleAvatar(
-                                backgroundImage: CachedNetworkImageProvider(
-                                    recentState.recents[index].imageUrl),
-                              ),
-                              title: Text(recentState.recents[index].title),
-                              subtitle: Text(
-                                recentState.recents[index].chapterTitle
-                                        .replaceAll("-", " ")
-                                        .split(" ")[recentState
-                                                .recents[index].chapterTitle
-                                                .split("-")
-                                                .indexWhere((element) =>
-                                                    element == "chapter") +
-                                            1]
-                                        .replaceFirst("c", "C") +
-                                    " " +
-                                    recentState.recents[index].chapterTitle
-                                        .replaceAll("-", " ")
-                                        .split(" ")[recentState
-                                            .recents[index].chapterTitle
-                                            .split("-")
-                                            .indexWhere((element) =>
-                                                element == "chapter") +
-                                        2],
-                                style: TextStyle(
-                                    color: context.isLightMode()
-                                        ? Colors.black54.withOpacity(0.5)
-                                        : Colors.white70),
-                              ),
-                            );
-                          })
-                        ],
-                      ),
+                      child: recentState.recents.length > 0
+                          ? Column(
+                              children: [
+                                ...List.generate(recentState.recents.length,
+                                    (index) {
+                                  return ListTile(
+                                    onTap: () async {
+                                      final DatabaseHelper dbInstance =
+                                          getItInstance<DatabaseHelper>();
+                                      RecentlyRead recentlyRead = RecentlyRead(
+                                          title:
+                                              recentState.recents[index].title,
+                                          mangaUrl: recentState
+                                              .recents[index].mangaUrl,
+                                          imageUrl: recentState
+                                              .recents[index].imageUrl,
+                                          chapterUrl: recentState
+                                              .recents[index].chapterUrl,
+                                          chapterTitle: recentState
+                                              .recents[index].chapterTitle,
+                                          mostRecentReadDate:
+                                              DateTime.now().toString());
+                                      List<RecentlyRead> recents = context
+                                          .read<RecentsCubit>()
+                                          .state
+                                          .recents;
+                                      List<RecentlyRead> withoutCurrentRead =
+                                          recents
+                                              .where((element) =>
+                                                  element.mangaUrl !=
+                                                  recentlyRead.mangaUrl)
+                                              .toList();
+                                      context.read<RecentsCubit>().setResults([
+                                        ...withoutCurrentRead,
+                                        recentlyRead
+                                      ]);
+                                      await dbInstance
+                                          .updateOrInsertRecentlyRead(
+                                              recentlyRead);
+                                      Navigator.pushNamed(
+                                          context, Routes.mangaReader,
+                                          arguments: ChapterList(
+                                              mangaImage: recentState
+                                                  .recents[index].imageUrl,
+                                              mangaTitle: recentState
+                                                  .recents[index].title,
+                                              mangaUrl: recentState
+                                                  .recents[index].mangaUrl,
+                                              chapterUrl: recentState
+                                                  .recents[index].chapterUrl,
+                                              chapterTitle: recentState
+                                                  .recents[index].chapterTitle,
+                                              dateUploaded: recentState
+                                                  .recents[index]
+                                                  .mostRecentReadDate));
+                                    },
+                                    trailing: Text(
+                                      timeago.format(DateTime.parse(recentState
+                                          .recents[index].mostRecentReadDate)),
+                                      style:
+                                          const TextStyle(color: Colors.cyan),
+                                    ),
+                                    isThreeLine: true,
+                                    leading: CircleAvatar(
+                                      backgroundImage:
+                                          CachedNetworkImageProvider(recentState
+                                              .recents[index].imageUrl),
+                                    ),
+                                    title:
+                                        Text(recentState.recents[index].title),
+                                    subtitle: Text(
+                                      recentState.recents[index].chapterTitle
+                                              .replaceAll("-", " ")
+                                              .split(" ")[recentState
+                                                      .recents[index]
+                                                      .chapterTitle
+                                                      .split("-")
+                                                      .indexWhere((element) =>
+                                                          element ==
+                                                          "chapter") +
+                                                  1]
+                                              .replaceFirst("c", "C") +
+                                          " " +
+                                          recentState.recents[index].chapterTitle
+                                              .replaceAll("-", " ")
+                                              .split(" ")[recentState
+                                                  .recents[index].chapterTitle
+                                                  .split("-")
+                                                  .indexWhere((element) =>
+                                                      element == "chapter") +
+                                              2],
+                                      style: TextStyle(
+                                          color: context.isLightMode()
+                                              ? Colors.black54.withOpacity(0.5)
+                                              : Colors.white70),
+                                    ),
+                                  );
+                                })
+                              ],
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      top: ScreenUtil.screenWidth / 2),
+                                  child: callSvg("assets/subscribed.svg",
+                                      width: 70.0, height: 70.0),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text("No chapter here."),
+                                )
+                              ],
+                            ),
                     ),
                   ),
                 ],
@@ -186,87 +220,123 @@ class _RecentsViewState extends State<RecentsView>
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
-                      child: Column(
-                        children: [
-                          ...List.generate(subsState.subs.length, (index) {
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                  top: Sizes.dimen_8.h,
-                                  bottom: Sizes.dimen_8.h),
-                              child: Stack(
-                                children: [
-                                  ListTile(
-                                    onTap: () async {
-                                      Navigator.pushNamed(
-                                          context, Routes.mangaInfo,
-                                          arguments: newestMMdl.Datum(
-                                              title:
-                                                  subsState.subs[index].title,
-                                              mangaUrl: subsState
-                                                  .subs[index].mangaUrl,
-                                              imageUrl: subsState
-                                                  .subs[index].imageUrl));
-                                    },
-                                    trailing: Text(
-                                      timeago.format(DateTime.parse(subsState
-                                          .subs[index].dateSubscribed)),
-                                      style:
-                                          const TextStyle(color: Colors.cyan),
-                                    ),
-                                    leading: CircleAvatar(
-                                      radius: Sizes.dimen_30.w,
-                                      backgroundImage:
-                                          CachedNetworkImageProvider(
-                                              subsState.subs[index].imageUrl),
-                                    ),
-                                    title: Text(
-                                      subsState.subs[index].title,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  mangaUpdates!.take(50).toList().indexWhere(
-                                              (element) =>
-                                                  element.title.toLowerCase() ==
-                                                  subsState.subs[index].title
-                                                      .toLowerCase()) !=
-                                          -1
-                                      ? Align(
-                                          alignment: Alignment.topLeft,
-                                          child: ContinuousScaleAnim(
-                                            child: Padding(
-                                              padding: EdgeInsets.all(
-                                                  Sizes.dimen_4.w),
-                                              child: Container(
-                                                // width: Sizes.dimen_20.w,
-                                                // height: Sizes.dimen_20.h,
+                      child: subsState.subs.length > 0
+                          ? Column(
+                              children: [
+                                ...List.generate(subsState.subs.length,
+                                    (index) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                        top: Sizes.dimen_8.h,
+                                        bottom: Sizes.dimen_8.h),
+                                    child: Stack(
+                                      children: [
+                                        ListTile(
+                                          onTap: () async {
+                                            Navigator.pushNamed(
+                                                context, Routes.mangaInfo,
+                                                arguments: newestMMdl.Datum(
+                                                    title: subsState
+                                                        .subs[index].title,
+                                                    mangaUrl: subsState
+                                                        .subs[index].mangaUrl,
+                                                    imageUrl: subsState
+                                                        .subs[index].imageUrl));
+                                          },
+                                          trailing: Text(
+                                            timeago.format(DateTime.parse(
+                                                subsState.subs[index]
+                                                    .dateSubscribed)),
+                                            style: const TextStyle(
+                                                color: Colors.cyan),
+                                          ),
+                                          leading: CircleAvatar(
+                                            radius: Sizes.dimen_30.w,
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                                    subsState
+                                                        .subs[index].imageUrl),
+                                          ),
+                                          title: Text(
+                                            subsState.subs[index].title,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        mangaUpdates!
+                                                    .take(50)
+                                                    .toList()
+                                                    .indexWhere((element) =>
+                                                        element.title
+                                                            .toLowerCase() ==
+                                                        subsState
+                                                            .subs[index].title
+                                                            .toLowerCase()) !=
+                                                -1
+                                            ? Align(
+                                                alignment: Alignment.topLeft,
+                                                child: ContinuousScaleAnim(
+                                                  child: Padding(
+                                                    padding: EdgeInsets.all(
+                                                        Sizes.dimen_4.w),
+                                                    child: Container(
+                                                      // width: Sizes.dimen_20.w,
+                                                      // height: Sizes.dimen_20.h,
 
-                                                decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    color: AppColor.royalBlue),
-                                                child: Padding(
-                                                  padding: EdgeInsets.all(
-                                                      Sizes.dimen_4.w),
-                                                  child: Text(
-                                                    "UP",
-                                                    style: TextStyle(
-                                                        fontSize:
-                                                            Sizes.dimen_14.sp,
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold),
+                                                      decoration: BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          color: AppColor
+                                                              .royalBlue),
+                                                      child: Padding(
+                                                        padding: EdgeInsets.all(
+                                                            Sizes.dimen_4.w),
+                                                        child: Text(
+                                                          "UP",
+                                                          style: TextStyle(
+                                                              fontSize: Sizes
+                                                                  .dimen_14.sp,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      : Container()
-                                ],
-                              ),
-                            );
-                          })
-                        ],
-                      ),
+                                              )
+                                            : Container()
+                                      ],
+                                    ),
+                                  );
+                                })
+                              ],
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      top: ScreenUtil.screenWidth / 2),
+                                  child: callSvg("assets/boruto.svg",
+                                      width: 70.0, height: 70.0),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(Sizes.dimen_20.w),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                            "You have not subscribed to any comic. You will not get update notifications."),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
                     ),
                   ),
                 ],
@@ -274,8 +344,16 @@ class _RecentsViewState extends State<RecentsView>
             );
           }),
           MangaUpdatesTabView(),
-          Container(),
-          Container(),
+          Container(
+            child: Center(
+              child: Text("WORK IN PROGRESS"),
+            ),
+          ),
+          Container(
+            child: Center(
+              child: Text("WORK IN PROGRESS"),
+            ),
+          ),
         ],
       ),
     );

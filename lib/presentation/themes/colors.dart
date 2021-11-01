@@ -6,4 +6,5 @@ class AppColor {
   static const Color royalBlue = Color(0xFF604FEF);
   static const Color violet = Color(0xFFA74DBC);
   static const Color somehowGrey = Color.fromRGBO(40, 42, 57, 0.5);
+  static Color? bottomNavUnselectedColor = Colors.grey[600];
 }

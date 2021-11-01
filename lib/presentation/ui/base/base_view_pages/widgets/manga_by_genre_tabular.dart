@@ -34,7 +34,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
 
   @override
   void dispose() {
-    _pageController!.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 

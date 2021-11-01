@@ -29,7 +29,7 @@ class _MangaUpdatesTabViewState extends State<MangaUpdatesTabView> {
       updateQuery: (previousResultData, fetchMoreResultData) {
         fetchMoreResultData!["getMangaPage"]['data'] = [
           ...previousResultData!["getMangaPage"]['data'],
-          ...fetchMoreResultData!["getMangaPage"]['data']
+          ...fetchMoreResultData["getMangaPage"]['data']
         ];
         if (mounted) {
           setState(() {

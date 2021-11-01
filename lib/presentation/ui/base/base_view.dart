@@ -3,12 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webcomic/data/common/constants/categories.dart';
 import 'package:webcomic/data/common/constants/controllers.dart';
+import 'package:webcomic/data/common/constants/size_constants.dart';
+import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
+import 'package:webcomic/data/models/unsplash/unsplash_model.dart';
+import 'package:webcomic/data/services/api/unsplash_api.dart';
 import 'package:webcomic/data/services/database/db.dart';
+import 'package:webcomic/data/services/deep_link/deep_link.service.dart';
+import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/home_view.dart';
@@ -16,8 +22,10 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/recents_view.dart'
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 import 'package:webcomic/presentation/ui/other_pages/categories/category_view.dart';
+import 'package:webcomic/presentation/ui/other_pages/collections/collections_view.dart';
 
 class BaseView extends StatefulWidget {
   const BaseView({Key? key}) : super(key: key);
@@ -28,33 +36,25 @@ class BaseView extends StatefulWidget {
 
 class _BaseViewState extends State<BaseView>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  List<BottomNavItems> bottomNavBarItems = [
-    BottomNavItems(
-        name: "FOR YOU",
-        icon: const Icon(
-          Icons.home,
-          color: Colors.white,
-        )),
-    BottomNavItems(
-        name: "RECENTS",
-        icon: const Icon(
-          Icons.menu,
-          color: Colors.white,
-        )),
-    BottomNavItems(
-        name: "FOR YOU",
-        icon: const Icon(
-          Icons.phone,
-          color: Colors.white,
-        )),
+  List<String> bottomNavBarItems = [
+    "HOME",
+    "MY",
+    "GENRES",
+    "SETTINGS",
+    "COLLECTIONS"
   ];
   List<Widget> pagesForBottomNav = [
     const HomeView(),
     const RecentsView(),
     CategoryView(category: Categories.ALL),
-    const Scaffold(
-      backgroundColor: AppColor.violet,
-    )
+    Scaffold(
+      body: Container(
+        child: Center(
+          child: Text("WORK IN PROGRESS"),
+        ),
+      ),
+    ),
+    CollectionsView()
   ];
 
   @override
@@ -67,26 +67,52 @@ class _BaseViewState extends State<BaseView>
 
   void doSetUp() async {
     final DatabaseHelper dbInstance = getItInstance<DatabaseHelper>();
+    final DynamicLinkServiceImpl dynamicLiksService =
+        getItInstance<DynamicLinkServiceImpl>();
     List<RecentlyRead>? recents = await dbInstance.getRecentReads();
     List<ChapterRead>? chaptersRead = await dbInstance.getChaptersRead();
     List<Subscribe>? subscribed = await dbInstance.getSubscriptions();
     context.read<RecentsCubit>().setResults(recents ?? []);
     context.read<ChaptersReadCubit>().setResults(chaptersRead ?? []);
     context.read<SubsCubit>().setSubs(subscribed ?? []);
+    String? unsplashLinks =
+        getItInstance<SharedServiceImpl>().getUnSplashLinks();
+
+    List<Result> results = [];
+    List<String> resultingLinks = [];
+    if (unsplashLinks == null) {
+      for (int i = 1; i < 10; i++) {
+        List<Result>? res =
+            await getItInstance<UnsplashApiServiceImpl>().getImages(i);
+        if (res != null) {
+          print("Response from unsplash ${res.length}");
+          results.addAll(res);
+        }
+      }
+      for (int i = 0; i < results.length; i++) {
+        resultingLinks.add(results[i].previewPhotos[0].urls.regular);
+      }
+      print(results.length);
+      await getItInstance<SharedServiceImpl>()
+          .saveUnsplashLinks(resultingLinks.join(","));
+    }
+    await dynamicLiksService.handleDynamicLinks();
   }
 
   List<String> bottomNavAssets = [
-    "assets/naruto_no_color.svg",
-    "assets/goku.svg",
-    "assets/naruto.svg",
-    "assets/subscribed.svg"
+    "assets/Home.svg",
+    "assets/User.svg",
+    "assets/Favourites.svg",
+    "assets/Settings.svg",
+    "assets/naruto.svg"
   ];
 
   List<String> bottomNavItemActive = [
-    "assets/home.svg",
-    "assets/recents.svg",
-    "assets/sign.svg",
-    "assets/subscribed.svg"
+    "assets/Home_active.svg",
+    "assets/User_active.svg",
+    "assets/Favourites_active.svg",
+    "assets/Settings_active.svg",
+    "assets/sign.svg"
   ];
 
   @override
@@ -131,36 +157,59 @@ class _BaseViewState extends State<BaseView>
     return Scaffold(
       bottomNavigationBar: BlocBuilder<BottomNavigationCubit, int>(
         builder: (context, idx) {
-          return BottomNavigationBar(
-            selectedIconTheme: const IconThemeData(color: Colors.purple),
-            unselectedIconTheme: const IconThemeData(color: Colors.white),
-            unselectedItemColor: Colors.white,
-            selectedItemColor: Colors.purple,
-            currentIndex: idx,
-            onTap: (int index) {
-              context.read<BottomNavigationCubit>().setPage(index);
-              baseViewPageController!.jumpToPage(index);
-            },
-            backgroundColor:
-                context.isLightMode() ? Colors.white : Colors.black54,
-            items: [
-              ...List.generate(bottomNavBarItems.length, (index) {
-                return BottomNavigationBarItem(
-                    icon: callSvg(
-                        idx == index
-                            ? bottomNavItemActive[index]
-                            : bottomNavAssets[index],
-                        color: index != idx
-                            ? context.isLightMode()
-                                ? AppColor.vulcan
-                                : Colors.white
-                            : null,
-                        width: 30.0,
-                        height: 30.0),
-                    label: '');
-              })
-            ],
-          );
+          return BlocBuilder<ShowCollectionCubit, bool>(
+              builder: (context, shouldShowCollection) {
+            return BottomNavigationBar(
+              elevation: 2.0,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor:
+                  context.isLightMode() ? AppColor.vulcan : Colors.white,
+              unselectedItemColor: AppColor.bottomNavUnselectedColor,
+              unselectedLabelStyle: TextStyle(fontSize: Sizes.dimen_11.sp),
+              selectedLabelStyle: TextStyle(
+                  fontSize: Sizes.dimen_11.sp,
+                  color:
+                      context.isLightMode() ? AppColor.vulcan : Colors.white),
+              // showSelectedLabels: false,
+              // showUnselectedLabels: false,
+              // selectedIconTheme: const IconThemeData(color: Colors.purple),
+              // unselectedIconTheme: const IconThemeData(color: Colors.white),
+              // unselectedItemColor: Colors.white,
+              // selectedItemColor: Colors.purple,
+              currentIndex: idx,
+              onTap: (int index) {
+                context.read<BottomNavigationCubit>().setPage(index);
+                baseViewPageController!.jumpToPage(index);
+              },
+              backgroundColor:
+                  context.isLightMode() ? Colors.white : Colors.black,
+              items: [
+                ...List.generate(
+                    shouldShowCollection ? bottomNavBarItems.length : 4,
+                    (index) {
+                  return BottomNavigationBarItem(
+                      tooltip: bottomNavBarItems[index],
+                      icon: Padding(
+                        padding: const EdgeInsets.only(bottom: 2.0),
+                        child: callSvg(
+                            idx == index
+                                ? bottomNavItemActive[index]
+                                : bottomNavAssets[index],
+                            color: context.isLightMode()
+                                ? idx == index
+                                    ? AppColor.vulcan
+                                    : AppColor.bottomNavUnselectedColor
+                                : idx == index
+                                    ? Colors.white
+                                    : AppColor.bottomNavUnselectedColor,
+                            width: Sizes.dimen_11_5.w,
+                            height: Sizes.dimen_11_5.h),
+                      ),
+                      label: bottomNavBarItems[index]);
+                })
+              ],
+            );
+          });
         },
       ),
       body: BlocBuilder<BottomNavigationCubit, int>(builder: (context, idx) {

@@ -1,32 +1,44 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:webcomic/data/common/constants/collection_constants.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
+import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
+import 'package:webcomic/data/models/google_models/user.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
+import 'package:webcomic/data/models/manga_info_with_datum.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/data/models/newest_manga_model.dart';
 import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/database/db.dart';
+import 'package:webcomic/data/services/prefs/prefs_service.dart';
+import 'package:webcomic/data/services/snackbar/snackbar_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/loading.dart';
 
 class MangaInfo extends StatefulWidget {
@@ -79,7 +91,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                       headerSliverBuilder: (context, innerBoxIsScrolled) {
                         return [
                           SliverAppBar(
-                            expandedHeight: ScreenUtil.screenHeight / 2,
+                            expandedHeight: ScreenUtil.screenHeight / 3,
                             automaticallyImplyLeading: false,
                             leading: GestureDetector(
                               onTap: () {
@@ -174,11 +186,19 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                               element.mangaUrl ==
                                               widget.mangaDetails.mangaUrl);
                                       if (indexOfCurrentMangaIfSubbed != -1) {
+                                        getItInstance<SnackbarServiceImpl>().showSnack(
+                                            context,
+                                            "${widget.mangaDetails.title} has been removed from subscriptions. You will not receive update notifications.",
+                                            color: AppColor.vulcan);
                                         subs.removeWhere((element) =>
                                             element.mangaUrl ==
                                             widget.mangaDetails.mangaUrl);
                                         context.read<SubsCubit>().setSubs(subs);
                                       } else {
+                                        getItInstance<SnackbarServiceImpl>().showSnack(
+                                            context,
+                                            "${widget.mangaDetails.title} has been added to subscriptions. You will receive update notifications.",
+                                            color: AppColor.vulcan);
                                         context
                                             .read<SubsCubit>()
                                             .setSubs([...subs, newSub]);
@@ -244,15 +264,160 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                   ),
                                   ScaleAnim(
                                     onTap: () {
+                                      String? userDetails =
+                                          getItInstance<SharedServiceImpl>()
+                                              .getGoogleDetails();
+                                      if (userDetails != null) {
+                                        Navigator.pushNamed(context, Routes.addToCollection, arguments: MangaInfoWithDatum(mangaInfo: mangaInfo, datum: widget.mangaDetails));
+                                      } else {
+                                        showModalBottomSheet(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ),
+                                            context: context,
+                                            backgroundColor:
+                                                context.isLightMode()
+                                                    ? Colors.white
+                                                    : AppColor.vulcan,
+                                            isScrollControlled: true,
+                                            builder: (context) {
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 10.0),
+                                                child: Center(
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      primary: context
+                                                              .isLightMode()
+                                                          ? AppColor.vulcan
+                                                          : Colors
+                                                              .white, // background
+                                                      onPrimary: context
+                                                              .isLightMode()
+                                                          ? Colors.white
+                                                          : Colors
+                                                              .black, // foreground
+                                                    ),
+                                                    onPressed: () async {
+                                                      GoogleSignInAccount?
+                                                          googleSignInAccount =
+                                                          await getItInstance<
+                                                                  GoogleSignIn>()
+                                                              .signIn();
+                                                      GoogleSignInAuthentication
+                                                          googleSignInAuthentication =
+                                                          await googleSignInAccount!
+                                                              .authentication;
+                                                      AuthCredential
+                                                          credential =
+                                                          GoogleAuthProvider
+                                                              .credential(
+                                                        accessToken:
+                                                            googleSignInAuthentication
+                                                                .accessToken,
+                                                        idToken:
+                                                            googleSignInAuthentication
+                                                                .idToken,
+                                                      );
+                                                      UserCredential
+                                                          authResult =
+                                                          await getItInstance<
+                                                                  FirebaseAuth>()
+                                                              .signInWithCredential(
+                                                                  credential);
+                                                      Map<String, dynamic>
+                                                          userData = {
+                                                        "name": authResult
+                                                            .user!.displayName,
+                                                        "email": authResult
+                                                            .user!.email,
+                                                        "profilePicture":
+                                                            authResult
+                                                                .user!.photoURL,
+                                                        "pro": "false"
+                                                      };
+                                                      await getItInstance<
+                                                              SharedServiceImpl>()
+                                                          .saveUserDetails(
+                                                              jsonEncode(
+                                                                  userData));
+                                                      // TODO: Show success dialog
+                                                      print(authResult
+                                                          .toString());
+                                                      context.read<ShowCollectionCubit>().setShowCollection(true);
+                                                      context.read<UserFromGoogleCubit>().setUser(UserFromGoogle.fromMap(userData));
+                                                      firestore.FirebaseFirestore firesStoreInstance = getItInstance<firestore.FirebaseFirestore>();
+                                                      await  firesStoreInstance.collection(CollectionConsts.users).doc( authResult
+                                                          .user!.uid).set({"details": jsonEncode(userData)});
+                                                      await  getItInstance<SharedServiceImpl>().setFirestoreUserId(authResult
+                                                          .user!.uid);
+                                                      Navigator.pop(context);
+
+                                                    },
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Text(
+                                                            "Sign Up with Google to continue",
+                                                            style: TextStyle(
+                                                                fontSize: Sizes
+                                                                    .dimen_18
+                                                                    .sp)),
+                                                        SizedBox(
+                                                          width:
+                                                              Sizes.dimen_10.w,
+                                                        ),
+                                                        Container(
+                                                          width:
+                                                              Sizes.dimen_50.w,
+                                                          height:
+                                                              Sizes.dimen_50.h,
+                                                          decoration: BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              image: DecorationImage(
+                                                                  image: CachedNetworkImageProvider(
+                                                                      "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png"))),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            });
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: callSvg("assets/web_comic_logo.svg",
+
+                                      width: Sizes.dimen_18.w,
+                                        height: Sizes.dimen_18.h
+                                      ),
+                                    ),
+                                  ),
+                                  ScaleAnim(
+                                    onTap: () {
                                       Navigator.pushNamed(
                                           context, Routes.summary,
                                           arguments: mangaInfo);
                                     },
                                     child: Padding(
                                       padding: EdgeInsets.all(8.0),
-                                      child: Icon(Icons.info),
+                                      child: Icon(Icons.info,
+
+                                          color: Colors.white
+                                      ),
                                     ),
-                                  )
+                                  ),
                                 ],
                               )
                             ],
@@ -272,19 +437,17 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                               return Stack(
 // alignment: Alignment.center,
                                 children: [
-                                  Positioned.fill(
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: CachedNetworkImage(
-                                              imageUrl: widget
-                                                      .mangaDetails.imageUrl ??
-                                                  '',
-                                              fit: BoxFit.cover,
-                                              colorBlendMode: BlendMode.darken),
-                                        ),
-                                      ],
-                                    ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: CachedNetworkImage(
+                                            imageUrl: widget
+                                                    .mangaDetails.imageUrl ??
+                                                '',
+                                            fit: BoxFit.cover,
+                                            colorBlendMode: BlendMode.darken),
+                                      ),
+                                    ],
                                   ),
                                   constraints.biggest.height >=
                                           ScreenUtil.screenHeight / 3 -
@@ -496,7 +659,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                         await dbInstance
                                             .updateOrInsertRecentlyRead(
                                                 recentlyRead);
-                                        Navigator.pushReplacementNamed(
+                                        Navigator.pushNamed(
                                             context, Routes.mangaReader,
                                             arguments: ChapterList(
                                                 mangaImage:
@@ -505,8 +668,9 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                 mangaTitle:
                                                     widget.mangaDetails.title ??
                                                         '',
-                                                mangaUrl: widget.mangaDetails.mangaUrl ??
-                                                    '',
+                                                mangaUrl:
+                                                    widget.mangaDetails.mangaUrl ??
+                                                        '',
                                                 chapterUrl: mangaInfo
                                                     .data
                                                     .chapterList[index]

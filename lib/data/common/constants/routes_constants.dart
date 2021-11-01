@@ -7,4 +7,9 @@ class Routes {
   static const String mangaSearch = "/manga-search";
   static const String categories = "/categories";
   static const String summary = "/summary";
+  static const String addToCollection = "/add-to-collection";
+  static const String createCollection = "/create-collection";
+  static const String collectionMain = "/collection-main";
+  static const String subCollection = "/collection-subcollection";
+  static const String addCollectionSearch = "/add-collection-search";
 }

@@ -26,17 +26,21 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   TextEditingController searchController = TextEditingController();
+  bool hasSearched = false;
   Timer? _debounce;
+  ValueNotifier<bool> isSearching = ValueNotifier(false);
 
   onSearchChanged(String query, GraphQLClient client) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () async {
+      isSearching.value = true;
       QueryResult result = await client.query(QueryOptions(
           document: parseString(MANGA_SEARCH), variables: {"term": query}));
 
       final resultData = result.data!["mangaSearch"];
       MangaSearch mangaSearchRes = MangaSearch.fromMap(resultData);
       context.read<MangaResultsCubit>().setResults(mangaSearchRes.data);
+      isSearching.value = false;
     });
   }
 
@@ -79,6 +83,11 @@ class _SearchState extends State<Search> {
                                   controller: searchController,
                                   onChanged: (v) {
                                     if (v.length < 3) return;
+                                    if (mounted) {
+                                      setState(() {
+                                        hasSearched = true;
+                                      });
+                                    }
                                     onSearchChanged(v, client);
                                   },
                                   style: TextStyle(
@@ -89,9 +98,8 @@ class _SearchState extends State<Search> {
                                   decoration: new InputDecoration.collapsed(
                                       hintText: 'Search Mangas',
                                       hintStyle: TextStyle(
-                                          color: !context.isLightMode()
-                                              ? AppColor.vulcan
-                                              : Colors.white)),
+                                          color: AppColor
+                                              .bottomNavUnselectedColor)),
                                 ),
                               ),
                             )),
@@ -121,40 +129,75 @@ class _SearchState extends State<Search> {
                 child: BlocBuilder<MangaResultsCubit, MangaResultsState>(
                     builder: (context, mangaResults) {
                   return Container(
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: mangaResults.mangaSearchResults.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ListTile(
-                                onTap: () {
-                                  Navigator.pushNamed(context, Routes.mangaInfo,
-                                      arguments: Datum(
-                                          mangaUrl: mangaResults
-                                              .mangaSearchResults[index]
-                                              .mangaUrl,
-                                          imageUrl: mangaResults
-                                              .mangaSearchResults[index]
-                                              .imageUrl,
-                                          title: mangaResults
-                                              .mangaSearchResults[index]
-                                              .title));
-                                },
-                                title: Text(mangaResults
-                                        .mangaSearchResults[index].title ??
-                                    ''),
-                                leading: CircleAvatar(
-                                  backgroundImage: CachedNetworkImageProvider(
-                                      mangaResults.mangaSearchResults[index]
-                                              .imageUrl ??
-                                          ''),
-                                ),
-                              ),
-                            ),
-                          );
+                    child: ValueListenableBuilder(
+                        valueListenable: isSearching,
+                        builder: (context, bool value, _) {
+                          return !value
+                              ? mangaResults.mangaSearchResults.length > 0
+                                  ? ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: mangaResults
+                                          .mangaSearchResults.length,
+                                      itemBuilder: (context, index) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: ListTile(
+                                              onTap: () {
+                                                Navigator.pushNamed(
+                                                    context, Routes.mangaInfo,
+                                                    arguments: Datum(
+                                                        mangaUrl: mangaResults
+                                                            .mangaSearchResults[
+                                                                index]
+                                                            .mangaUrl,
+                                                        imageUrl: mangaResults
+                                                            .mangaSearchResults[
+                                                                index]
+                                                            .imageUrl,
+                                                        title: mangaResults
+                                                            .mangaSearchResults[
+                                                                index]
+                                                            .title));
+                                              },
+                                              title: Text(mangaResults
+                                                      .mangaSearchResults[index]
+                                                      .title ??
+                                                  ''),
+                                              leading: CircleAvatar(
+                                                backgroundImage:
+                                                    CachedNetworkImageProvider(
+                                                        mangaResults
+                                                                .mangaSearchResults[
+                                                                    index]
+                                                                .imageUrl ??
+                                                            ''),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      })
+                                  : hasSearched
+                                      ? Center(
+                                          child: Text(searchController.text +
+                                              " not found."),
+                                        )
+                                      : Container()
+                              : Container(
+                                  width: Sizes.dimen_50.w,
+                                  height: Sizes.dimen_50.h,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      backgroundColor: context.isLightMode()
+                                          ? Colors.white
+                                          : AppColor.vulcan,
+                                      color: !context.isLightMode()
+                                          ? Colors.white
+                                          : AppColor.vulcan,
+                                    ),
+                                  ),
+                                );
                         }),
                   );
                 }),

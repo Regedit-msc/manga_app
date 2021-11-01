@@ -8,6 +8,12 @@ abstract class SharedService {
   Future<void> saveUserToken(String userToken);
   String getUserThemePreference();
   Future<void> setUserThemePreference(String theme);
+  String? getGoogleDetails();
+  Future<void> saveUserDetails(String userDetailsStringified);
+  Future<void> setFirestoreUserId(String userId);
+  String getFirestoreUserId();
+  String? getUnSplashLinks();
+  Future<void> saveUnsplashLinks(String links);
 }
 
 class SharedServiceImpl extends SharedService {
@@ -48,5 +54,35 @@ class SharedServiceImpl extends SharedService {
   @override
   Future<void> setUserThemePreference(String theme) async {
     await prefs.setString("THEME_PREFERENCE", theme);
+  }
+
+  @override
+  String? getGoogleDetails() {
+    return prefs.getString("GOOGLE_DETAILS") ?? null;
+  }
+
+  @override
+  Future<void> saveUserDetails(String userDetailsStringified) async {
+    await prefs.setString("GOOGLE_DETAILS", userDetailsStringified);
+  }
+
+  @override
+  String getFirestoreUserId() {
+    return prefs.getString("FIRESTORE_USER_ID") ?? "";
+  }
+
+  @override
+  Future<void> setFirestoreUserId(String userId) async {
+    await prefs.setString("FIRESTORE_USER_ID", userId);
+  }
+
+  @override
+  String? getUnSplashLinks() {
+    return prefs.getString("UNSPLASH_LINKS") ?? null;
+  }
+
+  @override
+  Future<void> saveUnsplashLinks(String links) async {
+    await prefs.setString("UNSPLASH_LINKS", links);
   }
 }
