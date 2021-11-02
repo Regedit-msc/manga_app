@@ -21,7 +21,7 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_upda
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_clicked.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewed.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -71,7 +71,7 @@ class _HomeViewState extends State<HomeView>
           }
 
           if (result.isLoading) {
-            return Loading();
+            return NoAnimationLoading();
           }
 
           final mangaInfo = result.data!["getNewestManga"];
@@ -92,17 +92,17 @@ class _HomeViewState extends State<HomeView>
                   children: [
                     Container(
                       width: ScreenUtil.screenWidth,
-                      height: Sizes.dimen_120.h,
+                      height: Sizes.dimen_300,
                       child: Stack(
                         children: [
                           CarouselSlider.builder(
                             options: CarouselOptions(
-                                height: Sizes.dimen_120.h,
+                                height: Sizes.dimen_300,
                                 viewportFraction: 1.0,
-                                // enlargeCenterPage: false,
-                                autoPlayCurve: Curves.easeIn,
+                                enlargeCenterPage: true,
+                                autoPlayCurve: Curves.ease,
                                 autoPlay: true,
-                                autoPlayInterval: Duration(seconds: 2),
+                                autoPlayInterval: Duration(seconds: 4),
                                 autoPlayAnimationDuration:
                                     Duration(milliseconds: 200),
                                 onPageChanged: (i, reason) {
@@ -135,7 +135,7 @@ class _HomeViewState extends State<HomeView>
                                     ),
                                   ),
                                   placeholder: (ctx, string) {
-                                    return Loading();
+                                    return NoAnimationLoading();
                                   },
                                   errorWidget: (context, url, error) =>
                                       Icon(Icons.error),

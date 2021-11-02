@@ -11,7 +11,7 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MangaByGenreHome extends StatefulWidget {
   final String genre;
@@ -36,7 +36,7 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
           }
 
           if (result.isLoading) {
-            return Loading();
+            return NoAnimationLoading();
           }
 
           final mangaInfo = result.data!["getMangaByGenre"];
@@ -106,7 +106,7 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                               },
                               child: Container(
                                 width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_120.h,
+                                height: Sizes.dimen_250,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
@@ -114,7 +114,7 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                                       children: [
                                         Container(
                                           width: double.infinity,
-                                          height: Sizes.dimen_120.h,
+                                          height: Sizes.dimen_200,
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
                                                 Sizes.dimen_8),
@@ -123,7 +123,7 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                                               imageUrl: newestManga
                                                   .data[index].mangaImage,
                                               placeholder: (ctx, string) {
-                                                return Loading();
+                                                return NoAnimationLoading();
                                               },
                                             ),
                                           ),

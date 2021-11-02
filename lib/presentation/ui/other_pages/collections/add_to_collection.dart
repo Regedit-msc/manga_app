@@ -12,7 +12,7 @@ import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/data/services/snackbar/snackbar_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class AddToCollection extends StatefulWidget {
   final MangaInfoWithDatum? mangaInfo;
@@ -202,7 +202,7 @@ class _AddToCollectionState extends State<AddToCollection> {
                         })
                       ]);
                     }
-                    return Loading();
+                    return NoAnimationLoading();
                   })
             ],
           ),

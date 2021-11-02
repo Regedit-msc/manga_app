@@ -54,7 +54,7 @@ class _BaseViewState extends State<BaseView>
         ),
       ),
     ),
-    CollectionsView()
+    CollectionsView(),
   ];
 
   @override
@@ -165,9 +165,9 @@ class _BaseViewState extends State<BaseView>
               selectedItemColor:
                   context.isLightMode() ? AppColor.vulcan : Colors.white,
               unselectedItemColor: AppColor.bottomNavUnselectedColor,
-              unselectedLabelStyle: TextStyle(fontSize: Sizes.dimen_11.sp),
+              unselectedLabelStyle: TextStyle(fontSize: Sizes.dimen_11_5.sp),
               selectedLabelStyle: TextStyle(
-                  fontSize: Sizes.dimen_11.sp,
+                  fontSize: Sizes.dimen_11_5.sp,
                   color:
                       context.isLightMode() ? AppColor.vulcan : Colors.white),
               // showSelectedLabels: false,
@@ -202,8 +202,8 @@ class _BaseViewState extends State<BaseView>
                                 : idx == index
                                     ? Colors.white
                                     : AppColor.bottomNavUnselectedColor,
-                            width: Sizes.dimen_11_5.w,
-                            height: Sizes.dimen_11_5.h),
+                            width: Sizes.dimen_30,
+                            height: Sizes.dimen_30),
                       ),
                       label: bottomNavBarItems[index]);
                 })

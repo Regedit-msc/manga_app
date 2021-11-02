@@ -10,7 +10,7 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_updates_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MangaUpdatesTabView extends StatefulWidget {
   const MangaUpdatesTabView({Key? key}) : super(key: key);
@@ -55,7 +55,7 @@ class _MangaUpdatesTabViewState extends State<MangaUpdatesTabView> {
             }
 
             if (result.isLoading) {
-              return Loading();
+              return NoAnimationLoading();
             }
 
             final mangaInfo = result.data!["getMangaPage"];
@@ -164,7 +164,7 @@ class CardItem extends StatelessWidget {
                 imageUrl: imageUrl,
                 fit: BoxFit.cover,
                 placeholder: (ctx, string) {
-                  return Loading();
+                  return NoAnimationLoading();
                 },
               ),
             ),

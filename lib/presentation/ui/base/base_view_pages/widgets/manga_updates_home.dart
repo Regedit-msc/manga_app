@@ -13,6 +13,7 @@ import 'package:webcomic/data/models/manga_updates_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MangaUpdatesHome extends StatefulWidget {
   const MangaUpdatesHome({Key? key}) : super(key: key);
@@ -36,7 +37,7 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
           }
 
           if (result.isLoading) {
-            return Text('Loading');
+            return NoAnimationLoading();
           }
 
           final mangaInfo = result.data!["getMangaPage"];
@@ -107,7 +108,7 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                               },
                               child: Container(
                                 width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_120.h,
+                                height: Sizes.dimen_250,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
@@ -121,6 +122,9 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                                                 Sizes.dimen_8),
                                             child: CachedNetworkImage(
                                                 fit: BoxFit.cover,
+                                                placeholder: (ctx, string) {
+                                                  return NoAnimationLoading();
+                                                },
                                                 imageUrl: newestManga
                                                     .data[index].imageUrl),
                                           ),

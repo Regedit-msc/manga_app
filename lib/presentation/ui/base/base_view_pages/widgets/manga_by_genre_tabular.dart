@@ -13,7 +13,7 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MangaByGenreTabular extends StatefulWidget {
   final String genre;
@@ -52,7 +52,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
           }
 
           if (result.isLoading) {
-            return Loading();
+            return NoAnimationLoading();
           }
 
           final mangaInfo = result.data!["getMangaByGenre"];
@@ -101,7 +101,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                 ),
                 Container(
                   width: ScreenUtil.screenWidth,
-                  height: Sizes.dimen_160.h,
+                  height: Sizes.dimen_400,
                   child: PageView.builder(
                       padEnds: false,
                       scrollDirection: Axis.horizontal,
@@ -169,7 +169,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           bottom: 1.0),
                                                   child: Container(
                                                     width: Sizes.dimen_70.w,
-                                                    height: Sizes.dimen_20.h,
+                                                    height: Sizes.dimen_50,
                                                     child: CachedNetworkImage(
                                                       fit: BoxFit.cover,
                                                       imageUrl: newestManga.data
@@ -178,7 +178,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                        return Loading();
+                                                        return NoAnimationLoading();
                                                       },
                                                     ),
                                                   ),
@@ -322,7 +322,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           bottom: 1.0),
                                                   child: Container(
                                                     width: Sizes.dimen_70.w,
-                                                    height: Sizes.dimen_20.h,
+                                                    height: Sizes.dimen_50,
                                                     child: CachedNetworkImage(
                                                       fit: BoxFit.cover,
                                                       imageUrl: newestManga.data
@@ -332,7 +332,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                        return Loading();
+                                                        return NoAnimationLoading();
                                                       },
                                                     ),
                                                   ),
@@ -479,7 +479,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           bottom: 1.0),
                                                   child: Container(
                                                     width: Sizes.dimen_70.w,
-                                                    height: Sizes.dimen_20.h,
+                                                    height: Sizes.dimen_50,
                                                     child: CachedNetworkImage(
                                                       fit: BoxFit.cover,
                                                       imageUrl: newestManga.data
@@ -489,7 +489,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                        return Loading();
+                                                        return NoAnimationLoading();
                                                       },
                                                     ),
                                                   ),
@@ -636,7 +636,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           bottom: 1.0),
                                                   child: Container(
                                                     width: Sizes.dimen_70.w,
-                                                    height: Sizes.dimen_20.h,
+                                                    height: Sizes.dimen_50,
                                                     child: CachedNetworkImage(
                                                       fit: BoxFit.cover,
                                                       imageUrl: newestManga.data
@@ -646,7 +646,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                        return Loading();
+                                                        return NoAnimationLoading();
                                                       },
                                                     ),
                                                   ),

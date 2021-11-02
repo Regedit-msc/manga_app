@@ -70,7 +70,7 @@ class _AddCollectionMangaSearchViewState
                         borderRadius: BorderRadius.circular(5.0),
                         child: Container(
                             width: Sizes.dimen_200.w,
-                            height: Sizes.dimen_20.h,
+                            height: Sizes.dimen_50,
                             color: !context.isLightMode()
                                 ? Colors.white
                                 : AppColor.vulcan,
@@ -78,6 +78,7 @@ class _AddCollectionMangaSearchViewState
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: TextField(
+                                  autofocus: true,
                                   cursorColor: !context.isLightMode()
                                       ? AppColor.vulcan
                                       : Colors.white,

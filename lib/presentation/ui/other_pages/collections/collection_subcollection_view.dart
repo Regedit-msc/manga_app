@@ -14,7 +14,7 @@ import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class CollectionSubcollectionView extends StatefulWidget {
   final String collectionId;
@@ -266,7 +266,7 @@ class _CollectionSubcollectionViewState
                   ),
                 );
               }
-              return Loading();
+              return NoAnimationLoading();
             }),
       ),
     );

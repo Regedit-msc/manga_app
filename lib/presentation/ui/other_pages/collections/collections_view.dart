@@ -22,9 +22,9 @@ class CollectionsView extends StatefulWidget {
 class _CollectionsViewState extends State<CollectionsView>
     with AutomaticKeepAliveClientMixin {
   @override
-  void initState() {
+  void didChangeDependencies() {
     doSetup();
-    super.initState();
+    super.didChangeDependencies();
   }
 
   void doSetup() {
@@ -55,7 +55,7 @@ class _CollectionsViewState extends State<CollectionsView>
                       borderRadius: BorderRadius.circular(20.0),
                       child: Container(
                           width: Sizes.dimen_200.w,
-                          height: Sizes.dimen_20.h,
+                          height: Sizes.dimen_50,
                           color: !context.isLightMode()
                               ? Colors.white
                               : AppColor.vulcan,

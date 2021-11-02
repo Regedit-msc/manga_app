@@ -10,7 +10,6 @@ import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/google_models/user.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/di/get_it.dart';
-import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 
@@ -58,7 +57,6 @@ class _SplashState extends State<Splash> {
               context.isLightMode()
                   ? "assets/logo_light.svg"
                   : 'assets/logo_light.svg',
-              color: context.isLightMode() ? AppColor.vulcan : Colors.white,
               width: Sizes.dimen_40.w,
               height: Sizes.dimen_40.h),
         ),

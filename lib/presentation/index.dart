@@ -155,7 +155,7 @@ class _IndexState extends State<Index> {
               navigatorKey:
                   getItInstance<NavigationServiceImpl>().navigationKey,
               debugShowCheckedModeBanner: false,
-              title: 'Manga App',
+              title: 'Webcomic',
               themeMode: getItInstance<ThemeController>().themeMode,
               theme: ThemeData(
                 scaffoldBackgroundColor: Colors.white,

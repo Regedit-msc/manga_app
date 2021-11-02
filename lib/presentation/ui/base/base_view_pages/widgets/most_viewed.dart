@@ -11,7 +11,7 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/most_viewed_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MostViewedManga extends StatefulWidget {
   const MostViewedManga({Key? key}) : super(key: key);
@@ -57,7 +57,7 @@ class _MostViewedMangaState extends State<MostViewedManga> {
           }
 
           if (result.isLoading) {
-            return Loading();
+            return NoAnimationLoading();
           }
 
           final mangaInfo = result.data!["getMostViewedManga"];
@@ -103,7 +103,7 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                               padding: const EdgeInsets.all(8.0),
                               child: Container(
                                 width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_120.h,
+                                height: Sizes.dimen_250,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
@@ -111,12 +111,15 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                       children: [
                                         Container(
                                           width: double.infinity,
-                                          height: Sizes.dimen_120.h,
+                                          height: Sizes.dimen_200,
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
                                                 Sizes.dimen_8),
                                             child: CachedNetworkImage(
                                                 fit: BoxFit.cover,
+                                                placeholder: (ctx, string) {
+                                                  return NoAnimationLoading();
+                                                },
                                                 imageUrl: newestManga
                                                     .data[index].imageUrl),
                                           ),

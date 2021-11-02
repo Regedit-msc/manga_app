@@ -14,7 +14,7 @@ import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/router.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class NewlyAddedCollections extends StatefulWidget {
   const NewlyAddedCollections({Key? key}) : super(key: key);
@@ -217,10 +217,7 @@ class _NewlyAddedCollectionsState extends State<NewlyAddedCollections> {
                                                   ),
                                                 );
                                               }
-                                              return Container(
-                                                child: Center(
-                                                    child: Text("Loading")),
-                                              );
+                                              return NoAnimationLoading();
                                             }))
                                     : Container(),
                               );
@@ -232,7 +229,7 @@ class _NewlyAddedCollectionsState extends State<NewlyAddedCollections> {
                 ),
               );
             }
-            return Loading();
+            return NoAnimationLoading();
           }),
     );
   }

@@ -12,8 +12,8 @@ class SlideShowIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: Sizes.dimen_50.w,
-      height: Sizes.dimen_10.h,
+      width: Sizes.dimen_50,
+      height: Sizes.dimen_20,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(Sizes.dimen_12),
           color: AppColor.somehowGrey),

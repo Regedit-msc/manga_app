@@ -40,6 +40,7 @@ import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collect
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MangaInfo extends StatefulWidget {
   final Datum mangaDetails;
@@ -76,7 +77,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
               }
 
               if (result.isLoading) {
-                return Loading();
+                return NoAnimationLoading();
               }
 
               if (mangaInfo != null) {
@@ -476,38 +477,38 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                           ),
                                         )
                                       : Container(),
-                                  constraints.biggest.height >=
-                                          ScreenUtil.screenHeight / 3 -
-                                              kToolbarHeight
-                                      ? Positioned(
-                                          top: Sizes.dimen_70.h,
-                                          left: Sizes.dimen_14.w,
-                                          child: Container(
-                                            width: ScreenUtil.screenWidth - 10,
-                                            child: Wrap(
-                                              clipBehavior: Clip.hardEdge,
-                                              children: [
-                                                Text(
-                                                  mangaInfo!.data.description
-                                                              .trim()
-                                                              .length >
-                                                          300
-                                                      ? mangaInfo!
-                                                              .data.description
-                                                              .trim()
-                                                              .substring(
-                                                                  0, 100) +
-                                                          "..."
-                                                      : mangaInfo!
-                                                          .data.description
-                                                          .trim(),
-                                                  style: TextStyle(
-                                                      color: Colors.white),
-                                                ),
-                                              ],
-                                            ),
-                                          ))
-                                      : Container(),
+                                  // constraints.biggest.height >=
+                                  //         ScreenUtil.screenHeight / 3 -
+                                  //             kToolbarHeight
+                                  //     ? Positioned(
+                                  //         top: Sizes.dimen_70.h,
+                                  //         left: Sizes.dimen_14.w,
+                                  //         child: Container(
+                                  //           width: ScreenUtil.screenWidth - 10,
+                                  //           child: Wrap(
+                                  //             clipBehavior: Clip.hardEdge,
+                                  //             children: [
+                                  //               Text(
+                                  //                 mangaInfo!.data.description
+                                  //                             .trim()
+                                  //                             .length >
+                                  //                         300
+                                  //                     ? mangaInfo!
+                                  //                             .data.description
+                                  //                             .trim()
+                                  //                             .substring(
+                                  //                                 0, 100) +
+                                  //                         "..."
+                                  //                     : mangaInfo!
+                                  //                         .data.description
+                                  //                         .trim(),
+                                  //                 style: TextStyle(
+                                  //                     color: Colors.white),
+                                  //               ),
+                                  //             ],
+                                  //           ),
+                                  //         ))
+                                  //     : Container(),
                                 ],
                               );
                             }),
@@ -790,7 +791,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                 ),
                                               ),
                                               placeholder: (context, url) =>
-                                                  Loading(),
+                                                  NoAnimationLoading(),
                                               errorWidget:
                                                   (context, url, error) =>
                                                       Icon(Icons.error),

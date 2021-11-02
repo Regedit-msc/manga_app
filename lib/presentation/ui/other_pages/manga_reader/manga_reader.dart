@@ -21,6 +21,7 @@ import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MangaReader extends StatefulWidget {
   final ChapterList chapterList;
@@ -153,211 +154,228 @@ class _MangaReaderState extends State<MangaReader> {
                     return !val
                         ? SingleChildScrollView(
                             scrollDirection: Axis.vertical,
-                            child: LayoutBuilder(
-                              builder: (context, contraint) {
-                                return Container(
-                                  child: Column(
-                                    children: [
-                                      ...List.generate(
-                                          mangaReader.data.images.length, (index) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            if (mounted) {
+                            child: LayoutBuilder(builder: (context, contraint) {
+                              return Container(
+                                child: Column(
+                                  children: [
+                                    ...List.generate(
+                                        mangaReader.data.images.length,
+                                        (index) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          if (mounted) {
+                                            setState(() {
+                                              showAppBar = !showAppBar;
+                                            });
+                                            Future.delayed(
+                                                Duration(seconds: 10), () {
+                                              if (!mounted) return;
                                               setState(() {
-                                                showAppBar = !showAppBar;
+                                                showAppBar = false;
                                               });
-                                              Future.delayed(Duration(seconds: 10),
-                                                  () {
-                                                if (!mounted) return;
-                                                setState(() {
-                                                  showAppBar = false;
-                                                });
-                                              });
-                                            }
-                                          },
+                                            });
+                                          }
+                                        },
+                                        child: Expanded(
                                           child: CachedNetworkImage(
-                                            fadeInDuration:
-                                                const Duration(microseconds: 100),
+                                            fadeInDuration: const Duration(
+                                                microseconds: 100),
                                             imageUrl:
                                                 mangaReader.data.images[index],
                                             fit: BoxFit.cover,
                                             placeholder: (ctx, string) {
-                                              return Loading();
+                                              return NoAnimationLoading();
                                             },
                                           ),
-                                        );
-                                      }),
-                                     contraint.biggest.height < ScreenUtil.screenHeight? Container(): GestureDetector(
-                                        onTap: () async {
-                                          if (!(int.tryParse(mangaReader
-                                              .data.chapter
-                                              .replaceAll(
-                                              RegExp(r'[^0-9]'), ''))! >=
-                                              mangaReader.data.chapterList!.length +
-                                                  1)) {
-                                            int currentChapter = int.parse(
-                                                mangaReader.data.chapter.replaceAll(
-                                                    RegExp(r'[^0-9]'), ''));
-                                            String nextChapterUrl = widget
-                                                .chapterList.chapterUrl
-                                                .replaceAll(
-                                                "${int.parse(widget.chapterList.chapterUrl.replaceAll(RegExp(r'[^0-9]'), ''))}",
-                                                "${currentChapter + 1}");
-                                            print(nextChapterUrl);
-
-                                            final DatabaseHelper dbInstance =
-                                            getItInstance<DatabaseHelper>();
-                                            ChapterRead newChapter = ChapterRead(
-                                                mangaUrl:
-                                                widget.chapterList.mangaUrl,
-                                                chapterUrl: nextChapterUrl);
-                                            RecentlyRead recentlyRead = RecentlyRead(
-                                                title:
-                                                widget.chapterList.mangaTitle,
-                                                mangaUrl:
-                                                widget.chapterList.mangaUrl,
-                                                imageUrl:
-                                                widget.chapterList.mangaImage,
-                                                chapterUrl: nextChapterUrl,
-                                                chapterTitle: widget
-                                                    .chapterList.chapterTitle
-                                                    .replaceAll(
-                                                    "${int.parse(widget.chapterList.chapterUrl.replaceAll(RegExp(r'[^0-9]'), ''))}",
-                                                    "${currentChapter + 1}"),
-                                                mostRecentReadDate:
-                                                DateTime.now().toString());
-                                            chapterName.value =
-                                                recentlyRead.chapterTitle;
-                                            List<RecentlyRead> recents = context
-                                                .read<RecentsCubit>()
-                                                .state
-                                                .recents;
-                                            List<ChapterRead> chaptersRead = context
-                                                .read<ChaptersReadCubit>()
-                                                .state
-                                                .chaptersRead;
-                                            List<RecentlyRead> withoutCurrentRead =
-                                            recents
-                                                .where((element) =>
-                                            element.mangaUrl !=
-                                                recentlyRead.mangaUrl)
-                                                .toList();
-                                            List<ChapterRead>
-                                            withoutCurrentChapter = chaptersRead
-                                                .where((element) =>
-                                            element.chapterUrl !=
-                                                newChapter.chapterUrl)
-                                                .toList();
-
-                                            context
-                                                .read<RecentsCubit>()
-                                                .setResults([
-                                              ...withoutCurrentRead,
-                                              recentlyRead
-                                            ]);
-                                            context
-                                                .read<ChaptersReadCubit>()
-                                                .setResults([
-                                              ...withoutCurrentChapter,
-                                              newChapter
-                                            ]);
-                                            await fetchMore!(
-                                                toNewPageOptions(nextChapterUrl));
-                                            await dbInstance
-                                                .updateOrInsertChapterRead(
-                                                newChapter);
-
-                                            await dbInstance
-                                                .updateOrInsertRecentlyRead(
-                                                recentlyRead);
-                                          }
-                                        },
-                                        child: Container(
-                                          child: ValueListenableBuilder(
-                                              valueListenable: isLoading,
-                                              builder: (context, bool loading, _) {
-                                                return !loading
-                                                    ? Padding(
-                                                  padding:
-                                                  const EdgeInsets.all(
-                                                      8.0),
-                                                  child: !(int.tryParse(
-                                                      mangaReader.data
-                                                          .chapter
-                                                          .replaceAll(
-                                                          RegExp(
-                                                              r'[^0-9]'),
-                                                          ''))! >=
-                                                      mangaReader
-                                                          .data
-                                                          .chapterList!
-                                                          .length +
-                                                          1)
-                                                      ? ClipRRect(
-                                                    borderRadius:
-                                                    BorderRadius
-                                                        .circular(
-                                                        10.0),
-                                                    child: Container(
-                                                      color: context
-                                                          .isLightMode()
-                                                          ? AppColor
-                                                          .vulcan
-                                                          : Colors
-                                                          .white,
-                                                      child: Row(
-                                                        children: [
-                                                          Container(
-                                                            width: Sizes
-                                                                .dimen_140
-                                                                .w,
-                                                            height: Sizes
-                                                                .dimen_50
-                                                                .h,
-                                                            child: mangaReader !=
-                                                                null
-                                                                ? CachedNetworkImage(
-                                                              imageUrl:
-                                                              mangaReader.data.images![1],
-                                                              fit:
-                                                              BoxFit.cover,
-                                                              placeholder:
-                                                                  (ctx, string) {
-                                                                return Loading();
-                                                              },
-                                                            )
-                                                                : Container(),
-                                                          ),
-                                                          Container(
-                                                            margin: EdgeInsets.only(
-                                                                left: Sizes
-                                                                    .dimen_40
-                                                                    .w),
-                                                            child: Text(
-                                                              "Next chapter ${int.parse(mangaReader.data.chapter.replaceAll(RegExp(r'[^0-9]'), '')) + 1}",
-                                                              style: TextStyle(
-                                                                  fontWeight: FontWeight
-                                                                      .bold,
-                                                                  color: context.isLightMode()
-                                                                      ? Colors.white
-                                                                      : Colors.black),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  )
-                                                      : Text("Last Chapter"),
-                                                )
-                                                    : Container();
-                                              }),
                                         ),
-                                      )
-                                    ],
-                                  ),
-                                );
-                              }
-                            ),
+                                      );
+                                    }),
+                                    contraint.biggest.height <
+                                            ScreenUtil.screenHeight
+                                        ? Container()
+                                        : GestureDetector(
+                                            onTap: () async {
+                                              if (!(int.tryParse(mangaReader
+                                                      .data.chapter
+                                                      .replaceAll(
+                                                          RegExp(r'[^0-9]'),
+                                                          ''))! >=
+                                                  mangaReader.data.chapterList!
+                                                          .length +
+                                                      1)) {
+                                                int currentChapter = int.parse(
+                                                    mangaReader.data.chapter
+                                                        .replaceAll(
+                                                            RegExp(r'[^0-9]'),
+                                                            ''));
+                                                String nextChapterUrl = widget
+                                                    .chapterList.chapterUrl
+                                                    .replaceAll(
+                                                        "${int.parse(widget.chapterList.chapterUrl.replaceAll(RegExp(r'[^0-9]'), ''))}",
+                                                        "${currentChapter + 1}");
+                                                print(nextChapterUrl);
+
+                                                final DatabaseHelper
+                                                    dbInstance = getItInstance<
+                                                        DatabaseHelper>();
+                                                ChapterRead newChapter =
+                                                    ChapterRead(
+                                                        mangaUrl: widget
+                                                            .chapterList
+                                                            .mangaUrl,
+                                                        chapterUrl:
+                                                            nextChapterUrl);
+                                                RecentlyRead
+                                                    recentlyRead = RecentlyRead(
+                                                        title:
+                                                            widget.chapterList
+                                                                .mangaTitle,
+                                                        mangaUrl:
+                                                            widget.chapterList
+                                                                .mangaUrl,
+                                                        imageUrl:
+                                                            widget.chapterList
+                                                                .mangaImage,
+                                                        chapterUrl:
+                                                            nextChapterUrl,
+                                                        chapterTitle: widget
+                                                            .chapterList
+                                                            .chapterTitle
+                                                            .replaceAll(
+                                                                "${int.parse(widget.chapterList.chapterUrl.replaceAll(RegExp(r'[^0-9]'), ''))}",
+                                                                "${currentChapter + 1}"),
+                                                        mostRecentReadDate:
+                                                            DateTime.now()
+                                                                .toString());
+                                                chapterName.value =
+                                                    recentlyRead.chapterTitle;
+                                                List<RecentlyRead> recents =
+                                                    context
+                                                        .read<RecentsCubit>()
+                                                        .state
+                                                        .recents;
+                                                List<ChapterRead> chaptersRead =
+                                                    context
+                                                        .read<
+                                                            ChaptersReadCubit>()
+                                                        .state
+                                                        .chaptersRead;
+                                                List<RecentlyRead>
+                                                    withoutCurrentRead = recents
+                                                        .where((element) =>
+                                                            element.mangaUrl !=
+                                                            recentlyRead
+                                                                .mangaUrl)
+                                                        .toList();
+                                                List<ChapterRead>
+                                                    withoutCurrentChapter =
+                                                    chaptersRead
+                                                        .where((element) =>
+                                                            element
+                                                                .chapterUrl !=
+                                                            newChapter
+                                                                .chapterUrl)
+                                                        .toList();
+
+                                                context
+                                                    .read<RecentsCubit>()
+                                                    .setResults([
+                                                  ...withoutCurrentRead,
+                                                  recentlyRead
+                                                ]);
+                                                context
+                                                    .read<ChaptersReadCubit>()
+                                                    .setResults([
+                                                  ...withoutCurrentChapter,
+                                                  newChapter
+                                                ]);
+                                                await fetchMore!(
+                                                    toNewPageOptions(
+                                                        nextChapterUrl));
+                                                await dbInstance
+                                                    .updateOrInsertChapterRead(
+                                                        newChapter);
+
+                                                await dbInstance
+                                                    .updateOrInsertRecentlyRead(
+                                                        recentlyRead);
+                                              }
+                                            },
+                                            child: Container(
+                                              child: ValueListenableBuilder(
+                                                  valueListenable: isLoading,
+                                                  builder: (context,
+                                                      bool loading, _) {
+                                                    return !loading
+                                                        ? Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: !(int.tryParse(mangaReader
+                                                                        .data
+                                                                        .chapter
+                                                                        .replaceAll(
+                                                                            RegExp(
+                                                                                r'[^0-9]'),
+                                                                            ''))! >=
+                                                                    mangaReader
+                                                                            .data
+                                                                            .chapterList!
+                                                                            .length +
+                                                                        1)
+                                                                ? ClipRRect(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            10.0),
+                                                                    child:
+                                                                        Container(
+                                                                      color: context.isLightMode()
+                                                                          ? AppColor
+                                                                              .vulcan
+                                                                          : Colors
+                                                                              .white,
+                                                                      child:
+                                                                          Row(
+                                                                        children: [
+                                                                          Container(
+                                                                            width:
+                                                                                Sizes.dimen_140.w,
+                                                                            height:
+                                                                                Sizes.dimen_50.h,
+                                                                            child: mangaReader != null
+                                                                                ? CachedNetworkImage(
+                                                                                    imageUrl: mangaReader.data.images![1],
+                                                                                    fit: BoxFit.cover,
+                                                                                    placeholder: (ctx, string) {
+                                                                                      return Loading();
+                                                                                    },
+                                                                                  )
+                                                                                : Container(),
+                                                                          ),
+                                                                          Container(
+                                                                            margin:
+                                                                                EdgeInsets.only(left: Sizes.dimen_40.w),
+                                                                            child:
+                                                                                Text(
+                                                                              "Next chapter ${int.parse(mangaReader.data.chapter.replaceAll(RegExp(r'[^0-9]'), '')) + 1}",
+                                                                              style: TextStyle(fontWeight: FontWeight.bold, color: context.isLightMode() ? Colors.white : Colors.black),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  )
+                                                                : Text(
+                                                                    "Last Chapter"),
+                                                          )
+                                                        : Container();
+                                                  }),
+                                            ),
+                                          )
+                                  ],
+                                ),
+                              );
+                            }),
                           )
                         : Loading();
                   });

@@ -9,7 +9,7 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
-import 'package:webcomic/presentation/ui/loading/loading.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class CategoryViewMain extends StatefulWidget {
   final String category;
@@ -62,7 +62,7 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
             }
 
             if (result.isLoading) {
-              return Loading();
+              return NoAnimationLoading();
             }
 
             final mangaInfo = result.data!["getMangaByGenre"];
@@ -171,7 +171,7 @@ class CardItem extends StatelessWidget {
                 imageUrl: imageUrl,
                 fit: BoxFit.cover,
                 placeholder: (ctx, string) {
-                  return Loading();
+                  return NoAnimationLoading();
                 },
               ),
             ),
