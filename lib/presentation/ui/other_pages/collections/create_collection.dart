@@ -48,6 +48,7 @@ class _CreateCollectionState extends State<CreateCollection> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    collectionImage.dispose();
     super.dispose();
   }
 

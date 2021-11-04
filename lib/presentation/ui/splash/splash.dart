@@ -44,7 +44,7 @@ class _SplashState extends State<Splash> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: TweenAnimationBuilder(
-        duration: Duration(milliseconds: 3000),
+        duration: Duration(milliseconds: 1000),
         builder: (context, double value, child) {
           return Opacity(
             opacity: value,

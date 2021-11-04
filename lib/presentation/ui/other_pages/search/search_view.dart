@@ -48,6 +48,7 @@ class _SearchState extends State<Search> {
   void dispose() {
     _debounce?.cancel();
     searchController.dispose();
+    isSearching.dispose();
     super.dispose();
   }
 

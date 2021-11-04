@@ -42,6 +42,12 @@ class _MangaUpdatesTabViewState extends State<MangaUpdatesTabView> {
   }
 
   @override
+  void dispose() {
+    loading.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Query(
