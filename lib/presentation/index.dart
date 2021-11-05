@@ -160,11 +160,26 @@ class _IndexState extends State<Index> {
                 .copyWith(
                     statusBarIconBrightness: Brightness.light,
                     statusBarColor: Colors.black));
-          } else {
+          } else if (themeBloc.themeMode == ThemeMode.light) {
             SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
                 .copyWith(
                     statusBarIconBrightness: Brightness.dark,
                     statusBarColor: Colors.white));
+          } else {
+            final brightness =
+                MediaQueryData.fromWindow(WidgetsBinding.instance!.window)
+                    .platformBrightness;
+            if (brightness == Brightness.light) {
+              SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
+                  .copyWith(
+                      statusBarIconBrightness: Brightness.dark,
+                      statusBarColor: Colors.white));
+            } else {
+              SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark
+                  .copyWith(
+                      statusBarIconBrightness: Brightness.light,
+                      statusBarColor: Colors.black));
+            }
           }
           return AnimatedSwitcher(
               duration: Duration(seconds: 1),

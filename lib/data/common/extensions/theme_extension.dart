@@ -9,6 +9,16 @@ extension LightMode on BuildContext {
   bool isLightMode() {
     final brightness = MediaQuery.of(this).platformBrightness;
     final theme = this.read<ThemeCubit>().state.themeMode;
-    return brightness == Brightness.light && theme != ThemeMode.dark;
+    if (theme == ThemeMode.dark) {
+      return false;
+    } else if (theme == ThemeMode.light) {
+      return true;
+    } else {
+      if (brightness == Brightness.light) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 }
