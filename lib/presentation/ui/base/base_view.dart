@@ -19,11 +19,13 @@ import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/home_view.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/recents_view.dart';
+import 'package:webcomic/presentation/ui/base/base_view_pages/settings_view.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/other_pages/categories/category_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/collections/collections_view.dart';
 
@@ -47,13 +49,13 @@ class _BaseViewState extends State<BaseView>
     const HomeView(),
     const RecentsView(),
     CategoryView(category: Categories.ALL),
-    Scaffold(
-      body: Container(
-        child: Center(
-          child: Text("WORK IN PROGRESS"),
-        ),
-      ),
-    ),
+    SettingsView(),
+  ];
+  List<Widget> pagesForBottomNavWithCollection = [
+    const HomeView(),
+    const RecentsView(),
+    CategoryView(category: Categories.ALL),
+    SettingsView(),
     CollectionsView(),
   ];
 
@@ -148,77 +150,88 @@ class _BaseViewState extends State<BaseView>
     //     systemNavigationBarIconBrightness: Brightness.dark,
     //   ));
     // }
-    if (context.isLightMode()) {
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarIconBrightness: Brightness.dark,
-        statusBarColor: Colors.white,
-      ));
-    }
+    // if (context.isLightMode()) {
+    //   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    //     statusBarIconBrightness: Brightness.dark,
+    //     statusBarColor: Colors.white,
+    //   ));
+    // }
     return Scaffold(
       bottomNavigationBar: BlocBuilder<BottomNavigationCubit, int>(
         builder: (context, idx) {
           return BlocBuilder<ShowCollectionCubit, bool>(
               builder: (context, shouldShowCollection) {
-            return BottomNavigationBar(
-              elevation: 2.0,
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor:
-                  context.isLightMode() ? AppColor.vulcan : Colors.white,
-              unselectedItemColor: AppColor.bottomNavUnselectedColor,
-              unselectedLabelStyle: TextStyle(fontSize: Sizes.dimen_11_5.sp),
-              selectedLabelStyle: TextStyle(
-                  fontSize: Sizes.dimen_11_5.sp,
-                  color:
-                      context.isLightMode() ? AppColor.vulcan : Colors.white),
-              // showSelectedLabels: false,
-              // showUnselectedLabels: false,
-              // selectedIconTheme: const IconThemeData(color: Colors.purple),
-              // unselectedIconTheme: const IconThemeData(color: Colors.white),
-              // unselectedItemColor: Colors.white,
-              // selectedItemColor: Colors.purple,
-              currentIndex: idx,
-              onTap: (int index) {
-                context.read<BottomNavigationCubit>().setPage(index);
-                baseViewPageController!.jumpToPage(index);
-              },
-              backgroundColor:
-                  context.isLightMode() ? Colors.white : Colors.black,
-              items: [
-                ...List.generate(
-                    shouldShowCollection ? bottomNavBarItems.length : 4,
-                    (index) {
-                  return BottomNavigationBarItem(
-                      tooltip: bottomNavBarItems[index],
-                      icon: Padding(
-                        padding: const EdgeInsets.only(bottom: 2.0),
-                        child: callSvg(
-                            idx == index
-                                ? bottomNavItemActive[index]
-                                : bottomNavAssets[index],
-                            color: context.isLightMode()
-                                ? idx == index
-                                    ? AppColor.vulcan
-                                    : AppColor.bottomNavUnselectedColor
-                                : idx == index
-                                    ? Colors.white
-                                    : AppColor.bottomNavUnselectedColor,
-                            width: Sizes.dimen_30,
-                            height: Sizes.dimen_30),
-                      ),
-                      label: bottomNavBarItems[index]);
-                })
-              ],
-            );
+            return BlocBuilder<ThemeCubit, ThemeState>(
+                builder: (context, themeBloc) {
+              return BottomNavigationBar(
+                elevation: 2.0,
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: themeBloc.themeMode != ThemeMode.dark &&
+                        context.isLightMode()
+                    ? AppColor.vulcan
+                    : Colors.white,
+                unselectedItemColor: AppColor.bottomNavUnselectedColor,
+                unselectedLabelStyle: TextStyle(fontSize: Sizes.dimen_11_5.sp),
+                selectedLabelStyle: TextStyle(
+                    fontSize: Sizes.dimen_11_5.sp,
+                    color: themeBloc.themeMode != ThemeMode.dark &&
+                            context.isLightMode()
+                        ? AppColor.vulcan
+                        : Colors.white),
+                // showSelectedLabels: false,
+                // showUnselectedLabels: false,
+                // selectedIconTheme: const IconThemeData(color: Colors.purple),
+                // unselectedIconTheme: const IconThemeData(color: Colors.white),
+                // unselectedItemColor: Colors.white,
+                // selectedItemColor: Colors.purple,
+                currentIndex: idx,
+                onTap: (int index) {
+                  context.read<BottomNavigationCubit>().setPage(index);
+                  baseViewPageController!.jumpToPage(index);
+                },
+                backgroundColor: themeBloc.themeMode != ThemeMode.dark &&
+                        context.isLightMode()
+                    ? Colors.white
+                    : Colors.black,
+                items: [
+                  ...List.generate(
+                      shouldShowCollection ? bottomNavBarItems.length : 4,
+                      (index) {
+                    return BottomNavigationBarItem(
+                        tooltip: bottomNavBarItems[index],
+                        icon: Padding(
+                          padding: const EdgeInsets.only(bottom: 2.0),
+                          child: callSvg(
+                              idx == index
+                                  ? bottomNavItemActive[index]
+                                  : bottomNavAssets[index],
+                              color: themeBloc.themeMode != ThemeMode.dark &&
+                                      context.isLightMode()
+                                  ? idx == index
+                                      ? AppColor.vulcan
+                                      : AppColor.bottomNavUnselectedColor
+                                  : idx == index
+                                      ? Colors.white
+                                      : AppColor.bottomNavUnselectedColor,
+                              width: Sizes.dimen_30,
+                              height: Sizes.dimen_30),
+                        ),
+                        label: bottomNavBarItems[index]);
+                  })
+                ],
+              );
+            });
           });
         },
       ),
       body: BlocBuilder<BottomNavigationCubit, int>(builder: (context, idx) {
         return PageView(
             controller: baseViewPageController,
+            physics: NeverScrollableScrollPhysics(),
             onPageChanged: (int index) {
               context.read<BottomNavigationCubit>().setPage(index);
             },
-            children: pagesForBottomNav);
+            children: pagesForBottomNavWithCollection);
       }),
     );
   }

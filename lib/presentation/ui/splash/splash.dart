@@ -8,9 +8,13 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/google_models/user.dart';
+import 'package:webcomic/data/models/settings_model.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
+import 'package:webcomic/data/services/settings/settings_service.dart';
 import 'package:webcomic/di/get_it.dart';
+import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 
 class Splash extends StatefulWidget {
@@ -38,6 +42,9 @@ class _SplashState extends State<Splash> {
           .read<UserFromGoogleCubit>()
           .setUser(UserFromGoogle.fromMap(jsonDecode(userDetails)));
     }
+    Settings settings = getItInstance<SettingsServiceImpl>().getSettings();
+    context.read<SettingsCubit>().setSettings(settings);
+    context.read<ThemeCubit>().initTheme();
   }
 
   @override

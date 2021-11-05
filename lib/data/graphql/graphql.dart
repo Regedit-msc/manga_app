@@ -154,3 +154,12 @@ query MangaUpdate(\$page: Int!) {
   }
 }
 ''';
+
+const REMOVE_TOKEN = '''
+mutation RemoveFcmTokenMutation( \$userId: String!) {
+  removeFcmToken(userID: \$userId) {
+    message
+    success
+  }
+}
+''';

@@ -124,3 +124,25 @@ Future<PaletteGenerator> getPalette(String imageUrl) async {
   );
   return paletteGenerator;
 }
+
+/// Generate colors for info
+class GeneratedImageBytesAndColor {
+  final PaletteGenerator palette;
+  final ImageProvider image;
+  final Uint8List imageBytes;
+  GeneratedImageBytesAndColor(
+      {required this.palette, required this.imageBytes, required this.image});
+}
+
+Future<GeneratedImageBytesAndColor> getImageAndColors(String imageUrl) async {
+  Uint8List imageBytes =
+      (await NetworkAssetBundle(Uri.parse(imageUrl)).load(imageUrl))
+          .buffer
+          .asUint8List();
+  ImageProvider image = Image.memory(imageBytes).image;
+  final paletteGenerator = await PaletteGenerator.fromImageProvider(
+    image,
+  );
+  return GeneratedImageBytesAndColor(
+      palette: paletteGenerator, imageBytes: imageBytes, image: image);
+}

@@ -11,6 +11,7 @@ abstract class GQLRawApiService {
   Future<dynamic> addToken();
   Future<dynamic> updateToken(String token);
   Future<dynamic> subscribe(String mangaTitle);
+  Future<void> removeToken();
 }
 
 class GQLRawApiServiceImpl extends GQLRawApiService {
@@ -58,6 +59,7 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
       return;
     } else {
       print("Success");
+      prefs.saveUserToken('');
       return;
     }
   }
@@ -65,20 +67,37 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
   @override
   Future subscribe(String mangaTitle) async {
     String userToken = prefs.getUserToken();
+    if (userToken != '') {
+      final MutationOptions options = MutationOptions(
+        document: parseString(SUBSCRIBE),
+        variables: <String, dynamic>{
+          'tokenId': userToken,
+          'mangaTitle': mangaTitle
+        },
+      );
+      final QueryResult result = await client.mutate(options);
+      if (result.hasException) {
+        print(result.exception.toString());
+        return;
+      } else {
+        print("Success");
+        return;
+      }
+    }
+  }
+
+  @override
+  Future<void> removeToken() async {
+    String userID = prefs.getUserID();
     final MutationOptions options = MutationOptions(
-      document: parseString(SUBSCRIBE),
-      variables: <String, dynamic>{
-        'tokenId': userToken,
-        'mangaTitle': mangaTitle
-      },
+      document: parseString(REMOVE_TOKEN),
+      variables: <String, dynamic>{'userId': userID},
     );
     final QueryResult result = await client.mutate(options);
     if (result.hasException) {
       print(result.exception.toString());
-      return;
     } else {
       print("Success");
-      return;
     }
   }
 }

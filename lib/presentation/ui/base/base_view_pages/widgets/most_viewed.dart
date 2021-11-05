@@ -6,7 +6,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/most_viewed_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
@@ -73,8 +72,6 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                   child: Text(
                     "Most Viewed Today",
                     style: TextStyle(
-                        color:
-                            context.isLightMode() ? Colors.black : Colors.white,
                         fontSize: Sizes.dimen_16.sp,
                         fontWeight: FontWeight.bold),
                   ),

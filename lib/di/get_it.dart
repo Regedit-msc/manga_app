@@ -26,8 +26,10 @@ import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.da
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 
 final getItInstance = GetIt.I;
@@ -60,14 +62,15 @@ Future init() async {
   getItInstance.registerLazySingleton<FirebaseFirestore>(() => _firestore);
   getItInstance.registerLazySingleton<SharedServiceImpl>(
       () => SharedServiceImpl(prefs: getItInstance()));
-  getItInstance.registerLazySingleton<ThemeController>(
-      () => ThemeController(getItInstance()));
+  getItInstance.registerSingleton<SettingsServiceImpl>(
+      SettingsServiceImpl(getItInstance()));
+  getItInstance
+      .registerSingleton<ThemeController>(ThemeController(getItInstance()));
   getItInstance.registerLazySingleton<DynamicLinkServiceImpl>(
       () => DynamicLinkServiceImpl(getItInstance(), getItInstance()));
   getItInstance.registerLazySingleton<UnsplashApiServiceImpl>(
       () => UnsplashApiServiceImpl(getItInstance()));
-  getItInstance.registerLazySingleton<SettingsServiceImpl>(
-      () => SettingsServiceImpl(getItInstance()));
+
   getItInstance
       .registerLazySingleton<SnackbarServiceImpl>(() => SnackbarServiceImpl());
   getItInstance.registerLazySingleton<NavigationServiceImpl>(
@@ -103,7 +106,13 @@ Future init() async {
     () => UserFromGoogleCubit(),
   );
   getItInstance.registerFactory(
+    () => SettingsCubit(settingsService: getItInstance()),
+  );
+  getItInstance.registerFactory(
     () => CollectionCardsCubit(),
   );
   getItInstance.registerSingleton<DatabaseHelper>(DatabaseHelper.instance);
+  getItInstance.registerFactory(
+        () => ThemeCubit(getItInstance()),
+  );
 }

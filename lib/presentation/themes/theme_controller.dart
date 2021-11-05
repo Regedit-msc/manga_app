@@ -7,8 +7,8 @@ class ThemeController with ChangeNotifier {
   ThemeController(this.settingsServiceImpl);
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
-  Future<void> loadTheme() async {
-    _themeMode = await settingsServiceImpl.themeMode();
+  void loadTheme() {
+    _themeMode = settingsServiceImpl.themeMode();
     notifyListeners();
   }
 

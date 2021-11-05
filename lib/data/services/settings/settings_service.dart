@@ -1,9 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:webcomic/data/common/constants/settings_constants.dart';
+import 'package:webcomic/data/models/settings_model.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 
 abstract class SettingsService {
-  Future<ThemeMode> themeMode();
+  ThemeMode themeMode();
   Future<void> updateThemeMode(ThemeMode theme);
+  Settings getSettings();
+  Settings getDefaults();
+  ThemeMode themeFromString(String theme);
+  Future<void> updateSettings(Settings newSettings);
 }
 
 class SettingsServiceImpl extends SettingsService {
@@ -11,7 +19,7 @@ class SettingsServiceImpl extends SettingsService {
 
   SettingsServiceImpl(this.sharedPrefs);
   @override
-  Future<ThemeMode> themeMode() async {
+  ThemeMode themeMode() {
     switch (sharedPrefs.getUserThemePreference()) {
       case "system":
         return ThemeMode.system;
@@ -28,17 +36,50 @@ class SettingsServiceImpl extends SettingsService {
   Future<void> updateThemeMode(ThemeMode theme) async {
     switch (theme) {
       case ThemeMode.system:
-        sharedPrefs.setUserThemePreference("system");
+        await sharedPrefs.setUserThemePreference("system");
         return;
       case ThemeMode.dark:
-        sharedPrefs.setUserThemePreference("dark");
+        await sharedPrefs.setUserThemePreference("dark");
         return;
       case ThemeMode.light:
-        sharedPrefs.setUserThemePreference("light");
+        await sharedPrefs.setUserThemePreference("light");
         return;
       default:
-        sharedPrefs.setUserThemePreference("system");
+        await sharedPrefs.setUserThemePreference("system");
         return;
+    }
+  }
+
+  @override
+  Settings getSettings() {
+    String? settings = sharedPrefs.getSettings();
+    if (settings != null) {
+      return settingsFromMap(settings);
+    }
+    return settingsFromMap(jsonEncode(defaultSettingsMap));
+  }
+
+  @override
+  Settings getDefaults() {
+    return settingsFromMap(jsonEncode(defaultSettingsMap));
+  }
+
+  @override
+  Future<void> updateSettings(Settings newSettings) async {
+    await sharedPrefs.setSettings(jsonEncode(newSettings.toMap()));
+  }
+
+  @override
+  ThemeMode themeFromString(String theme) {
+    switch (theme) {
+      case "system":
+        return ThemeMode.system;
+      case "dark":
+        return ThemeMode.dark;
+      case "light":
+        return ThemeMode.light;
+      default:
+        return ThemeMode.system;
     }
   }
 }

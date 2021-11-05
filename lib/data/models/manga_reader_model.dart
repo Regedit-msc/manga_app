@@ -75,7 +75,7 @@ class GetMangaReaderData {
 
   factory GetMangaReaderData.fromMap(Map<String, dynamic> json) =>
       GetMangaReaderData(
-          chapter: json["chapter"],
+          chapter: json["chapter"] ?? '',
           images: List<String>.from(json["images"].map((x) => x)),
           chapterList: json["chapterList"] != null
               ? List<String>.from(json["chapterList"].map((x) => x))

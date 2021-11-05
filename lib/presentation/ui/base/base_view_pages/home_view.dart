@@ -8,7 +8,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
@@ -21,6 +20,7 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_upda
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_clicked.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewed.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class HomeView extends StatefulWidget {
@@ -95,55 +95,61 @@ class _HomeViewState extends State<HomeView>
                       height: Sizes.dimen_300,
                       child: Stack(
                         children: [
-                          CarouselSlider.builder(
-                            options: CarouselOptions(
-                                height: Sizes.dimen_300,
-                                viewportFraction: 1.0,
-                                enlargeCenterPage: true,
-                                autoPlayCurve: Curves.ease,
-                                autoPlay: true,
-                                autoPlayInterval: Duration(seconds: 4),
-                                autoPlayAnimationDuration:
-                                    Duration(milliseconds: 200),
-                                onPageChanged: (i, reason) {
-                                  context
-                                      .read<MangaSlideShowCubit>()
-                                      .setIndex(i + 1);
-                                }),
-                            itemBuilder: (_, index, __) {
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).pushNamed(
-                                      Routes.mangaInfo,
-                                      arguments: newestMMdl.Datum(
-                                          title: newestManga.data![index].title,
-                                          mangaUrl:
-                                              newestManga.data![index].mangaUrl,
-                                          imageUrl: newestManga
-                                              .data![index].imageUrl));
-                                },
-                                child: CachedNetworkImage(
-                                  imageUrl:
-                                      newestManga.data![index].imageUrl ?? '',
-                                  imageBuilder: (context, imageProvider) =>
-                                      Container(
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image: imageProvider,
-                                        fit: BoxFit.cover,
+                          BlocBuilder<SettingsCubit, SettingsState>(
+                              builder: (context, settingsBloc) {
+                            return CarouselSlider.builder(
+                              options: CarouselOptions(
+                                  height: Sizes.dimen_300,
+                                  viewportFraction: 1.0,
+                                  enlargeCenterPage: true,
+                                  autoPlayCurve: Curves.ease,
+                                  autoPlay: true,
+                                  autoPlayInterval: Duration(
+                                      seconds: settingsBloc
+                                          .settings.newMangaSliderDuration),
+                                  autoPlayAnimationDuration:
+                                      Duration(milliseconds: 200),
+                                  onPageChanged: (i, reason) {
+                                    context
+                                        .read<MangaSlideShowCubit>()
+                                        .setIndex(i + 1);
+                                  }),
+                              itemBuilder: (_, index, __) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).pushNamed(
+                                        Routes.mangaInfo,
+                                        arguments: newestMMdl.Datum(
+                                            title:
+                                                newestManga.data![index].title,
+                                            mangaUrl: newestManga
+                                                .data![index].mangaUrl,
+                                            imageUrl: newestManga
+                                                .data![index].imageUrl));
+                                  },
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                        newestManga.data![index].imageUrl ?? '',
+                                    imageBuilder: (context, imageProvider) =>
+                                        Container(
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: imageProvider,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     ),
+                                    placeholder: (ctx, string) {
+                                      return NoAnimationLoading();
+                                    },
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
                                   ),
-                                  placeholder: (ctx, string) {
-                                    return NoAnimationLoading();
-                                  },
-                                  errorWidget: (context, url, error) =>
-                                      Icon(Icons.error),
-                                ),
-                              );
-                            },
-                            itemCount: newestManga.data!.length,
-                          ),
+                                );
+                              },
+                              itemCount: newestManga.data!.length,
+                            );
+                          }),
                           const Align(
                               alignment: Alignment.bottomRight,
                               child: Padding(
@@ -185,9 +191,6 @@ class _HomeViewState extends State<HomeView>
                                 child: Text(
                                   "Genres",
                                   style: TextStyle(
-                                      color: context.isLightMode()
-                                          ? Colors.black
-                                          : Colors.white,
                                       fontWeight: FontWeight.bold,
                                       fontSize: Sizes.dimen_18.sp),
                                 ),

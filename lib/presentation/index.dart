@@ -20,7 +20,6 @@ import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/router.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
-import 'package:webcomic/presentation/themes/theme_controller.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
@@ -28,8 +27,10 @@ import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.da
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 
 import '../main.dart';
@@ -52,6 +53,8 @@ class _IndexState extends State<Index> {
   late ShowCollectionCubit _showCollectionCubit;
   late UserFromGoogleCubit _userFromGoogleCubit;
   late CollectionCardsCubit _collectionCardsCubit;
+  late SettingsCubit _settingsCubit;
+  late ThemeCubit _themeCubit;
   @override
   void initState() {
     super.initState();
@@ -67,6 +70,8 @@ class _IndexState extends State<Index> {
     _subsCubit = getItInstance<SubsCubit>();
     _userFromGoogleCubit = getItInstance<UserFromGoogleCubit>();
     _collectionCardsCubit = getItInstance<CollectionCardsCubit>();
+    _settingsCubit = getItInstance<SettingsCubit>();
+    _themeCubit = getItInstance<ThemeCubit>();
     var initializationSettingsAndroid =
         ln.AndroidInitializationSettings('@drawable/logo');
     var initializationSettingsIOs = ln.IOSInitializationSettings();
@@ -77,7 +82,6 @@ class _IndexState extends State<Index> {
         onSelectNotification: onSelectNotification);
 
     setUpFcmToken();
-    initTheme();
     initFcmNotifications();
   }
 
@@ -93,11 +97,9 @@ class _IndexState extends State<Index> {
     _showCollectionCubit.close();
     _userFromGoogleCubit.close();
     _collectionCardsCubit.close();
+    _settingsCubit.close();
+    _themeCubit.close();
     super.dispose();
-  }
-
-  void initTheme() async {
-    await getItInstance<ThemeController>().loadTheme();
   }
 
   void setUpFcmToken() async {
@@ -148,56 +150,70 @@ class _IndexState extends State<Index> {
           BlocProvider<ShowCollectionCubit>.value(value: _showCollectionCubit),
           BlocProvider<CollectionCardsCubit>.value(
               value: _collectionCardsCubit),
+          BlocProvider<SettingsCubit>.value(value: _settingsCubit),
+          BlocProvider<ThemeCubit>.value(value: _themeCubit),
         ],
-        child: AnimatedBuilder(
-          builder: (context, widget) {
-            return MaterialApp(
-              navigatorKey:
-                  getItInstance<NavigationServiceImpl>().navigationKey,
-              debugShowCheckedModeBanner: false,
-              title: 'Webcomic',
-              themeMode: getItInstance<ThemeController>().themeMode,
-              theme: ThemeData(
-                scaffoldBackgroundColor: Colors.white,
-                brightness: Brightness.light,
-                indicatorColor: AppColor.vulcan,
-                tabBarTheme: TabBarTheme(
-                    unselectedLabelColor: Colors.grey,
-                    unselectedLabelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: Sizes.dimen_14.sp),
-                    labelColor: AppColor.vulcan,
-                    labelStyle: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: Sizes.dimen_14.sp)),
-                appBarTheme: AppBarTheme(
-                    iconTheme: IconThemeData(color: Colors.black),
-                    elevation: 0.0,
-                    backgroundColor: Colors.white,
-                    titleTextStyle: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: Sizes.dimen_22.sp)),
-                visualDensity: VisualDensity.adaptivePlatformDensity,
-                textTheme: ThemeText.getTextLightTheme(),
-              ),
-              darkTheme: ThemeData(
-                  brightness: Brightness.dark,
-                  scaffoldBackgroundColor: AppColor.vulcan,
+        child:
+            BlocBuilder<ThemeCubit, ThemeState>(builder: (context, themeBloc) {
+          if (themeBloc.themeMode == ThemeMode.dark) {
+            SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark
+                .copyWith(
+                    statusBarIconBrightness: Brightness.light,
+                    statusBarColor: Colors.black));
+          } else {
+            SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
+                .copyWith(
+                    statusBarIconBrightness: Brightness.dark,
+                    statusBarColor: Colors.white));
+          }
+          return AnimatedSwitcher(
+              duration: Duration(seconds: 1),
+              child: MaterialApp(
+                navigatorKey:
+                    getItInstance<NavigationServiceImpl>().navigationKey,
+                debugShowCheckedModeBanner: false,
+                title: 'Webcomic',
+                themeMode: themeBloc.themeMode,
+                theme: ThemeData(
+                  scaffoldBackgroundColor: Colors.white,
+                  brightness: Brightness.light,
+                  indicatorColor: AppColor.vulcan,
+                  tabBarTheme: TabBarTheme(
+                      unselectedLabelColor: Colors.grey,
+                      unselectedLabelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: Sizes.dimen_14.sp),
+                      labelColor: AppColor.vulcan,
+                      labelStyle: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: Sizes.dimen_14.sp)),
+                  appBarTheme: AppBarTheme(
+                      iconTheme: IconThemeData(color: Colors.black),
+                      elevation: 0.0,
+                      backgroundColor: Colors.white,
+                      titleTextStyle: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Sizes.dimen_22.sp)),
                   visualDensity: VisualDensity.adaptivePlatformDensity,
-                  textTheme: ThemeText.getTextTheme(),
-                  appBarTheme: const AppBarTheme(
-                    iconTheme: IconThemeData(color: Colors.white),
-                    elevation: 0,
-                    backgroundColor: AppColor.vulcan,
-                  )),
-              initialRoute: Routes.initRoute,
-              onGenerateRoute: (settings) =>
-                  CustomRouter.generateRoutes(settings),
-            );
-          },
-          animation: getItInstance<ThemeController>(),
-        ),
+                  textTheme: ThemeText.getTextLightTheme(),
+                ),
+                darkTheme: ThemeData(
+                    brightness: Brightness.dark,
+                    indicatorColor: Colors.white,
+                    scaffoldBackgroundColor: AppColor.vulcan,
+                    visualDensity: VisualDensity.adaptivePlatformDensity,
+                    textTheme: ThemeText.getTextTheme(),
+                    appBarTheme: const AppBarTheme(
+                      iconTheme: IconThemeData(color: Colors.white),
+                      elevation: 0,
+                      backgroundColor: AppColor.vulcan,
+                    )),
+                initialRoute: Routes.initRoute,
+                onGenerateRoute: (settings) =>
+                    CustomRouter.generateRoutes(settings),
+              ));
+        }),
       ),
     );
   }

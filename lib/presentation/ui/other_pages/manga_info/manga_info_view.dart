@@ -15,6 +15,7 @@ import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
+import 'package:webcomic/data/common/generator/color_generator.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
@@ -36,6 +37,7 @@ import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
@@ -51,12 +53,62 @@ class MangaInfo extends StatefulWidget {
 }
 
 class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
+
+   GeneratedImageBytesAndColor? _imageAndColor = null;
+  Future<void> doSetup() async{
+    GeneratedImageBytesAndColor _default =  await getImageAndColors(widget.mangaDetails.imageUrl?? '');
+    if(mounted){
+      setState(() {
+        _imageAndColor =_default;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+   doSetup();
+    super.initState();
+  }
+
+  Color getTileSelectedColor(bool shouldDrawColors, BuildContext context){
+    if(shouldDrawColors && _imageAndColor != null){
+      if(context.isLightMode()){
+        if(_imageAndColor!.palette.lightMutedColor != null){
+          return  _imageAndColor!.palette.lightMutedColor!.color.withOpacity(0.2);
+        }
+      } else {
+        if(_imageAndColor!.palette.darkMutedColor != null){
+          return  _imageAndColor!.palette.darkMutedColor!.color.withOpacity(0.4);
+        }
+      }
+    }
+    return context.isLightMode()? Colors.grey.withOpacity(0.2): Colors.black54.withOpacity(0.5);
+  }
+
+   Color getTileDefaultColor(bool shouldDrawColors, BuildContext context){
+     if(shouldDrawColors && _imageAndColor != null){
+       if(context.isLightMode()){
+         if(_imageAndColor!.palette.lightMutedColor != null){
+           return  _imageAndColor!.palette.lightMutedColor!.color.withOpacity(0.3);
+         }
+       } else {
+         if(_imageAndColor!.palette.darkMutedColor != null){
+           return  _imageAndColor!.palette.darkMutedColor!.color.withOpacity(0.3);
+         }
+       }
+     }
+     return context.isLightMode()? Colors.white: AppColor.vulcan;
+   }
+
   @override
   Widget build(BuildContext context) {
     // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     //   systemNavigationBarColor: Colors.black,
     //   statusBarColor: Colors.transparent,
     // ));
+
+
+
     return SafeArea(
       child: Scaffold(
         body: Query(
@@ -189,8 +241,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                       if (indexOfCurrentMangaIfSubbed != -1) {
                                         getItInstance<SnackbarServiceImpl>().showSnack(
                                             context,
-                                            "${widget.mangaDetails.title} has been removed from subscriptions. You will not receive update notifications.",
-                                            color: AppColor.vulcan);
+                                            "${widget.mangaDetails.title} has been removed from subscriptions.",
+                                            );
                                         subs.removeWhere((element) =>
                                             element.mangaUrl ==
                                             widget.mangaDetails.mangaUrl);
@@ -198,8 +250,19 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                       } else {
                                         getItInstance<SnackbarServiceImpl>().showSnack(
                                             context,
-                                            "${widget.mangaDetails.title} has been added to subscriptions. You will receive update notifications.",
-                                            color: AppColor.vulcan);
+                                            "${widget.mangaDetails.title} has been added to subscriptions.",
+                                            );
+                                        if(!context.read<SettingsCubit>().state.settings.subscribedNotifications){
+                                          getItInstance<SnackbarServiceImpl>().showSnack(
+                                            context,
+                                            "You will be not notified when ${widget.mangaDetails.title} updates. Enable subscription notifications in settings then resubscribe.",
+                                          );
+                                        } else {
+                                          getItInstance<SnackbarServiceImpl>().showSnack(
+                                            context,
+                                            "You will be  notified when ${widget.mangaDetails.title} updates. To disable subscription notifications turn it off in settings.",
+                                          );
+                                        }
                                         context
                                             .read<SubsCubit>()
                                             .setSubs([...subs, newSub]);
@@ -557,189 +620,195 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                               ),
                             ),
                           ),
-                          ListView.builder(
-                              itemCount: result.isLoading
-                                  ? 1
-                                  : mangaInfo != null
-                                      ? mangaInfo.data.chapterList.length
-                                      : 20,
-                              itemBuilder: (ctx, index) {
-                                if (result.hasException) {
-                                  return Text(result.exception.toString());
-                                }
+                          BlocBuilder<SettingsCubit,
+                              SettingsState>(
+                              builder: (context, settingsBloc) {
 
-                                if (result.isLoading) {
-                                  return Loading();
-                                }
-                                return BlocBuilder<ChaptersReadCubit,
-                                        ChaptersReadState>(
-                                    builder: (context, chapterReadState) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                        color: chapterReadState.chaptersRead
-                                                    .indexWhere((element) =>
-                                                        element.chapterUrl ==
-                                                        mangaInfo!
-                                                            .data
-                                                            .chapterList[index]
-                                                            .chapterUrl) !=
-                                                -1
-                                            ? context.isLightMode()
-                                                ? Colors.grey.withOpacity(0.2)
-                                                : Colors.black54
-                                                    .withOpacity(0.5)
-                                            : Colors.transparent),
-                                    child: ListTile(
-                                      isThreeLine: true,
-                                      onTap: () async {
-                                        final DatabaseHelper dbInstance =
-                                            getItInstance<DatabaseHelper>();
-                                        ChapterRead newChapter = ChapterRead(
-                                            mangaUrl:
-                                                widget.mangaDetails.mangaUrl ??
-                                                    'none',
-                                            chapterUrl: mangaInfo!.data
-                                                .chapterList[index].chapterUrl);
-                                        RecentlyRead recentlyRead =
-                                            RecentlyRead(
-                                                title:
-                                                    widget.mangaDetails.title ??
-                                                        '',
-                                                mangaUrl: widget.mangaDetails
-                                                        .mangaUrl ??
-                                                    '',
-                                                imageUrl: widget.mangaDetails
-                                                        .imageUrl ??
-                                                    "",
-                                                chapterUrl: mangaInfo
-                                                    .data
-                                                    .chapterList[index]
-                                                    .chapterUrl,
-                                                chapterTitle: mangaInfo
-                                                    .data
-                                                    .chapterList[index]
-                                                    .chapterTitle,
-                                                mostRecentReadDate:
-                                                    DateTime.now().toString());
-                                        List<RecentlyRead> recents = context
-                                            .read<RecentsCubit>()
-                                            .state
-                                            .recents;
-                                        List<ChapterRead> chaptersRead = context
-                                            .read<ChaptersReadCubit>()
-                                            .state
-                                            .chaptersRead;
-                                        List<RecentlyRead> withoutCurrentRead =
-                                            recents
-                                                .where((element) =>
-                                                    element.mangaUrl !=
-                                                    recentlyRead.mangaUrl)
-                                                .toList();
-                                        List<ChapterRead>
-                                            withoutCurrentChapter = chaptersRead
-                                                .where((element) =>
-                                                    element.chapterUrl !=
-                                                    newChapter.chapterUrl)
-                                                .toList();
+                              return Container(
+                                 // color: getTileDefaultColor(settingsBloc.settings.drawChapterColorsFromImage, context),
+                                child: ListView.builder(
+                                    itemCount: result.isLoading
+                                        ? 1
+                                        : mangaInfo != null
+                                            ? mangaInfo.data.chapterList.length
+                                            : 20,
+                                    itemBuilder: (ctx, index) {
+                                      if (result.hasException) {
+                                        return Text(result.exception.toString());
+                                      }
 
-                                        context
-                                            .read<RecentsCubit>()
-                                            .setResults([
-                                          ...withoutCurrentRead,
-                                          recentlyRead
-                                        ]);
-                                        context
-                                            .read<ChaptersReadCubit>()
-                                            .setResults([
-                                          ...withoutCurrentChapter,
-                                          newChapter
-                                        ]);
-                                        await dbInstance
-                                            .updateOrInsertChapterRead(
-                                                newChapter);
-
-                                        await dbInstance
-                                            .updateOrInsertRecentlyRead(
-                                                recentlyRead);
-                                        Navigator.pushNamed(
-                                            context, Routes.mangaReader,
-                                            arguments: ChapterList(
-                                                mangaImage:
-                                                    widget.mangaDetails.imageUrl ??
-                                                        '',
-                                                mangaTitle:
-                                                    widget.mangaDetails.title ??
-                                                        '',
-                                                mangaUrl:
-                                                    widget.mangaDetails.mangaUrl ??
-                                                        '',
-                                                chapterUrl: mangaInfo
-                                                    .data
-                                                    .chapterList[index]
-                                                    .chapterUrl,
-                                                chapterTitle: mangaInfo
-                                                    .data
-                                                    .chapterList[index]
-                                                    .chapterTitle,
-                                                dateUploaded: mangaInfo
-                                                    .data
-                                                    .chapterList[index]
-                                                    .dateUploaded));
-                                      },
-                                      subtitle: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          mangaInfo!.data.chapterList[index]
-                                              .dateUploaded,
-                                          style: TextStyle(
-                                              color: context.isLightMode()
-                                                  ? AppColor.vulcan
-                                                      .withOpacity(0.6)
-                                                  : Color(0xffF4E8C1)),
-                                        ),
-                                      ),
-                                      leading: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(2.0),
-                                        child: Container(
-                                          // padding: EdgeInsets.all(8),
-                                          width: Sizes.dimen_100.w,
+                                      if (result.isLoading) {
+                                        return Loading();
+                                      }
+                                      return BlocBuilder<ChaptersReadCubit,
+                                              ChaptersReadState>(
+                                          builder: (context, chapterReadState) {
+                                        return Container(
                                           decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                  image:
-                                                      CachedNetworkImageProvider(
-                                                          widget.mangaDetails
-                                                                  .imageUrl ??
-                                                              ''),
-                                                  fit: BoxFit.cover)),
-                                        ),
-                                      ),
-                                      title: Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: Text(mangaInfo.data
-                                                .chapterList[index].chapterTitle
-                                                .replaceAll("-", " ")
-                                                .split(" ")[mangaInfo
-                                                        .data
-                                                        .chapterList[index]
-                                                        .chapterTitle
-                                                        .split("-")
-                                                        .indexWhere((element) =>
-                                                            element ==
-                                                            "chapter") +
-                                                    1]
-                                                .replaceFirst("c", "C") +
-                                            " " +
-                                            mangaInfo.data.chapterList[index]
-                                                .chapterTitle
-                                                .replaceAll("-", " ")
-                                                .split(" ")[mangaInfo.data.chapterList[index].chapterTitle.split("-").indexWhere((element) => element == "chapter") + 2]),
-                                      ),
-                                    ),
-                                  );
-                                });
-                              }),
+                                              color: chapterReadState.chaptersRead
+                                                          .indexWhere((element) =>
+                                                              element.chapterUrl ==
+                                                              mangaInfo!
+                                                                  .data
+                                                                  .chapterList[index]
+                                                                  .chapterUrl) !=
+                                                      -1
+                                                  ? getTileSelectedColor(settingsBloc.settings.drawChapterColorsFromImage, context): Colors.transparent
+                                                 ),
+                                          child: ListTile(
+                                            isThreeLine: true,
+                                            onTap: () async {
+                                              final DatabaseHelper dbInstance =
+                                                  getItInstance<DatabaseHelper>();
+                                              ChapterRead newChapter = ChapterRead(
+                                                  mangaUrl:
+                                                      widget.mangaDetails.mangaUrl ??
+                                                          'none',
+                                                  chapterUrl: mangaInfo!.data
+                                                      .chapterList[index].chapterUrl);
+                                              RecentlyRead recentlyRead =
+                                                  RecentlyRead(
+                                                      title:
+                                                          widget.mangaDetails.title ??
+                                                              '',
+                                                      mangaUrl: widget.mangaDetails
+                                                              .mangaUrl ??
+                                                          '',
+                                                      imageUrl: widget.mangaDetails
+                                                              .imageUrl ??
+                                                          "",
+                                                      chapterUrl: mangaInfo
+                                                          .data
+                                                          .chapterList[index]
+                                                          .chapterUrl,
+                                                      chapterTitle: mangaInfo
+                                                          .data
+                                                          .chapterList[index]
+                                                          .chapterTitle,
+                                                      mostRecentReadDate:
+                                                          DateTime.now().toString());
+                                              List<RecentlyRead> recents = context
+                                                  .read<RecentsCubit>()
+                                                  .state
+                                                  .recents;
+                                              List<ChapterRead> chaptersRead = context
+                                                  .read<ChaptersReadCubit>()
+                                                  .state
+                                                  .chaptersRead;
+                                              List<RecentlyRead> withoutCurrentRead =
+                                                  recents
+                                                      .where((element) =>
+                                                          element.mangaUrl !=
+                                                          recentlyRead.mangaUrl)
+                                                      .toList();
+                                              List<ChapterRead>
+                                                  withoutCurrentChapter = chaptersRead
+                                                      .where((element) =>
+                                                          element.chapterUrl !=
+                                                          newChapter.chapterUrl)
+                                                      .toList();
+
+                                              context
+                                                  .read<RecentsCubit>()
+                                                  .setResults([
+                                                ...withoutCurrentRead,
+                                                recentlyRead
+                                              ]);
+                                              context
+                                                  .read<ChaptersReadCubit>()
+                                                  .setResults([
+                                                ...withoutCurrentChapter,
+                                                newChapter
+                                              ]);
+                                              await dbInstance
+                                                  .updateOrInsertChapterRead(
+                                                      newChapter);
+
+                                              await dbInstance
+                                                  .updateOrInsertRecentlyRead(
+                                                      recentlyRead);
+                                              Navigator.pushNamed(
+                                                  context, Routes.mangaReader,
+                                                  arguments: ChapterList(
+                                                      mangaImage:
+                                                          widget.mangaDetails.imageUrl ??
+                                                              '',
+                                                      mangaTitle:
+                                                          widget.mangaDetails.title ??
+                                                              '',
+                                                      mangaUrl:
+                                                          widget.mangaDetails.mangaUrl ??
+                                                              '',
+                                                      chapterUrl: mangaInfo
+                                                          .data
+                                                          .chapterList[index]
+                                                          .chapterUrl,
+                                                      chapterTitle: mangaInfo
+                                                          .data
+                                                          .chapterList[index]
+                                                          .chapterTitle,
+                                                      dateUploaded: mangaInfo
+                                                          .data
+                                                          .chapterList[index]
+                                                          .dateUploaded));
+                                            },
+                                            subtitle: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                mangaInfo!.data.chapterList[index]
+                                                    .dateUploaded,
+                                                style: TextStyle(
+                                                    color: context.isLightMode()
+                                                        ? AppColor.vulcan
+                                                            .withOpacity(0.6)
+                                                        : Color(0xffF4E8C1)),
+                                              ),
+                                            ),
+                                            leading: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(2.0),
+                                              child: Container(
+                                                // padding: EdgeInsets.all(8),
+                                                width: Sizes.dimen_100.w,
+                                                decoration: BoxDecoration(
+                                                    image: DecorationImage(
+                                                        image:
+                                                            CachedNetworkImageProvider(
+                                                                widget.mangaDetails
+                                                                        .imageUrl ??
+                                                                    ''),
+                                                        fit: BoxFit.cover)),
+                                              ),
+                                            ),
+                                            title: Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 8.0),
+                                              child: Text(mangaInfo.data
+                                                      .chapterList[index].chapterTitle
+                                                      .replaceAll("-", " ")
+                                                      .split(" ")[mangaInfo
+                                                              .data
+                                                              .chapterList[index]
+                                                              .chapterTitle
+                                                              .split("-")
+                                                              .indexWhere((element) =>
+                                                                  element ==
+                                                                  "chapter") +
+                                                          1]
+                                                      .replaceFirst("c", "C") +
+                                                  " " +
+                                                  mangaInfo.data.chapterList[index]
+                                                      .chapterTitle
+                                                      .replaceAll("-", " ")
+                                                      .split(" ")[mangaInfo.data.chapterList[index].chapterTitle.split("-").indexWhere((element) => element == "chapter") + 2]),
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                    }),
+                              );
+                            }
+                          ),
                           Container(
                             child: GridView.count(
                               crossAxisCount: 2,
