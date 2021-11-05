@@ -180,7 +180,10 @@ class _SettingsViewState extends State<SettingsView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(" App Theme"),
+                        Text(
+                          " App Theme",
+                          style: TextStyle(fontSize: Sizes.dimen_16.sp),
+                        ),
                         Text(
                           "Change the app theme.",
                           style: TextStyle(

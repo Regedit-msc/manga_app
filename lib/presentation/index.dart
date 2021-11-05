@@ -134,6 +134,30 @@ class _IndexState extends State<Index> {
     //   statusBarColor: Colors.transparent,
     // ));
 
+    Color? getColor(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return AppColor.violet;
+      }
+      return Colors.grey[800];
+    }
+
+    Color? getColorLight(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return AppColor.vulcan;
+      }
+      return Colors.grey[200];
+    }
+
     return GraphQLProvider(
       client: getItInstance<ValueNotifier<GraphQLClient>>(),
       child: MultiBlocProvider(
@@ -214,6 +238,10 @@ class _IndexState extends State<Index> {
                   textTheme: ThemeText.getTextLightTheme(),
                 ),
                 darkTheme: ThemeData(
+                    switchTheme: SwitchThemeData(
+                      thumbColor: MaterialStateProperty.all(AppColor.violet),
+                      trackColor: MaterialStateProperty.resolveWith(getColor),
+                    ),
                     brightness: Brightness.dark,
                     indicatorColor: Colors.white,
                     scaffoldBackgroundColor: AppColor.vulcan,

@@ -14,6 +14,7 @@ import 'package:webcomic/data/models/unsplash/unsplash_model.dart';
 import 'package:webcomic/data/services/api/unsplash_api.dart';
 import 'package:webcomic/data/services/database/db.dart';
 import 'package:webcomic/data/services/deep_link/deep_link.service.dart';
+import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
@@ -128,15 +129,23 @@ class _BaseViewState extends State<BaseView>
   void didChangePlatformBrightness() {
     final Brightness brightness =
         WidgetsBinding.instance!.platformDispatcher.platformBrightness;
-    if (brightness == Brightness.light) {
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarIconBrightness: Brightness.dark,
-        statusBarColor: Colors.white,
-      ));
-    } else {
-      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
-          statusBarIconBrightness: Brightness.light,
-          statusBarColor: Colors.black));
+    final themeMode = getItInstance<NavigationServiceImpl>()
+        .navigationKey
+        .currentContext!
+        .read<ThemeCubit>()
+        .state
+        .themeMode;
+    if (themeMode == ThemeMode.system) {
+      if (brightness == Brightness.light) {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
+            .copyWith(
+                statusBarIconBrightness: Brightness.dark,
+                statusBarColor: Colors.white));
+      } else {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+            statusBarIconBrightness: Brightness.light,
+            statusBarColor: Colors.black));
+      }
     }
   }
 

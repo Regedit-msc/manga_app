@@ -6,7 +6,6 @@ import 'package:webcomic/data/common/constants/categories.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
@@ -60,9 +59,6 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                         child: Text(
                           widget.genre,
                           style: TextStyle(
-                              color: context.isLightMode()
-                                  ? Colors.black
-                                  : Colors.white,
                               fontSize: Sizes.dimen_16.sp,
                               fontWeight: FontWeight.bold),
                         ),
@@ -71,9 +67,6 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                         padding: const EdgeInsets.all(8.0),
                         child: Icon(
                           Icons.arrow_forward_ios,
-                          color: context.isLightMode()
-                              ? Colors.black
-                              : Colors.white,
                           size: Sizes.dimen_16.sp,
                         ),
                       ),

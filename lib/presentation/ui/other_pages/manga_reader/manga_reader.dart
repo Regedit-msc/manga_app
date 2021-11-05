@@ -35,9 +35,12 @@ class MangaReader extends StatefulWidget {
 }
 
 class _MangaReaderState extends State<MangaReader> {
+  // TODO: INTRO TO READER
   final ScrollController _scrollController = ScrollController();
   ValueNotifier<bool> isLoading = ValueNotifier(true);
   ValueNotifier<String> chapterName = ValueNotifier('');
+  TapDownDetails? tapDownDetails;
+  late TransformationController controller;
   final ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
   bool showAppBar = false;
   Future preLoadImages(List<String> listOfUrls) async {
@@ -61,6 +64,7 @@ class _MangaReaderState extends State<MangaReader> {
   void initState() {
     chapterName.value = widget.chapterList.chapterTitle;
     // doSetup();
+    controller = TransformationController();
     _scrollController.addListener(scrollListener);
     super.initState();
   }
@@ -69,6 +73,7 @@ class _MangaReaderState extends State<MangaReader> {
   void dispose() {
     chapterName.dispose();
     isLoading.dispose();
+    controller.dispose();
     _scrollController.removeListener(scrollListener);
     _scrollController.dispose();
     super.dispose();
@@ -263,21 +268,40 @@ class _MangaReaderState extends State<MangaReader> {
                                               });
                                             }
                                           },
-                                          child: CachedNetworkImage(
-                                            fadeInDuration: const Duration(
-                                                microseconds: 100),
-                                            imageUrl: mangaReader
-                                                .data.images[index],
-                                            fit: BoxFit.contain,
-                                            placeholder: (ctx, string) {
-                                              return Container(
-                                                  height:
-                                                      ScreenUtil.screenHeight,
-                                                  width:
-                                                      ScreenUtil.screenWidth,
-                                                  child:
-                                                      NoAnimationLoading());
-                                            },
+                                          onDoubleTap: (){
+                                            final double scale = 3;
+                                            final  position = tapDownDetails!.localPosition;
+                                            final x = -position.dx * (scale -1);
+                                            final y = -position.dy * (scale -1);
+
+                                            final zoomed = Matrix4.identity()
+                                              ..translate(x, y)
+                                              ..scale(scale);
+                                            final value = controller.value.isIdentity()?zoomed :Matrix4.identity();
+                                           controller.value = value;
+                                          },
+                                          onDoubleTapDown: (details) => tapDownDetails = details,
+                                          child: InteractiveViewer(
+                                            transformationController: controller,
+                                            clipBehavior: Clip.none,
+                                            // scaleEnabled: true,
+                                            panEnabled: true,
+                                            child: CachedNetworkImage(
+                                              fadeInDuration: const Duration(
+                                                  microseconds: 100),
+                                              imageUrl: mangaReader
+                                                  .data.images[index],
+                                              fit: BoxFit.contain,
+                                              placeholder: (ctx, string) {
+                                                return Container(
+                                                    height:
+                                                        ScreenUtil.screenHeight,
+                                                    width:
+                                                        ScreenUtil.screenWidth,
+                                                    child:
+                                                        NoAnimationLoading());
+                                              },
+                                            ),
                                           ),
                                         );
                                       }),
