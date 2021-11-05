@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -66,6 +67,7 @@ class _MangaReaderState extends State<MangaReader> {
     // doSetup();
     controller = TransformationController();
     _scrollController.addListener(scrollListener);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     super.initState();
   }
 
@@ -76,6 +78,8 @@ class _MangaReaderState extends State<MangaReader> {
     controller.dispose();
     _scrollController.removeListener(scrollListener);
     _scrollController.dispose();
+    print("Dispose");
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -87,11 +91,14 @@ class _MangaReaderState extends State<MangaReader> {
           setState(() {
             showAppBar = true;
           });
+
+
       } else {
         if(showAppBar){
           setState(() {
             showAppBar = false;
           });
+
         }
       }
     }
@@ -110,6 +117,7 @@ class _MangaReaderState extends State<MangaReader> {
         setState(() {
           showAppBar = false;
         });
+
       });
     }
   }
@@ -269,7 +277,7 @@ class _MangaReaderState extends State<MangaReader> {
                                             }
                                           },
                                           onDoubleTap: (){
-                                            final double scale = 3;
+                                            final double scale = 2;
                                             final  position = tapDownDetails!.localPosition;
                                             final x = -position.dx * (scale -1);
                                             final y = -position.dy * (scale -1);
@@ -286,21 +294,23 @@ class _MangaReaderState extends State<MangaReader> {
                                             clipBehavior: Clip.none,
                                             // scaleEnabled: true,
                                             panEnabled: true,
-                                            child: CachedNetworkImage(
-                                              fadeInDuration: const Duration(
-                                                  microseconds: 100),
-                                              imageUrl: mangaReader
-                                                  .data.images[index],
-                                              fit: BoxFit.contain,
-                                              placeholder: (ctx, string) {
-                                                return Container(
-                                                    height:
-                                                        ScreenUtil.screenHeight,
-                                                    width:
-                                                        ScreenUtil.screenWidth,
-                                                    child:
-                                                        NoAnimationLoading());
-                                              },
+                                            child: FittedBox(
+                                              child: CachedNetworkImage(
+                                                fadeInDuration: const Duration(
+                                                    microseconds: 100),
+                                                imageUrl: mangaReader
+                                                    .data.images[index],
+                                                fit: BoxFit.cover,
+                                                placeholder: (ctx, string) {
+                                                  return Container(
+                                                      height:
+                                                          ScreenUtil.screenHeight,
+                                                      width:
+                                                          ScreenUtil.screenWidth,
+                                                      child:
+                                                          NoAnimationLoading());
+                                                },
+                                              ),
                                             ),
                                           ),
                                         );
@@ -596,87 +606,85 @@ class _MangaReaderState extends State<MangaReader> {
                                 Positioned(
                                     top: 0,
                                     child:  showAppBar
-                                        ? SafeArea(
-                                          child: Container(
-                                              color:context.isLightMode()? Colors.white: AppColor.vulcan,
-                                              width: ScreenUtil.screenWidth,
-                                              height: kToolbarHeight,
-                                              child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                                                child: Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                                  children: [
-                                                 Expanded(
-                                                   child: Row(
-                                                     children: [
-                                                     Padding(
-                                                       padding:  EdgeInsets.only(left: Sizes.dimen_10, right: Sizes.dimen_8),
-                                                       child: ScaleAnim(
-                                                         onTap:(){
-                                                           Navigator.pop(context);
-                                                         },
-                                                         child: Icon(Icons.arrow_back_outlined,
-                                                         size: Sizes.dimen_22,
+                                        ? Container(
+                                            color:context.isLightMode()? Colors.white: AppColor.vulcan,
+                                            width: ScreenUtil.screenWidth,
+                                            height: kToolbarHeight,
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                                              child: Row(
+                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                children: [
+                                               Expanded(
+                                                 child: Row(
+                                                   children: [
+                                                   Padding(
+                                                     padding:  EdgeInsets.only(left: Sizes.dimen_10, right: Sizes.dimen_8),
+                                                     child: ScaleAnim(
+                                                       onTap:(){
+                                                         Navigator.pop(context);
+                                                       },
+                                                       child: Icon(Icons.arrow_back_outlined,
+                                                       size: Sizes.dimen_22,
 
-                                                         ),
                                                        ),
                                                      ),
-                                                     ValueListenableBuilder(
-                                                       builder: (context, String value, _) {
-                                                         return Text(value
-                                                             .replaceAll("-", " ")
-                                                             .split(" ")[value.split("-").indexWhere(
-                                                                 (element) => element == "chapter") +
-                                                             1]
-                                                             .replaceFirst("c", "C") +
-                                                             " " +
-                                                             value.replaceAll("-", " ").split(" ")[value
-                                                                 .split("-")
-                                                                 .indexWhere(
-                                                                     (element) => element == "chapter") +
-                                                                 2],
+                                                   ),
+                                                   ValueListenableBuilder(
+                                                     builder: (context, String value, _) {
+                                                       return Text(value
+                                                           .replaceAll("-", " ")
+                                                           .split(" ")[value.split("-").indexWhere(
+                                                               (element) => element == "chapter") +
+                                                           1]
+                                                           .replaceFirst("c", "C") +
+                                                           " " +
+                                                           value.replaceAll("-", " ").split(" ")[value
+                                                               .split("-")
+                                                               .indexWhere(
+                                                                   (element) => element == "chapter") +
+                                                               2],
 
-                                                         style: TextStyle(
-                                                           fontWeight: FontWeight.bold,
-                                                           fontSize: Sizes.dimen_20.sp,
-                                                         ),
+                                                       style: TextStyle(
+                                                         fontWeight: FontWeight.bold,
+                                                         fontSize: Sizes.dimen_20.sp,
+                                                       ),
 
-                                                         );
-                                                       },
-                                                       valueListenable: chapterName,
-                                                     ),
-                                                   ],),
-                                                 ),
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        Navigator.of(context).pushReplacementNamed(
-                                                            Routes.mangaInfo,
-                                                            arguments: newestMMdl.Datum(
-                                                                title: widget.chapterList.mangaTitle,
-                                                                mangaUrl: widget.chapterList.mangaUrl,
-                                                                imageUrl: widget.chapterList.mangaImage));
-                                                      },
-                                                      child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment.end,
-                                                        children: [
-                                                          Padding(
-                                                            padding: const EdgeInsets.all(8.0),
-                                                            child: Icon(Icons.menu,
-                                                                size: Sizes.dimen_24,
-                                                                color: context.isLightMode()
-                                                                    ? AppColor.vulcan
-                                                                    : Colors.white),
-                                                          ),
-                                                        ],
-                                                      ),
+                                                       );
+                                                     },
+                                                     valueListenable: chapterName,
+                                                   ),
+                                                 ],),
+                                               ),
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.of(context).pushReplacementNamed(
+                                                          Routes.mangaInfo,
+                                                          arguments: newestMMdl.Datum(
+                                                              title: widget.chapterList.mangaTitle,
+                                                              mangaUrl: widget.chapterList.mangaUrl,
+                                                              imageUrl: widget.chapterList.mangaImage));
+                                                    },
+                                                    child: Row(
+                                                      mainAxisAlignment: MainAxisAlignment.end,
+                                                      children: [
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: Icon(Icons.menu,
+                                                              size: Sizes.dimen_24,
+                                                              color: context.isLightMode()
+                                                                  ? AppColor.vulcan
+                                                                  : Colors.white),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  )
+                                                  ),
+                                                )
 
-                                                ],),
-                                              ),
-                                          ),
+                                              ],),
+                                            ),
                                         )
                                         : Container()),
                               ],

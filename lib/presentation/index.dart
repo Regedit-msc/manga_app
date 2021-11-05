@@ -236,6 +236,10 @@ class _IndexState extends State<Index> {
                           fontSize: Sizes.dimen_22.sp)),
                   visualDensity: VisualDensity.adaptivePlatformDensity,
                   textTheme: ThemeText.getTextLightTheme(),
+                  switchTheme: SwitchThemeData(
+                    thumbColor: MaterialStateProperty.all(AppColor.vulcan),
+                    trackColor: MaterialStateProperty.resolveWith(getColorLight),
+                  ),
                 ),
                 darkTheme: ThemeData(
                     switchTheme: SwitchThemeData(
