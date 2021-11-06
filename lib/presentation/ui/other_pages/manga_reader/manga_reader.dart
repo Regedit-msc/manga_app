@@ -91,14 +91,14 @@ class _MangaReaderState extends State<MangaReader> {
           setState(() {
             showAppBar = true;
           });
-
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
       } else {
         if(showAppBar){
           setState(() {
             showAppBar = false;
           });
-
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
         }
       }
     }
@@ -111,13 +111,14 @@ class _MangaReaderState extends State<MangaReader> {
         setState(() {
           showAppBar = true;
         });
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       });
       Future.delayed(Duration(seconds: 2), () {
         if (!mounted) return;
         setState(() {
           showAppBar = false;
         });
-
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
       });
     }
   }
