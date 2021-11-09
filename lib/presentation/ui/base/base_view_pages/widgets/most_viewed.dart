@@ -170,8 +170,14 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                         clipBehavior: Clip.hardEdge,
                                         children: [
                                           Text(
-                                            newestManga.data[index].title,
+                                            newestManga.data[index].title.trim(),
+                                            maxLines: 1,
+                                            textAlign: TextAlign.start,
                                             overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: Sizes.dimen_14.sp,
+                                                fontWeight: FontWeight.w700
+                                            ),
                                           ),
                                         ]),
                                   )

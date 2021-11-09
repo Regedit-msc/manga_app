@@ -13,6 +13,8 @@ import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
+import 'package:webcomic/data/services/dialog/dialogs.dart';
+import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_home_widget.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_tabular.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_genre_card.dart';
@@ -68,7 +70,10 @@ class _HomeViewState extends State<HomeView>
         ),
         builder: (QueryResult result, {refetch, fetchMore}) {
           if (result.hasException) {
-            return Text(result.exception.toString());
+            WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+              getItInstance<DialogServiceImpl>().NoNetWorkDialog(refetch!());
+            });
+            return NoAnimationLoading();
           }
 
           if (result.isLoading) {
@@ -93,7 +98,7 @@ class _HomeViewState extends State<HomeView>
                   children: [
                     Container(
                       width: ScreenUtil.screenWidth,
-                      height: Sizes.dimen_300,
+                      height: Sizes.dimen_200,
                       child: Stack(
                         children: [
                           BlocBuilder<SettingsCubit, SettingsState>(

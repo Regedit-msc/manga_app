@@ -167,9 +167,11 @@ class CardItem extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(Sizes.dimen_10.sp),
               child: CachedNetworkImage(
+                width:Sizes.dimen_90.w,
+                height:Sizes.dimen_50.h,
                 fadeInDuration: const Duration(microseconds: 100),
                 imageUrl: imageUrl,
-                fit: BoxFit.cover,
+                fit: BoxFit.fill,
                 placeholder: (ctx, string) {
                   return NoAnimationLoading();
                 },
