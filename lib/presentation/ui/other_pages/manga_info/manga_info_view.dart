@@ -863,7 +863,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                             widget.mangaDetails
                                                                     .imageUrl ??
                                                                 ''),
-                                                    fit: BoxFit.fill)),
+                                                    fit: BoxFit.cover)),
                                           ),
                                         ),
                                         title: Padding(
