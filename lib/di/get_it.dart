@@ -14,6 +14,7 @@ import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/api/unsplash_api.dart';
 import 'package:webcomic/data/services/database/db.dart';
 import 'package:webcomic/data/services/deep_link/deep_link.service.dart';
+import 'package:webcomic/data/services/dialog/dialogs.dart';
 import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/data/services/settings/settings_service.dart';
@@ -66,6 +67,8 @@ Future init() async {
       SettingsServiceImpl(getItInstance()));
   getItInstance
       .registerSingleton<ThemeController>(ThemeController(getItInstance()));
+  getItInstance
+      .registerSingleton<DialogServiceImpl>(DialogServiceImpl());
   getItInstance.registerLazySingleton<DynamicLinkServiceImpl>(
       () => DynamicLinkServiceImpl(getItInstance(), getItInstance()));
   getItInstance.registerLazySingleton<UnsplashApiServiceImpl>(

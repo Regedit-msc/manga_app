@@ -153,8 +153,14 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                                         clipBehavior: Clip.hardEdge,
                                         children: [
                                           Text(
-                                            newestManga.data[index].mangaTitle,
+                                            newestManga.data[index].mangaTitle.trim(),
+                                            maxLines: 1,
+                                            textAlign: TextAlign.start,
                                             overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: Sizes.dimen_14.sp,
+                                                fontWeight: FontWeight.w700
+                                            ),
                                           ),
                                         ]),
                                   )

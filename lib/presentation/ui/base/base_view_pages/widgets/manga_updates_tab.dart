@@ -78,7 +78,7 @@ class _MangaUpdatesTabViewState extends State<MangaUpdatesTabView> {
                       children: [
                         Expanded(
                           child: GridView.count(
-                            childAspectRatio: constraints.biggest.aspectRatio,
+                            childAspectRatio: 3/4,
                             shrinkWrap: true,
                             crossAxisCount: 3,
                             physics: BouncingScrollPhysics(),
@@ -158,20 +158,25 @@ class CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: Sizes.dimen_100.h,
+     // width: double.infinity,
+     // height: Sizes.dimen_100.h,
       child: Column(
         children: [
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(Sizes.dimen_10.sp),
-              child: CachedNetworkImage(
-                fadeInDuration: const Duration(microseconds: 100),
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (ctx, string) {
-                  return NoAnimationLoading();
-                },
+              child: FittedBox(
+                fit: BoxFit.fill,
+                child: CachedNetworkImage(
+                  width:Sizes.dimen_90.w,
+                  height:Sizes.dimen_50.h,
+                  fadeInDuration: const Duration(microseconds: 100),
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (ctx, string) {
+                    return NoAnimationLoading();
+                  },
+                ),
               ),
             ),
           ),

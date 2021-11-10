@@ -299,7 +299,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                               decoration: BoxDecoration(
                                                   borderRadius:
                                                       BorderRadius.circular(
-                                                          Sizes.dimen_20.sp),
+                                                          Sizes.dimen_10.sp),
                                                   color: Colors.white),
                                               child: Padding(
                                                 padding:
@@ -319,7 +319,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                               decoration: BoxDecoration(
                                                   borderRadius:
                                                       BorderRadius.circular(
-                                                          Sizes.dimen_20.sp),
+                                                          Sizes.dimen_10.sp),
                                                   color: Colors.white),
                                               child: Padding(
                                                 padding:
@@ -539,7 +539,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                           imageUrl:
                                               widget.mangaDetails.imageUrl ??
                                                   '',
-                                          fit: BoxFit.cover,
+                                          fit: BoxFit.fitWidth,
+                                          color: Colors.black.withOpacity(0.7),
                                           colorBlendMode: BlendMode.darken),
                                     ),
                                   ],
@@ -547,26 +548,26 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                 constraints.biggest.height >=
                                         ScreenUtil.screenHeight / 3 -
                                             kToolbarHeight
-                                    ? Positioned(
-                                        top: Sizes.dimen_32.h,
-                                        left: Sizes.dimen_14.w,
-                                        child: Container(
-                                          width: ScreenUtil.screenWidth / 2,
-                                          child: Wrap(
-                                            children: [
-                                              Text(
-                                                widget.mangaDetails.title ?? "",
-                                                style: ThemeText.whiteBodyText2
-                                                    ?.copyWith(
-                                                        fontSize:
-                                                            Sizes.dimen_20.sp,
-                                                        fontWeight:
-                                                            FontWeight.w900),
-                                              ),
-                                            ],
-                                          ),
+                                    ? Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Container(
+                                        padding: EdgeInsets.only(left: Sizes.dimen_14.w,),
+                                        width: ScreenUtil.screenWidth / 2,
+                                        child: Wrap(
+                                          children: [
+                                            Text(
+                                              widget.mangaDetails.title ?? "",
+                                              style: ThemeText.whiteBodyText2
+                                                  ?.copyWith(
+                                                      fontSize:
+                                                          Sizes.dimen_20.sp,
+                                                      fontWeight:
+                                                          FontWeight.w900),
+                                            ),
+                                          ],
                                         ),
-                                      )
+                                      ),
+                                    )
                                     : Container(),
                                 // constraints.biggest.height >=
                                 //         ScreenUtil.screenHeight / 3 -
@@ -629,6 +630,10 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                   ),
                                   Text(
                                     mangaInfo.data.summary.trim(),
+                                    textAlign: TextAlign.justify,
+                                    style: TextStyle(
+
+                                    ),
                                   ),
                                   SizedBox(
                                     height: Sizes.dimen_6.h,
@@ -792,7 +797,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
 
                                         },
                                         subtitle: Padding(
-                                          padding: const EdgeInsets.all(8.0),
+                                          padding: const EdgeInsets.fromLTRB(0,16,0,0),
                                           child: Text(
                                             mangaInfo!.data.chapterList[index]
                                                 .dateUploaded,
@@ -805,10 +810,11 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                         ),
                                         leading: ClipRRect(
                                           borderRadius:
-                                              BorderRadius.circular(2.0),
+                                              BorderRadius.circular(4.0),
                                           child: Container(
                                             // padding: EdgeInsets.all(8),
-                                            width: Sizes.dimen_100.w,
+                                            height:Sizes.dimen_100.h,
+                                            width: Sizes.dimen_110.w,
                                             decoration: BoxDecoration(
                                                 image: DecorationImage(
                                                     image:
@@ -854,7 +860,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                           child: GridView.count(
                             crossAxisCount: 2,
                             crossAxisSpacing: 4.0,
-                            mainAxisSpacing: 8.0,
+                            mainAxisSpacing: 4.0,
                             children: List.generate(
                                 mangaInfo!.data.recommendations.length,
                                 (index) {
@@ -878,7 +884,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                       padding: const EdgeInsets.all(8.0),
                                       child: Container(
                                         width: double.infinity,
-                                        height: Sizes.dimen_60.h,
+                                        height: Sizes.dimen_100.h,
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(
                                               Sizes.dimen_10.sp),
@@ -894,7 +900,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                               decoration: BoxDecoration(
                                                 image: DecorationImage(
                                                   image: imageProvider,
-                                                  fit: BoxFit.cover,
+                                                  fit: BoxFit.fill,
                                                 ),
                                               ),
                                             ),
@@ -910,10 +916,19 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                     SizedBox(
                                       height: Sizes.dimen_4.h,
                                     ),
-                                    Text(
-                                      mangaInfo!
-                                          .data.recommendations[index].title,
-                                      overflow: TextOverflow.ellipsis,
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: Text(
+                                        mangaInfo!
+                                            .data.recommendations[index].title.trim(),
+                                        maxLines: 1,
+                                        textAlign: TextAlign.start,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize: Sizes.dimen_14.sp,
+                                            fontWeight: FontWeight.w700
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),

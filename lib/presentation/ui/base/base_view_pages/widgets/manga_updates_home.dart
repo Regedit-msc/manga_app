@@ -58,7 +58,7 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: EdgeInsets.fromLTRB(8,4,4,4),
                         child: Text(
                           "UPDATES",
                           style: TextStyle(
@@ -67,7 +67,7 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: EdgeInsets.fromLTRB(4,4,8,4),
                         child: Icon(
                           Icons.arrow_forward_ios,
                           size: Sizes.dimen_16.sp,
@@ -109,7 +109,7 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                                       children: [
                                         Container(
                                           width: double.infinity,
-                                          height: Sizes.dimen_120.h,
+                                          height:  Sizes.dimen_200,
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
                                                 Sizes.dimen_8),
@@ -171,8 +171,14 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                                         clipBehavior: Clip.hardEdge,
                                         children: [
                                           Text(
-                                            newestManga.data[index].title,
+                                            newestManga.data[index].title.trim(),
+                                            maxLines: 1,
+                                            textAlign: TextAlign.start,
                                             overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: Sizes.dimen_14.sp,
+                                              fontWeight: FontWeight.w700
+                                            ),
                                           ),
                                         ]),
                                   )
