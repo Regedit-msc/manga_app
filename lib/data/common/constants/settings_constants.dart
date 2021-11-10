@@ -1,5 +1,5 @@
 Map<String, dynamic> defaultSettingsMap = {
-  "preloadImages": true,
+  "preloadImages": false,
   "drawChapterColorsFromImage": false,
   "newMangaSliderDuration": 4,
   "biometrics": false,

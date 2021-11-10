@@ -47,7 +47,9 @@ class _MangaReaderState extends State<MangaReader> {
   Future preLoadImages(List<String> listOfUrls) async {
     await Future.wait(
         listOfUrls.map((image) => cacheImage(context, image)).toList());
-    isLoading.value = false;
+   if(mounted){
+     isLoading.value = false;
+   }
   }
 
   Future cacheImage(BuildContext context, String image) =>
@@ -73,14 +75,22 @@ class _MangaReaderState extends State<MangaReader> {
 
   @override
   void dispose() {
+    doCleanUp();
     chapterName.dispose();
     isLoading.dispose();
     controller.dispose();
     _scrollController.removeListener(scrollListener);
     _scrollController.dispose();
     print("Dispose");
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+
     super.dispose();
+  }
+
+  void doCleanUp(){
+   Future.delayed(Duration(milliseconds: 500), (){
+     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+   });
   }
 
 
@@ -228,6 +238,7 @@ class _MangaReaderState extends State<MangaReader> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       body: Query(
           options: QueryOptions(
             document: parseString(MANGA_READER),

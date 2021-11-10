@@ -41,7 +41,6 @@ import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
-import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/loading.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
@@ -114,6 +113,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
     // ));
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     return Scaffold(
+      extendBodyBehindAppBar: true,
       body: Query(
           options: QueryOptions(
             document: parseString(GET_MANGA_INFO),
@@ -180,6 +180,12 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                               )),
                             ],
                           ),
+                          systemOverlayStyle: SystemUiOverlayStyle.light
+                              .copyWith(
+                              statusBarIconBrightness:
+                              Brightness.dark,
+                              statusBarColor:
+                              Colors.transparent),
                           bottom: TabBar(
                             indicatorColor: AppColor.royalBlue,
                             unselectedLabelColor: Colors.grey,
@@ -783,54 +789,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                       .data
                                                       .chapterList[index]
                                                       .dateUploaded));
-                                          SystemChrome.setEnabledSystemUIMode(
-                                              SystemUiMode.edgeToEdge);
-                                          final themeMode = context
-                                              .read<ThemeCubit>()
-                                              .state
-                                              .themeMode;
-                                          if (themeMode == ThemeMode.dark) {
-                                            SystemChrome.setSystemUIOverlayStyle(
-                                                SystemUiOverlayStyle.dark
-                                                    .copyWith(
-                                                        statusBarIconBrightness:
-                                                            Brightness.light,
-                                                        statusBarColor:
-                                                            Colors.black));
-                                          } else if (themeMode ==
-                                              ThemeMode.light) {
-                                            SystemChrome.setSystemUIOverlayStyle(
-                                                SystemUiOverlayStyle.light
-                                                    .copyWith(
-                                                        statusBarIconBrightness:
-                                                            Brightness.dark,
-                                                        statusBarColor:
-                                                            Colors.white));
-                                          } else {
-                                            final brightness =
-                                                MediaQueryData.fromWindow(
-                                                        WidgetsBinding
-                                                            .instance!.window)
-                                                    .platformBrightness;
-                                            if (brightness ==
-                                                Brightness.light) {
-                                              SystemChrome.setSystemUIOverlayStyle(
-                                                  SystemUiOverlayStyle.light
-                                                      .copyWith(
-                                                          statusBarIconBrightness:
-                                                              Brightness.dark,
-                                                          statusBarColor:
-                                                              Colors.white));
-                                            } else {
-                                              SystemChrome.setSystemUIOverlayStyle(
-                                                  SystemUiOverlayStyle.dark
-                                                      .copyWith(
-                                                          statusBarIconBrightness:
-                                                              Brightness.light,
-                                                          statusBarColor:
-                                                              Colors.black));
-                                            }
-                                          }
+
                                         },
                                         subtitle: Padding(
                                           padding: const EdgeInsets.all(8.0),
