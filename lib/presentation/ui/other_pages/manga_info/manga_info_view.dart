@@ -41,6 +41,7 @@ import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/loading.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
@@ -105,13 +106,43 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
     return context.isLightMode() ? Colors.white : AppColor.vulcan;
   }
 
+  Brightness getBrightNess() {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final theme = context.read<ThemeCubit>().state.themeMode;
+    if (theme == ThemeMode.dark) {
+      return Brightness.light;
+    } else if (theme == ThemeMode.light) {
+      return Brightness.dark;
+    } else {
+      if (brightness == Brightness.light) {
+        return Brightness.dark;
+      } else {
+        return Brightness.light;
+      }
+    }
+  }
+
+  Color getOverlayColor (){
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final theme = context.read<ThemeCubit>().state.themeMode;
+    if (theme == ThemeMode.dark) {
+      return Colors.transparent;
+    } else if (theme == ThemeMode.light) {
+      return Colors.white;
+    } else {
+      if (brightness == Brightness.light) {
+        return Colors.white;
+      } else {
+        return Colors.transparent;
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     //   systemNavigationBarColor: Colors.black,
     //   statusBarColor: Colors.transparent,
     // ));
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Query(
@@ -183,9 +214,9 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                           systemOverlayStyle: SystemUiOverlayStyle.light
                               .copyWith(
                               statusBarIconBrightness:
-                              Brightness.dark,
+                             getBrightNess(),
                               statusBarColor:
-                              Colors.transparent),
+                              getOverlayColor()),
                           bottom: TabBar(
                             indicatorColor: AppColor.royalBlue,
                             unselectedLabelColor: Colors.grey,

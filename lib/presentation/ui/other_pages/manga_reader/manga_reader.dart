@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -101,14 +103,14 @@ class _MangaReaderState extends State<MangaReader> {
           setState(() {
             showAppBar = true;
           });
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
 
       } else {
         if(showAppBar){
           setState(() {
             showAppBar = false;
           });
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
         }
       }
     }
@@ -121,14 +123,12 @@ class _MangaReaderState extends State<MangaReader> {
         setState(() {
           showAppBar = true;
         });
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       });
       Future.delayed(Duration(seconds: 2), () {
         if (!mounted) return;
         setState(() {
           showAppBar = false;
         });
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
       });
     }
   }
@@ -238,6 +238,16 @@ class _MangaReaderState extends State<MangaReader> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        automaticallyImplyLeading: false,
+        systemOverlayStyle: SystemUiOverlayStyle.light
+            .copyWith(
+            statusBarIconBrightness:
+           null,
+            statusBarColor:
+            Colors.transparent),
+      ),
       extendBodyBehindAppBar: true,
       body: Query(
           options: QueryOptions(

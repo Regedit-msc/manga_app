@@ -8,7 +8,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
@@ -98,14 +97,14 @@ class _HomeViewState extends State<HomeView>
                   children: [
                     Container(
                       width: ScreenUtil.screenWidth,
-                      height: Sizes.dimen_200,
+                      height: Sizes.dimen_250,
                       child: Stack(
                         children: [
                           BlocBuilder<SettingsCubit, SettingsState>(
                               builder: (context, settingsBloc) {
                             return CarouselSlider.builder(
                               options: CarouselOptions(
-                                  height: Sizes.dimen_300,
+                                  height: Sizes.dimen_250,
                                   viewportFraction: 1.0,
                                   enlargeCenterPage: true,
                                   autoPlayCurve: Curves.ease,
