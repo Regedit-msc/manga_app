@@ -238,16 +238,6 @@ class _MangaReaderState extends State<MangaReader> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        automaticallyImplyLeading: false,
-        systemOverlayStyle: SystemUiOverlayStyle.light
-            .copyWith(
-            statusBarIconBrightness:
-           null,
-            statusBarColor:
-            Colors.transparent),
-      ),
       extendBodyBehindAppBar: true,
       body: Query(
           options: QueryOptions(

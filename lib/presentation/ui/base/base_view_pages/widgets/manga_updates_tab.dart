@@ -172,7 +172,10 @@ class CardItem extends StatelessWidget {
                   imageUrl: imageUrl,
                   fit: BoxFit.cover,
                   placeholder: (ctx, string) {
-                    return NoAnimationLoading();
+                    return Container(
+                        width: Sizes.dimen_40,
+                        height: Sizes.dimen_40,
+                        child: NoAnimationLoading());
                   },
                 ),
               ),

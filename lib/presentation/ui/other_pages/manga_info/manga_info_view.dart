@@ -915,7 +915,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                       padding: const EdgeInsets.all(8.0),
                                       child: Container(
                                         width: double.infinity,
-                                        height: Sizes.dimen_100.h,
+                                        height: Sizes.dimen_120,
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(
                                               Sizes.dimen_10.sp),
@@ -931,7 +931,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                               decoration: BoxDecoration(
                                                 image: DecorationImage(
                                                   image: imageProvider,
-                                                  fit: BoxFit.fill,
+                                                  fit: BoxFit.cover,
                                                 ),
                                               ),
                                             ),
