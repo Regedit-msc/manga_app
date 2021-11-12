@@ -243,7 +243,11 @@ class _HomeViewState extends State<HomeView>
                             ),
                           ),
                           MangaByGenreTabular(genre: "Shounen"),
-                          MangaByGenreHome(genre: "Fantasy")
+                          MangaByGenreHome(genre: "Fantasy"),
+                          MangaByGenreHome(genre: "Cooking"),
+                          MangaByGenreTabular(genre: "Manhwa"),
+                          MangaByGenreHome(genre: "Medical"),
+                          MangaByGenreHome(genre: "One Shot"),
                         ],
                       ),
                     )

@@ -5,13 +5,16 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webcomic/data/common/constants/collection_constants.dart';
+import 'package:webcomic/data/common/constants/privacy.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
@@ -122,7 +125,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
     }
   }
 
-  Color getOverlayColor (){
+  Color getOverlayColor() {
     final brightness = MediaQuery.of(context).platformBrightness;
     final theme = context.read<ThemeCubit>().state.themeMode;
     if (theme == ThemeMode.dark) {
@@ -137,6 +140,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -213,10 +217,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                           ),
                           systemOverlayStyle: SystemUiOverlayStyle.light
                               .copyWith(
-                              statusBarIconBrightness:
-                             getBrightNess(),
-                              statusBarColor:
-                              getOverlayColor()),
+                                  statusBarIconBrightness: getBrightNess(),
+                                  statusBarColor: getOverlayColor()),
                           bottom: TabBar(
                             indicatorColor: AppColor.royalBlue,
                             unselectedLabelColor: Colors.grey,
@@ -396,131 +398,223 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 10.0),
-                                              child: Center(
-                                                child: ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    primary: context
-                                                            .isLightMode()
-                                                        ? AppColor.vulcan
-                                                        : Colors
-                                                            .white, // background
-                                                    onPrimary: context
-                                                            .isLightMode()
-                                                        ? Colors.white
-                                                        : Colors
-                                                            .black, // foreground
-                                                  ),
-                                                  onPressed: () async {
-                                                    GoogleSignInAccount?
-                                                        googleSignInAccount =
-                                                        await getItInstance<
-                                                                GoogleSignIn>()
-                                                            .signIn();
-                                                    GoogleSignInAuthentication
-                                                        googleSignInAuthentication =
-                                                        await googleSignInAccount!
-                                                            .authentication;
-                                                    AuthCredential credential =
-                                                        GoogleAuthProvider
-                                                            .credential(
-                                                      accessToken:
-                                                          googleSignInAuthentication
-                                                              .accessToken,
-                                                      idToken:
-                                                          googleSignInAuthentication
-                                                              .idToken,
-                                                    );
-                                                    UserCredential authResult =
-                                                        await getItInstance<
-                                                                FirebaseAuth>()
-                                                            .signInWithCredential(
-                                                                credential);
-                                                    Map<String, dynamic>
-                                                        userData = {
-                                                      "name": authResult
-                                                          .user!.displayName,
-                                                      "email": authResult
-                                                          .user!.email,
-                                                      "profilePicture":
-                                                          authResult
-                                                              .user!.photoURL,
-                                                      "pro": "false"
-                                                    };
-                                                    await getItInstance<
-                                                            SharedServiceImpl>()
-                                                        .saveUserDetails(
-                                                            jsonEncode(
-                                                                userData));
-                                                    getItInstance<
-                                                            SnackbarServiceImpl>()
-                                                        .showSnack(context,
-                                                            "Sign up successful. A new collection tab has been unlocked. Check it out!");
-                                                    Navigator.pop(context);
-                                                    print(
-                                                        authResult.toString());
-                                                    context
-                                                        .read<
-                                                            ShowCollectionCubit>()
-                                                        .setShowCollection(
-                                                            true);
-                                                    context
-                                                        .read<
-                                                            UserFromGoogleCubit>()
-                                                        .setUser(UserFromGoogle
-                                                            .fromMap(userData));
-                                                    firestore.FirebaseFirestore
-                                                        firesStoreInstance =
-                                                        getItInstance<
-                                                            firestore
-                                                                .FirebaseFirestore>();
-                                                    await firesStoreInstance
-                                                        .collection(
-                                                            CollectionConsts
-                                                                .users)
-                                                        .doc(authResult
-                                                            .user!.uid)
-                                                        .set({
-                                                      "details":
-                                                          jsonEncode(userData)
-                                                    });
-                                                    await getItInstance<
-                                                            SharedServiceImpl>()
-                                                        .setFirestoreUserId(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      primary: context
+                                                              .isLightMode()
+                                                          ? AppColor.vulcan
+                                                          : Colors
+                                                              .white, // background
+                                                      onPrimary: context
+                                                              .isLightMode()
+                                                          ? Colors.white
+                                                          : Colors
+                                                              .black, // foreground
+                                                    ),
+                                                    onPressed: () async {
+                                                      GoogleSignInAccount?
+                                                          googleSignInAccount =
+                                                          await getItInstance<
+                                                                  GoogleSignIn>()
+                                                              .signIn();
+                                                      GoogleSignInAuthentication
+                                                          googleSignInAuthentication =
+                                                          await googleSignInAccount!
+                                                              .authentication;
+                                                      AuthCredential
+                                                          credential =
+                                                          GoogleAuthProvider
+                                                              .credential(
+                                                        accessToken:
+                                                            googleSignInAuthentication
+                                                                .accessToken,
+                                                        idToken:
+                                                            googleSignInAuthentication
+                                                                .idToken,
+                                                      );
+                                                      UserCredential
+                                                          authResult =
+                                                          await getItInstance<
+                                                                  FirebaseAuth>()
+                                                              .signInWithCredential(
+                                                                  credential);
+                                                      Map<String, dynamic>
+                                                          userData = {
+                                                        "name": authResult
+                                                            .user!.displayName,
+                                                        "email": authResult
+                                                            .user!.email,
+                                                        "profilePicture":
                                                             authResult
-                                                                .user!.uid);
-                                                  },
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Text(
-                                                          "Sign Up with Google to continue",
-                                                          style: TextStyle(
-                                                              fontSize: Sizes
-                                                                  .dimen_18
-                                                                  .sp)),
-                                                      SizedBox(
-                                                        width: Sizes.dimen_10.w,
-                                                      ),
-                                                      Container(
-                                                        width: Sizes.dimen_50.w,
-                                                        height:
-                                                            Sizes.dimen_50.h,
-                                                        decoration: BoxDecoration(
-                                                            shape:
-                                                                BoxShape.circle,
-                                                            image: DecorationImage(
-                                                                image: CachedNetworkImageProvider(
-                                                                    "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png"))),
-                                                      )
-                                                    ],
+                                                                .user!.photoURL,
+                                                        "pro": "false"
+                                                      };
+                                                      await getItInstance<
+                                                              SharedServiceImpl>()
+                                                          .saveUserDetails(
+                                                              jsonEncode(
+                                                                  userData));
+                                                      getItInstance<
+                                                              SnackbarServiceImpl>()
+                                                          .showSnack(context,
+                                                              "Sign up successful. A new collection tab has been unlocked. Check it out!");
+                                                      Navigator.pop(context);
+                                                      print(authResult
+                                                          .toString());
+                                                      context
+                                                          .read<
+                                                              ShowCollectionCubit>()
+                                                          .setShowCollection(
+                                                              true);
+                                                      context
+                                                          .read<
+                                                              UserFromGoogleCubit>()
+                                                          .setUser(UserFromGoogle
+                                                              .fromMap(
+                                                                  userData));
+                                                      firestore
+                                                              .FirebaseFirestore
+                                                          firesStoreInstance =
+                                                          getItInstance<
+                                                              firestore
+                                                                  .FirebaseFirestore>();
+                                                      await firesStoreInstance
+                                                          .collection(
+                                                              CollectionConsts
+                                                                  .users)
+                                                          .doc(authResult
+                                                              .user!.uid)
+                                                          .set({
+                                                        "details":
+                                                            jsonEncode(userData)
+                                                      });
+                                                      await getItInstance<
+                                                              SharedServiceImpl>()
+                                                          .setFirestoreUserId(
+                                                              authResult
+                                                                  .user!.uid);
+                                                    },
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Text(
+                                                            "Sign Up with Google to continue",
+                                                            style: TextStyle(
+                                                                fontSize: Sizes
+                                                                    .dimen_18
+                                                                    .sp)),
+                                                        SizedBox(
+                                                          width:
+                                                              Sizes.dimen_10.w,
+                                                        ),
+                                                        Container(
+                                                          width:
+                                                              Sizes.dimen_50.w,
+                                                          height:
+                                                              Sizes.dimen_50.h,
+                                                          decoration: BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              image: DecorationImage(
+                                                                  image: CachedNetworkImageProvider(
+                                                                      "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png"))),
+                                                        )
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
+                                                  SizedBox(
+                                                    height: Sizes.dimen_30,
+                                                  ),
+                                                  RichText(
+                                                    text: TextSpan(children: [
+                                                      TextSpan(
+                                                          text:
+                                                              "By continuing you agree to the ",
+                                                          style: TextStyle(
+                                                              color: context
+                                                                      .isLightMode()
+                                                                  ? Colors.black
+                                                                  : Colors
+                                                                      .white)),
+                                                      TextSpan(
+                                                          text:
+                                                              "terms and conditions ",
+                                                          recognizer:
+                                                              TapGestureRecognizer()
+                                                                ..onTap =
+                                                                    () async {
+                                                                  String url =
+                                                                      AppPolicies
+                                                                          .TERMS_LINK;
+                                                                  if (await canLaunch(
+                                                                      url)) {
+                                                                    await launch(
+                                                                        url);
+                                                                  } else {
+                                                                    print(
+                                                                        "Cannot launch");
+                                                                  }
+                                                                },
+                                                          mouseCursor:
+                                                              SystemMouseCursors
+                                                                  .precise,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: AppColor
+                                                                  .violet)),
+                                                      TextSpan(
+                                                          text:
+                                                              "and acknowledge that you have read the ",
+                                                          style: TextStyle(
+                                                              color: context
+                                                                      .isLightMode()
+                                                                  ? Colors.black
+                                                                  : Colors
+                                                                      .white)),
+                                                      TextSpan(
+                                                          text:
+                                                              "privacy policy.",
+                                                          recognizer:
+                                                              TapGestureRecognizer()
+                                                                ..onTap =
+                                                                    () async {
+                                                                  print("Tap");
+                                                                  String url =
+                                                                      AppPolicies
+                                                                          .PRIVACY_LINK;
+                                                                  if (await canLaunch(
+                                                                      url)) {
+                                                                    await launch(
+                                                                        url);
+                                                                  } else {
+                                                                    print(
+                                                                        "Cannot launch");
+                                                                  }
+                                                                },
+                                                          mouseCursor:
+                                                              SystemMouseCursors
+                                                                  .precise,
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: AppColor
+                                                                  .violet)),
+                                                    ]),
+                                                  )
+                                                ],
                                               ),
                                             );
                                           });
@@ -580,25 +674,27 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                         ScreenUtil.screenHeight / 3 -
                                             kToolbarHeight
                                     ? Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Container(
-                                        padding: EdgeInsets.only(left: Sizes.dimen_14.w,),
-                                        width: ScreenUtil.screenWidth / 2,
-                                        child: Wrap(
-                                          children: [
-                                            Text(
-                                              widget.mangaDetails.title ?? "",
-                                              style: ThemeText.whiteBodyText2
-                                                  ?.copyWith(
-                                                      fontSize:
-                                                          Sizes.dimen_20.sp,
-                                                      fontWeight:
-                                                          FontWeight.w900),
-                                            ),
-                                          ],
+                                        alignment: Alignment.centerLeft,
+                                        child: Container(
+                                          padding: EdgeInsets.only(
+                                            left: Sizes.dimen_14.w,
+                                          ),
+                                          width: ScreenUtil.screenWidth / 2,
+                                          child: Wrap(
+                                            children: [
+                                              Text(
+                                                widget.mangaDetails.title ?? "",
+                                                style: ThemeText.whiteBodyText2
+                                                    ?.copyWith(
+                                                        fontSize:
+                                                            Sizes.dimen_20.sp,
+                                                        fontWeight:
+                                                            FontWeight.w900),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    )
+                                      )
                                     : Container(),
                                 // constraints.biggest.height >=
                                 //         ScreenUtil.screenHeight / 3 -
@@ -662,9 +758,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                   Text(
                                     mangaInfo.data.summary.trim(),
                                     textAlign: TextAlign.justify,
-                                    style: TextStyle(
-
-                                    ),
+                                    style: TextStyle(),
                                   ),
                                   SizedBox(
                                     height: Sizes.dimen_6.h,
@@ -689,6 +783,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                           return Container(
                             // color: getTileDefaultColor(settingsBloc.settings.drawChapterColorsFromImage, context),
                             child: ListView.builder(
+                              padding: EdgeInsets.all(0.0),
                                 itemCount: result.isLoading
                                     ? 1
                                     : mangaInfo != null
@@ -722,6 +817,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                   context)
                                               : Colors.transparent),
                                       child: ListTile(
+                                        contentPadding: EdgeInsets.all(0.0),
                                         isThreeLine: true,
                                         onTap: () async {
                                           final DatabaseHelper dbInstance =
@@ -825,10 +921,10 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                       .data
                                                       .chapterList[index]
                                                       .dateUploaded));
-
                                         },
                                         subtitle: Padding(
-                                          padding: const EdgeInsets.fromLTRB(0,16,0,0),
+                                          padding: const EdgeInsets.fromLTRB(
+                                              0, 16, 0, 0),
                                           child: Text(
                                             mangaInfo!.data.chapterList[index]
                                                 .dateUploaded,
@@ -844,7 +940,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                               BorderRadius.circular(4.0),
                                           child: Container(
                                             // padding: EdgeInsets.all(8),
-                                            height:Sizes.dimen_100.h,
+                                            height: Sizes.dimen_100.h,
                                             width: Sizes.dimen_110.w,
                                             decoration: BoxDecoration(
                                                 image: DecorationImage(
@@ -918,7 +1014,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                         height: Sizes.dimen_120,
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(
-                                              Sizes.dimen_10.sp),
+                                              Sizes.dimen_4),
                                           child: CachedNetworkImage(
                                             imageUrl: mangaInfo!
                                                     .data
@@ -951,14 +1047,14 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                       padding: const EdgeInsets.only(left: 8.0),
                                       child: Text(
                                         mangaInfo!
-                                            .data.recommendations[index].title.trim(),
+                                            .data.recommendations[index].title
+                                            .trim(),
                                         maxLines: 1,
                                         textAlign: TextAlign.start,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                             fontSize: Sizes.dimen_14.sp,
-                                            fontWeight: FontWeight.w700
-                                        ),
+                                            fontWeight: FontWeight.w700),
                                       ),
                                     ),
                                   ],

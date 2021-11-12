@@ -65,25 +65,16 @@ class _LoadingState extends State<Loading> with SingleTickerProviderStateMixin {
               Align(
                 alignment: Alignment.center,
                 child: callSvg(
-                    context.isLightMode()
-                        ? "assets/logo_light.svg"
-                        : 'assets/logo_light.svg',
-                    color: context.isLightMode()
-                        ? AppColor.violet
-                        : Colors.white,
-                    width: Sizes.dimen_60.w,
-                    height: Sizes.dimen_40.h),
+                  "assets/tcomic.svg",
+                  color: context.isLightMode() ? AppColor.violet : Colors.white,
+                ),
               ),
               Align(
                 alignment: Alignment.center,
-                child: callSvg(
-                    context.isLightMode()
-                        ? "assets/logo_light.svg"
-                        : 'assets/logo_light.svg',
+                child: callSvg("assets/tcomic.svg",
                     color: context.isLightMode()
                         ? AppColor.vulcan
                         : AppColor.violet,
-                    width: Sizes.dimen_60.w,
                     height: _animation.value),
               ),
             ],

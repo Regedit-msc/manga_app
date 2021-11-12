@@ -111,7 +111,7 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                           height: Sizes.dimen_200,
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
-                                                Sizes.dimen_8),
+                                                Sizes.dimen_4),
                                             child: CachedNetworkImage(
                                                 fit: BoxFit.cover,
                                                 placeholder: (ctx, string) {
@@ -129,7 +129,7 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Container(
-                                                    width: Sizes.dimen_120.w,
+                                                    width: Sizes.dimen_100,
                                                     decoration: BoxDecoration(
                                                       border: Border.all(
                                                           color: Colors.white),
@@ -148,6 +148,7 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                                           style: TextStyle(
                                                               color:
                                                                   Colors.white,
+                                                              fontSize: 12.0,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold),
@@ -170,14 +171,14 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                         clipBehavior: Clip.hardEdge,
                                         children: [
                                           Text(
-                                            newestManga.data[index].title.trim(),
+                                            newestManga.data[index].title
+                                                .trim(),
                                             maxLines: 1,
                                             textAlign: TextAlign.start,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                                 fontSize: Sizes.dimen_14.sp,
-                                                fontWeight: FontWeight.w700
-                                            ),
+                                                fontWeight: FontWeight.w700),
                                           ),
                                         ]),
                                   )

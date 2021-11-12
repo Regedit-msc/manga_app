@@ -155,7 +155,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                               ),
                                               ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(10.0),
+                                                    BorderRadius.circular(
+                                                        Sizes.dimen_4),
                                                 child: Padding(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -236,7 +237,10 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                             .take(5)
                                                             .toList()[idx]
                                                             .author
-                                                            .split(':')[1])
+                                                            .split(':')[1],
+                                                      style: TextStyle(
+                                                          color: Colors.grey),
+                                                    )
                                                   ],
                                                 ),
                                               )
@@ -308,7 +312,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                               ),
                                               ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(10.0),
+                                                    BorderRadius.circular(
+                                                        Sizes.dimen_4),
                                                 child: Padding(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -371,29 +376,33 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                         ),
                                                       ],
                                                     ),
-                                                    Text(newestManga.data
-                                                                .skip(5)
-                                                                .take(5)
-                                                                .toList()[idx]
-                                                                .author
-                                                                .split(':')[1]
-                                                                .length >
-                                                            20
-                                                        ? newestManga.data
-                                                                .skip(5)
-                                                                .take(5)
-                                                                .toList()[idx]
-                                                                .author
-                                                                .split(':')[1]
-                                                                .substring(
-                                                                    0, 20) +
-                                                            "..."
-                                                        : newestManga.data
-                                                            .skip(5)
-                                                            .take(5)
-                                                            .toList()[idx]
-                                                            .author
-                                                            .split(':')[1])
+                                                    Text(
+                                                      newestManga.data
+                                                                  .skip(5)
+                                                                  .take(5)
+                                                                  .toList()[idx]
+                                                                  .author
+                                                                  .split(':')[1]
+                                                                  .length >
+                                                              20
+                                                          ? newestManga.data
+                                                                  .skip(5)
+                                                                  .take(5)
+                                                                  .toList()[idx]
+                                                                  .author
+                                                                  .split(':')[1]
+                                                                  .substring(
+                                                                      0, 20) +
+                                                              "..."
+                                                          : newestManga.data
+                                                              .skip(5)
+                                                              .take(5)
+                                                              .toList()[idx]
+                                                              .author
+                                                              .split(':')[1],
+                                                      style: TextStyle(
+                                                          color: Colors.grey),
+                                                    )
                                                   ],
                                                 ),
                                               )
@@ -465,7 +474,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                               ),
                                               ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(10.0),
+                                                    BorderRadius.circular(
+                                                        Sizes.dimen_4),
                                                 child: Padding(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -528,29 +538,33 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                         ),
                                                       ],
                                                     ),
-                                                    Text(newestManga.data
-                                                                .skip(10)
-                                                                .take(5)
-                                                                .toList()[idx]
-                                                                .author
-                                                                .split(':')[1]
-                                                                .length >
-                                                            20
-                                                        ? newestManga.data
-                                                                .skip(10)
-                                                                .take(5)
-                                                                .toList()[idx]
-                                                                .author
-                                                                .split(':')[1]
-                                                                .substring(
-                                                                    0, 20) +
-                                                            "..."
-                                                        : newestManga.data
-                                                            .skip(10)
-                                                            .take(5)
-                                                            .toList()[idx]
-                                                            .author
-                                                            .split(':')[1])
+                                                    Text(
+                                                      newestManga.data
+                                                                  .skip(10)
+                                                                  .take(5)
+                                                                  .toList()[idx]
+                                                                  .author
+                                                                  .split(':')[1]
+                                                                  .length >
+                                                              20
+                                                          ? newestManga.data
+                                                                  .skip(10)
+                                                                  .take(5)
+                                                                  .toList()[idx]
+                                                                  .author
+                                                                  .split(':')[1]
+                                                                  .substring(
+                                                                      0, 20) +
+                                                              "..."
+                                                          : newestManga.data
+                                                              .skip(10)
+                                                              .take(5)
+                                                              .toList()[idx]
+                                                              .author
+                                                              .split(':')[1],
+                                                      style: TextStyle(
+                                                          color: Colors.grey),
+                                                    )
                                                   ],
                                                 ),
                                               )
@@ -622,7 +636,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                               ),
                                               ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(10.0),
+                                                    BorderRadius.circular(
+                                                        Sizes.dimen_4),
                                                 child: Padding(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -685,29 +700,33 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                         ),
                                                       ],
                                                     ),
-                                                    Text(newestManga.data
-                                                                .skip(15)
-                                                                .take(5)
-                                                                .toList()[idx]
-                                                                .author
-                                                                .split(':')[1]
-                                                                .length >
-                                                            20
-                                                        ? newestManga.data
-                                                                .skip(15)
-                                                                .take(5)
-                                                                .toList()[idx]
-                                                                .author
-                                                                .split(':')[1]
-                                                                .substring(
-                                                                    0, 20) +
-                                                            "..."
-                                                        : newestManga.data
-                                                            .skip(15)
-                                                            .take(5)
-                                                            .toList()[idx]
-                                                            .author
-                                                            .split(':')[1])
+                                                    Text(
+                                                      newestManga.data
+                                                                  .skip(15)
+                                                                  .take(5)
+                                                                  .toList()[idx]
+                                                                  .author
+                                                                  .split(':')[1]
+                                                                  .length >
+                                                              20
+                                                          ? newestManga.data
+                                                                  .skip(15)
+                                                                  .take(5)
+                                                                  .toList()[idx]
+                                                                  .author
+                                                                  .split(':')[1]
+                                                                  .substring(
+                                                                      0, 20) +
+                                                              "..."
+                                                          : newestManga.data
+                                                              .skip(15)
+                                                              .take(5)
+                                                              .toList()[idx]
+                                                              .author
+                                                              .split(':')[1],
+                                                      style: TextStyle(
+                                                          color: Colors.grey),
+                                                    )
                                                   ],
                                                 ),
                                               )

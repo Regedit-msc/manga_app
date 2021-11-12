@@ -98,51 +98,25 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                                             .data[index].mangaImage));
                               },
                               child: Container(
-                                width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_250,
+                                width: Sizes.dimen_150,
+                                height: Sizes.dimen_200,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
-                                    child: Stack(
-                                      children: [
-                                        Container(
-                                          width: double.infinity,
-                                          height: Sizes.dimen_200,
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                                Sizes.dimen_8),
-                                            child: CachedNetworkImage(
+                                    child: Container(
+                                        width: double.infinity,
+                                        height: Sizes.dimen_200,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              Sizes.dimen_4),
+                                          child: CachedNetworkImage(
                                               fit: BoxFit.cover,
-                                              imageUrl: newestManga
-                                                  .data[index].mangaImage,
                                               placeholder: (ctx, string) {
                                                 return NoAnimationLoading();
                                               },
-                                            ),
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment: Alignment.bottomCenter,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(
-                                                      Sizes.dimen_10),
-                                                  topRight: Radius.circular(
-                                                      Sizes.dimen_10)),
-                                              color: Colors.transparent,
-                                            ),
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  Icons.analytics_outlined,
-                                                  color: Colors.white,
-                                                )),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                              imageUrl: newestManga
+                                                  .data[index].mangaImage),
+                                        )),
                                   ),
                                   SizedBox(
                                     height: Sizes.dimen_8.h,
@@ -153,15 +127,24 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                                         clipBehavior: Clip.hardEdge,
                                         children: [
                                           Text(
-                                            newestManga.data[index].mangaTitle.trim(),
+                                            newestManga.data[index].mangaTitle
+                                                .trim(),
                                             maxLines: 1,
                                             textAlign: TextAlign.start,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                                 fontSize: Sizes.dimen_14.sp,
-                                                fontWeight: FontWeight.w700
-                                            ),
+                                                fontWeight: FontWeight.w700),
                                           ),
+                                          Text(newestManga.data[index].stats
+                                                      .trim()
+                                                      .length >
+                                                  0
+                                              ? newestManga.data[index].stats
+                                                  .replaceAll("-eng-li", '')
+                                                  .replaceAll("Latest",
+                                                      "Latest Chapter")
+                                              : '')
                                         ]),
                                   )
                                 ]),

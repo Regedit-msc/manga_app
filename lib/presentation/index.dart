@@ -211,7 +211,7 @@ class _IndexState extends State<Index> {
                 navigatorKey:
                     getItInstance<NavigationServiceImpl>().navigationKey,
                 debugShowCheckedModeBanner: false,
-                title: 'Webcomic',
+                title: 'Tcomic',
                 themeMode: themeBloc.themeMode,
                 theme: ThemeData(
                   scaffoldBackgroundColor: Colors.white,
@@ -238,7 +238,8 @@ class _IndexState extends State<Index> {
                   textTheme: ThemeText.getTextLightTheme(),
                   switchTheme: SwitchThemeData(
                     thumbColor: MaterialStateProperty.all(AppColor.vulcan),
-                    trackColor: MaterialStateProperty.resolveWith(getColorLight),
+                    trackColor:
+                        MaterialStateProperty.resolveWith(getColorLight),
                   ),
                 ),
                 darkTheme: ThemeData(

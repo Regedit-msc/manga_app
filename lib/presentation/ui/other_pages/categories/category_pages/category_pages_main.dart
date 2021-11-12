@@ -165,7 +165,7 @@ class CardItem extends StatelessWidget {
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(Sizes.dimen_10.sp),
+              borderRadius: BorderRadius.circular(Sizes.dimen_4),
               child: FittedBox(
                 fit: BoxFit.cover,
                 child: CachedNetworkImage(

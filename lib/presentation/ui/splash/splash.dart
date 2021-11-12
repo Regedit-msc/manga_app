@@ -3,9 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
-import 'package:webcomic/data/common/constants/size_constants.dart';
-import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/google_models/user.dart';
 import 'package:webcomic/data/models/settings_model.dart';
@@ -61,11 +58,8 @@ class _SplashState extends State<Splash> {
         tween: Tween<double>(begin: 0.0, end: 1.0),
         child: Center(
           child: callSvg(
-              context.isLightMode()
-                  ? "assets/logo_light.svg"
-                  : 'assets/logo_light.svg',
-              width: Sizes.dimen_40.w,
-              height: Sizes.dimen_40.h),
+            "assets/tcomic.svg",
+          ),
         ),
       ),
     );

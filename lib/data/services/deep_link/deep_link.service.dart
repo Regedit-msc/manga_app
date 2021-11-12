@@ -68,7 +68,7 @@ class DynamicLinkServiceImpl extends DynamicLinksService {
         packageName: DeepLinkConstants.packageName,
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
-        title: isSubCollection ? title : 'Webcomic Link',
+        title: isSubCollection ? title : 'Tcomic Link',
         description: isSubCollection ? desc : "",
       ),
     );
