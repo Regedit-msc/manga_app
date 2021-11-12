@@ -783,7 +783,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                           return Container(
                             // color: getTileDefaultColor(settingsBloc.settings.drawChapterColorsFromImage, context),
                             child: ListView.builder(
-                              padding: EdgeInsets.all(0.0),
+                                padding: EdgeInsets.all(0.0),
                                 itemCount: result.isLoading
                                     ? 1
                                     : mangaInfo != null
@@ -817,7 +817,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                   context)
                                               : Colors.transparent),
                                       child: ListTile(
-                                        contentPadding: EdgeInsets.all(0.0),
+                                        contentPadding: EdgeInsets.only(
+                                            left: Sizes.dimen_4),
                                         isThreeLine: true,
                                         onTap: () async {
                                           final DatabaseHelper dbInstance =
