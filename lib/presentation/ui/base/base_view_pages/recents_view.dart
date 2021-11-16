@@ -19,6 +19,7 @@ import 'package:webcomic/data/services/database/db.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/cont_scale_animation.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
+import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/download_tab.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_updates_tab.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
@@ -491,11 +492,7 @@ class _RecentsViewState extends State<RecentsView>
             );
           }),
           MangaUpdatesTabView(),
-          Container(
-            child: Center(
-              child: Text("WORK IN PROGRESS"),
-            ),
-          ),
+          DownloadTab(),
           Container(
             child: Center(
               child: Text("WORK IN PROGRESS"),

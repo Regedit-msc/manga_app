@@ -1,12 +1,20 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webcomic/data/common/extensions/list_extension.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/manga_reader_model.dart';
 import 'package:webcomic/data/services/api/gql_api.dart';
+import 'package:webcomic/data/services/navigation/navigation_service.dart';
+import 'package:webcomic/data/services/prefs/prefs_service.dart';
+import 'package:webcomic/data/services/toast/toast_service.dart';
+
+import 'downloaded_cubit.dart';
 
 class OngoingDownloads {
   final String chapterName;
@@ -23,7 +31,7 @@ class OngoingDownloads {
       required this.mangaName,
       required this.chapterUrl,
       required this.chapterName,
-      this.status = DownloadTaskStatus.undefined,
+      this.status = DownloadTaskStatus.enqueued,
       this.progress = 0,
       this.imagesLength = 0});
   Map<String, dynamic> toMap() => {
@@ -85,7 +93,14 @@ class ToDownloadState {
 
 class ToDownloadCubit extends Cubit<ToDownloadState> {
   GQLRawApiServiceImpl gqlRawApiServiceImpl;
-  ToDownloadCubit({required this.gqlRawApiServiceImpl})
+  ToastServiceImpl toastServiceImpl;
+  SharedServiceImpl sharedServiceImpl;
+  NavigationServiceImpl navigationServiceImpl;
+  ToDownloadCubit(
+      {required this.gqlRawApiServiceImpl,
+      required this.sharedServiceImpl,
+      required this.toastServiceImpl,
+      required this.navigationServiceImpl})
       : super(ToDownloadState());
   void addAllChaptersToMangaListInQueue(
       {required List<ChapterList> chapters,
@@ -176,7 +191,7 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
   String generateDirName(
       String chapterName,
       String chapterUrl,
-      // mangaName-chapterNo-mangaUrl-chapterUrl
+      // mangaName-chapterNo
       String mangaName,
       String mangaUrl) {
     int chapterNo = int.parse(chapterName.replaceAll("-", " ").split(" ")[
@@ -186,7 +201,7 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
                 .indexWhere((element) => element == "chapter") +
             1]);
 
-    return "${mangaName.trim()}-$chapterNo-${mangaUrl.trim()}-${chapterUrl.trim()}";
+    return "${mangaName.trim()}-$chapterNo";
   }
 
   Future<void> requestDownload(
@@ -203,18 +218,18 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
     print(chapterDirName);
     print(imageName);
     final dir = await getApplicationDocumentsDirectory();
-    var _localPath = dir.path + chapterDirName;
+    var _localPath = dir.path + "/" + chapterDirName;
     final savedDir = Directory(_localPath);
     if (await savedDir.exists()) {
       String? taskid = await FlutterDownloader.enqueue(
         url: url,
-        fileName: imageName,
+        fileName: imageName + ".jpg",
         savedDir: _localPath,
         showNotification: false,
         openFileFromNotification: false,
       );
       print(taskid);
-      // mangaName-chapterNo-mangaUrl-chapterUrl
+      // mangaName-chapterNo
 
       emit(ToDownloadState(
           toDownloadMangaQueue: state.toDownloadMangaQueue,
@@ -234,7 +249,7 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
       await savedDir.create(recursive: true).then((value) async {
         String? taskid = await FlutterDownloader.enqueue(
           url: url,
-          fileName: imageName,
+          fileName: imageName + ".jpg",
           savedDir: _localPath,
           showNotification: false,
           openFileFromNotification: false,
@@ -279,7 +294,10 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
     }
   }
 
-  void startDownload({required String mangaUrl}) async {
+  void startDownload(
+      {required String mangaUrl,
+      required String imageUrl,
+      required String mangaName}) async {
     ToDownloadQueue queueForThisManga = state.toDownloadMangaQueue
         .firstWhere((element) => element.mangaUrl == mangaUrl);
     ToDownloadQueue newQueueForThisManga = ToDownloadQueue(
@@ -288,6 +306,38 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
         isDownloading: true,
         chaptersToDownload: [...queueForThisManga.chaptersToDownload]
             .unique((e) => e.chapterUrl));
+
+    String listOfDownloads = sharedServiceImpl.getDownloadedMangaDetails();
+    print(listOfDownloads.length.toString() + " List of downloads");
+    if (listOfDownloads != '') {
+      print(jsonDecode(listOfDownloads).runtimeType);
+
+      List<dynamic> details = jsonDecode(listOfDownloads);
+
+      List<DownloadedManga> downloadedManga =
+          details.map((e) => DownloadedManga.fromMap(e)).toList();
+      DownloadedManga mangaToAdd = DownloadedManga(
+          mangaUrl: mangaUrl,
+          imageUrl: imageUrl,
+          mangaName: mangaName,
+          dateDownloaded: DateTime.now().toString());
+      List<Map<String, dynamic>> newDetails = [...downloadedManga, mangaToAdd]
+          .unique((e) => e.mangaUrl)
+          .map((e) => e.toMap())
+          .toList();
+      await sharedServiceImpl.addDownloadedMangaDetails(jsonEncode(newDetails));
+    } else {
+      DownloadedManga mangaToAdd = DownloadedManga(
+          mangaUrl: mangaUrl,
+          imageUrl: imageUrl,
+          mangaName: mangaName,
+          dateDownloaded: DateTime.now().toString());
+      Map<String, dynamic> newManga = mangaToAdd.toMap();
+      List<Map<String, dynamic>> toEncode = List.from([newManga]);
+      String jsonL = jsonEncode(toEncode);
+      await sharedServiceImpl.addDownloadedMangaDetails(jsonL);
+    }
+
     List<ToDownloadQueue> queueWithoutCurrent = state.toDownloadMangaQueue
         .where((element) => element.mangaUrl != mangaUrl)
         .toList();
@@ -351,6 +401,7 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
         mangaUrl: mangaUrl,
         isRangeSelectorEnabled: !queueForThisManga.isRangeSelectorEnabled,
         chaptersToDownload: queueForThisManga.chaptersToDownload);
+
     emit(ToDownloadState(
       downloads: state.downloads,
       toDownloadMangaQueue:
@@ -454,5 +505,114 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
           ...queuesNotDownloading
         ].unique((e) => e.mangaUrl),
         downloads: state.downloads));
+  }
+
+  Future<void> pauseChapterDownload({required String chapterUrl}) async {
+    List<Map<String, dynamic>> currentlyBeingDownloaded = state.downloads;
+    List<Map<String, dynamic>> downloadStateForChapter =
+        currentlyBeingDownloaded
+            .where((element) => element["chapterUrl"] == chapterUrl)
+            .toList();
+    for (int i = 0; i < downloadStateForChapter.length; i++) {
+      if (downloadStateForChapter[i]["status"] == DownloadTaskStatus.running ||
+          downloadStateForChapter[i]["status"] == DownloadTaskStatus.running) {
+        print("Pausing $i");
+        await FlutterDownloader.pause(
+            taskId: downloadStateForChapter[i]["taskId"]);
+      }
+    }
+  }
+
+  void changeTaskID(String taskid, String newTaskID) {
+    List<Map<String, dynamic>> currentlyBeingDownloaded = state.downloads;
+    Map<String, dynamic> current = currentlyBeingDownloaded
+        .firstWhere((element) => element["taskId"] == taskid, orElse: () => {});
+    List<Map<String, dynamic>> withoutCurrent = currentlyBeingDownloaded
+        .where((element) => element["taskId"] != taskid)
+        .toList();
+    current['taskId'] = newTaskID;
+    this.setDownload([...withoutCurrent, current]);
+  }
+
+  Future<void> resumeChapterDownload({required String chapterUrl}) async {
+    List<Map<String, dynamic>> currentlyBeingDownloaded = state.downloads;
+    List<Map<String, dynamic>> downloadStateForChapter =
+        currentlyBeingDownloaded
+            .where((element) => element["chapterUrl"] == chapterUrl)
+            .toList();
+    for (int i = 0; i < downloadStateForChapter.length; i++) {
+      if (downloadStateForChapter[i]["status"] == DownloadTaskStatus.paused) {
+        String? newTaskId = await FlutterDownloader.resume(
+            taskId: downloadStateForChapter[i]["taskId"]);
+        if (newTaskId != null) {
+          changeTaskID(downloadStateForChapter[i]["taskId"], newTaskId!);
+        }
+      } else if (downloadStateForChapter[i]["status"] ==
+              DownloadTaskStatus.failed ||
+          downloadStateForChapter[i]["status"] == DownloadTaskStatus.canceled) {
+        String? newTaskId = await FlutterDownloader.retry(
+            taskId: downloadStateForChapter[i]["taskId"]);
+        if (newTaskId != null) {
+          changeTaskID(downloadStateForChapter[i]["taskId"], newTaskId!);
+        }
+      }
+    }
+  }
+
+  void removeDownloaded() {
+    List<Map<String, dynamic>> downloadList = List.from(state.downloads);
+    for (int i = 0; i < downloadList.length; i++) {
+      if (!this
+          .isMangaStillDownloading(mangaUrl: downloadList[i]["mangaUrl"])) {
+        ToDownloadQueue thisMangaQueue = state.toDownloadMangaQueue.firstWhere(
+            (element) => element.mangaUrl == downloadList[i]["mangaUrl"],
+            orElse: () => ToDownloadQueue(
+                  mangaUrl: downloadList[i]["mangaUrl"],
+                  mangaName: downloadList[i]["mangaName"],
+                ));
+        thisMangaQueue.isDownloading = false;
+        thisMangaQueue.chaptersToDownload = [];
+        List<ToDownloadQueue> withoutThisMangaQueue = state.toDownloadMangaQueue
+            .where((element) => element.mangaUrl != thisMangaQueue.mangaUrl)
+            .toList();
+        emit(
+          ToDownloadState(
+              toDownloadMangaQueue: [...withoutThisMangaQueue, thisMangaQueue]
+                  .unique((e) => e.mangaUrl),
+              downloads: [
+                ...downloadList
+                    .where((element) =>
+                        element["mangaUrl"] != downloadList[i]["mangaUrl"])
+                    .toList()
+              ]),
+        );
+        navigationServiceImpl.navigationKey.currentContext!
+            .read<DownloadedCubit>()
+            .refresh();
+        toastServiceImpl.showToast(
+            "Successfully downloaded chapters.", Toast.LENGTH_SHORT);
+      }
+    }
+  }
+
+  bool isMangaStillDownloading({required mangaUrl}) {
+    List<Map<String, dynamic>> downloadList = List.from(state.downloads);
+    List<Map<String, dynamic>> mangasForUrl = downloadList
+        .where((element) => element["mangaUrl"] == mangaUrl)
+        .toList();
+    if (mangasForUrl
+        .any((element) => element["status"] == DownloadTaskStatus.running)) {
+      return true;
+    } else if (mangasForUrl
+        .any((element) => element["status"] == DownloadTaskStatus.paused)) {
+      return true;
+    } else if (mangasForUrl
+        .any((element) => element["status"] == DownloadTaskStatus.enqueued)) {
+      return true;
+    } else if (mangasForUrl
+        .every((element) => element["status"] == DownloadTaskStatus.complete)) {
+      return false;
+    }
+    return false;
   }
 }

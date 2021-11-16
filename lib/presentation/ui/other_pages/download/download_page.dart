@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
@@ -110,10 +111,27 @@ class _DownloadViewState extends State<DownloadView> {
       print(downloadStateForChapter.length);
       int imagesLength = downloadStateForChapter[0]["imagesLength"] ?? 0;
       int progressTotal =  downloadStateForChapter.fold(0, (t, e) => t! + e["progress"] as int) ??0;
+      int status = getChapterDownloadStatus(downloadStateForChapter);
       print(progressTotal);
-      return[imagesLength, progressTotal];
+      return[imagesLength, progressTotal, status];
     }
-    return [0,0];
+    return [0,0, 0];
+  }
+  
+  int getChapterDownloadStatus( List<Map<String, dynamic>> state){
+    if(state.any((e) => e["status"] == DownloadTaskStatus.running)){
+      return 1;
+    }
+    if(state.any((e) => e["status"] == DownloadTaskStatus.paused)){
+      return 2;
+    }
+    if(state.every((e) => e["status"] == DownloadTaskStatus.enqueued)){
+      return 4;
+    }
+    if(state.every((e) => e["status"] == DownloadTaskStatus.complete)){
+      return 3;
+    }
+    return 0;
   }
 
   @override
@@ -491,7 +509,19 @@ class _DownloadViewState extends State<DownloadView> {
                                                 fit: BoxFit.cover,
                                               ),
                                             ),
-                                            trailing: buildProgressIndicator(totalProgress(toDownload,toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl )),
+                                            trailing: Container(
+                                              width: Sizes.dimen_50,
+                                              height: Sizes.dimen_50,
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                children: [
+                                                  PauseOrResume(progress:totalProgress(toDownload,toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl ), toDownload: toDownload,chapterUrl: toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl),
+                                                 SizedBox(width: Sizes.dimen_4,),
+                                                  BuildProgressIndicator(progress:totalProgress(toDownload,toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl ), toDownload: toDownload,chapterUrl: toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl),
+                                                ],
+                                              ),
+                                            ),
                                           ),
                                         );
                                       })
@@ -512,8 +542,16 @@ class _DownloadViewState extends State<DownloadView> {
                                         getItInstance<ToastServiceImpl>()
                                             .showToast("No chapters selected.",
                                                 Toast.LENGTH_SHORT);
-                                      } else {
-                                       context.read<ToDownloadCubit>().startDownload(mangaUrl: widget.chapterList.mangaDetails.mangaUrl?? '');
+                                      } else if(toDownload
+                                          .toDownloadMangaQueue[
+                                      getIndexOfManga()].isDownloading){
+                                        getItInstance<ToastServiceImpl>()
+                                            .showToast("Some chapters are still downloading.",
+                                            Toast.LENGTH_SHORT);
+                                      }
+
+                                      else {
+                                       context.read<ToDownloadCubit>().startDownload(mangaName: widget.chapterList.mangaDetails.title?? '',imageUrl: widget.chapterList.mangaDetails.imageUrl?? '',mangaUrl: widget.chapterList.mangaDetails.mangaUrl?? '');
                                       }
                                     },
                                     child: Container(
@@ -533,7 +571,9 @@ class _DownloadViewState extends State<DownloadView> {
                                                   .chaptersToDownload
                                                   .isEmpty
                                               ? "NO CHAPTER"
-                                              : "DOWNLOAD (${toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload.length})",
+                                              : toDownload
+                            .toDownloadMangaQueue[
+                        getIndexOfManga()].isDownloading? "DOWNLOADING (${toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload.length})" :"DOWNLOAD (${toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload.length})",
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: context.isLightMode()
@@ -570,26 +610,120 @@ class _DownloadViewState extends State<DownloadView> {
   }
 }
 
-Widget buildProgressIndicator(List<int> progress){
-  // 0  -> imagesLength
-  // 1 -> ProgressTotal
-  print("Progress ${progress}");
-  print(( progress[1]/(progress[0]*100) ).isFinite);
-  print(( progress[1]/(progress[0]*100) ).toString() + " Calculated");
-  return Container(
-    width: 30,
-    height: 30,
-    child: Stack(
-      alignment: Alignment.center,
-      children: [
-        Icon((  progress[1]/(progress[0]*100) ) == 1.0?Icons.download: Icons.access_time_rounded),
-        CircularProgressIndicator(
-          backgroundColor: Colors.transparent,
-          value: ( progress[1]/(progress[0]*100) ).isFinite? ( progress[1]/(progress[0]*100) ).floorToDouble(): 0,
-          valueColor: new AlwaysStoppedAnimation<Color>(AppColor.violet),
-          strokeWidth: 3,
-        ),
-      ],
-    ),
-  );
+
+
+class PauseOrResume extends StatefulWidget {
+  final ToDownloadState toDownload;
+
+  final String chapterUrl;
+  final List<int> progress;
+  const PauseOrResume({Key? key,required this.toDownload, required this.chapterUrl, required this.progress}) : super(key: key);
+
+  @override
+  _PauseOrResumeState createState() => _PauseOrResumeState();
 }
+
+class _PauseOrResumeState extends State<PauseOrResume> {
+  bool isRunning = true;
+  @override
+  void initState() {
+    super.initState();
+  }
+  void setPauseOrResume(){
+    List<Map<String, dynamic>> currentlyBeingDownloaded =
+        widget.toDownload.downloads;
+    List<Map<String, dynamic>>  downloadStateForChapter = currentlyBeingDownloaded
+        .where((element) => element["chapterUrl"] ==  widget.chapterUrl)
+        .toList();
+    if(downloadStateForChapter.any((element) => element["status"]== DownloadTaskStatus.running )){
+      setState(() {
+        isRunning= true;
+      });
+    } else {
+      setState(() {
+        isRunning= false;
+      });
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    if((  widget.progress[1]/( widget.progress[0]*100) ) != 1.0){
+      return  isRunning? GestureDetector(
+          onTap: () async {
+          await   context.read<ToDownloadCubit>().pauseChapterDownload(chapterUrl: widget.chapterUrl);
+            setState(() {
+              isRunning= false;
+            });
+          },
+          child: Icon(Icons.pause, size: Sizes.dimen_20)) : GestureDetector(
+          onTap: () async {
+           await  context.read<ToDownloadCubit>().resumeChapterDownload(chapterUrl: widget.chapterUrl);
+            setState(() {
+              isRunning= true;
+            });
+          },
+          child: Icon(Icons.refresh, size: Sizes.dimen_20));
+
+    }
+    return Container();
+  }
+}
+
+
+
+
+
+class BuildProgressIndicator extends StatefulWidget {
+  final ToDownloadState toDownload;
+
+  final String chapterUrl;
+  final List<int> progress;
+  const BuildProgressIndicator({Key? key,required ToDownloadState this.toDownload ,  required String this.chapterUrl, this.progress = const[0,0]}) : super(key: key);
+
+  @override
+  _BuildProgressIndicatorState createState() => _BuildProgressIndicatorState();
+}
+
+class _BuildProgressIndicatorState extends State<BuildProgressIndicator> {
+  IconData getIconToShowForStatus(int status){
+    switch(status){
+      case 1:
+        return Icons.download;
+      case 2:
+        return Icons.pause;
+      case 3:
+        return Icons.check_circle;
+      case 4:
+        return Icons.watch_later;
+        default:
+        return Icons.access_time_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: Sizes.dimen_20,
+      height: Sizes.dimen_20,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(getIconToShowForStatus(widget.progress[2]),
+            size: Sizes.dimen_20,
+          ),
+          CircularProgressIndicator(
+            backgroundColor: Colors.transparent,
+            value: !(  widget.progress[1]/( widget.progress[0]*100) ).isNaN && (  widget.progress[1]/( widget.progress[0]*100) ) != double.infinity && (  widget.progress[1]/( widget.progress[0]*100) ) > 0? (  widget.progress[1]/( widget.progress[0]*100) ): 0,
+            valueColor: new AlwaysStoppedAnimation<Color>(AppColor.violet),
+            strokeWidth: 3,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+

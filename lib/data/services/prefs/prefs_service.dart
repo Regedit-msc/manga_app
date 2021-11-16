@@ -18,6 +18,8 @@ abstract class SharedService {
   Future<void> setFirstTimeOnCollectionsToFalse();
   String? getSettings();
   Future<void> setSettings(String settings);
+  Future<void> addDownloadedMangaDetails(String details);
+  String getDownloadedMangaDetails();
 }
 
 class SharedServiceImpl extends SharedService {
@@ -108,5 +110,14 @@ class SharedServiceImpl extends SharedService {
   @override
   Future<void> setSettings(String settings) async {
     await prefs.setString("SETTINGS", settings);
+  }
+
+  @override
+  Future<void> addDownloadedMangaDetails(String details) async{
+    await prefs.setString("DOWNLOADED_MANGA", details);
+  }
+  @override
+  String getDownloadedMangaDetails() {
+    return prefs.getString("DOWNLOADED_MANGA")?? '';
   }
 }

@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webcomic/data/common/constants/collection_constants.dart';
 import 'package:webcomic/data/common/constants/privacy.dart';
@@ -643,7 +644,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                   onTap: () {
                                    // Download
                                     Navigator.pushNamed(context, Routes.downloadView,
-                                        arguments: MangaInformationForDownload(mangaDetails: widget.mangaDetails, chapterList: mangaInfo!.data.chapterList, colorPalette:  _imageAndColor != null?_imageAndColor!.palette: null));
+                                        arguments: MangaInformationForDownload(mangaDetails: widget.mangaDetails, chapterList: mangaInfo!.data.chapterList, colorPalette:  _imageAndColor != null?_imageAndColor!.palette: PaletteGenerator.fromColors([])));
                                   },
                                   child: Padding(
                                     padding: EdgeInsets.all(8.0),

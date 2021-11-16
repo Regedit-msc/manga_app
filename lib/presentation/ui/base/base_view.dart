@@ -28,6 +28,7 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/settings_view.dart
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
@@ -105,6 +106,8 @@ class _BaseViewState extends State<BaseView>
       await getItInstance<SharedServiceImpl>()
           .saveUnsplashLinks(resultingLinks.join(","));
     }
+
+    context.read<DownloadedCubit>().refresh();
     await dynamicLiksService.handleDynamicLinks();
     _bindBackgroundIsolate();
     FlutterDownloader.registerCallback(downloadCallback);
@@ -130,7 +133,12 @@ class _BaseViewState extends State<BaseView>
   void dispose() {
     baseViewPageController!.dispose();
     WidgetsBinding.instance!.removeObserver(this);
+    _unbindBackgroundIsolate();
     super.dispose();
+  }
+
+  void _unbindBackgroundIsolate() {
+    IsolateNameServer.removePortNameMapping('downloader_send_port');
   }
 
   @override
@@ -181,7 +189,7 @@ class _BaseViewState extends State<BaseView>
       current["taskId"] = id;
       current["status"] = status;
       context.read<ToDownloadCubit>().setDownload([...withoutCurrent, current]);
-      context.read<ToDownloadCubit>().makeMangasDoneDownloadingFalse();
+      context.read<ToDownloadCubit>().removeDownloaded();
     });
   }
 
@@ -190,10 +198,6 @@ class _BaseViewState extends State<BaseView>
     final SendPort? send =
         IsolateNameServer.lookupPortByName('downloader_send_port');
     send!.send([id, status, progress]);
-  }
-
-  void _unbindBackgroundIsolate() {
-    IsolateNameServer.removePortNameMapping('downloader_send_port');
   }
 
   @override
