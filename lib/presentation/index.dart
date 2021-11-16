@@ -23,6 +23,7 @@ import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
@@ -55,6 +56,7 @@ class _IndexState extends State<Index> {
   late CollectionCardsCubit _collectionCardsCubit;
   late SettingsCubit _settingsCubit;
   late ThemeCubit _themeCubit;
+  late ToDownloadCubit _toDownloadCubit;
   @override
   void initState() {
     super.initState();
@@ -72,6 +74,7 @@ class _IndexState extends State<Index> {
     _collectionCardsCubit = getItInstance<CollectionCardsCubit>();
     _settingsCubit = getItInstance<SettingsCubit>();
     _themeCubit = getItInstance<ThemeCubit>();
+    _toDownloadCubit = getItInstance<ToDownloadCubit>();
     var initializationSettingsAndroid =
         ln.AndroidInitializationSettings('@drawable/logo');
     var initializationSettingsIOs = ln.IOSInitializationSettings();
@@ -99,6 +102,7 @@ class _IndexState extends State<Index> {
     _collectionCardsCubit.close();
     _settingsCubit.close();
     _themeCubit.close();
+    _toDownloadCubit.close();
     super.dispose();
   }
 
@@ -176,6 +180,7 @@ class _IndexState extends State<Index> {
               value: _collectionCardsCubit),
           BlocProvider<SettingsCubit>.value(value: _settingsCubit),
           BlocProvider<ThemeCubit>.value(value: _themeCubit),
+          BlocProvider<ToDownloadCubit>.value(value: _toDownloadCubit),
         ],
         child:
             BlocBuilder<ThemeCubit, ThemeState>(builder: (context, themeBloc) {

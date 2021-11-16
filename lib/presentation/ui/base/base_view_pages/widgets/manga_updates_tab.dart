@@ -9,6 +9,8 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_updates_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
+import 'package:webcomic/data/services/cache/cache_service.dart';
+import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
@@ -174,6 +176,9 @@ class CardItem extends StatelessWidget {
                   child: FittedBox(
                     fit: BoxFit.cover,
                     child: CachedNetworkImage(
+                      cacheManager: getItInstance<CacheServiceImpl>()
+                          .getDefaultCacheOptions(),
+                      key: UniqueKey(),
                       fadeInDuration: const Duration(microseconds: 100),
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,

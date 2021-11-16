@@ -15,6 +15,7 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/models/google_models/user.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newsestMMdl;
+import 'package:webcomic/data/services/cache/cache_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/data/services/snackbar/snackbar_service.dart';
 import 'package:webcomic/di/get_it.dart';
@@ -681,7 +682,11 @@ Widget chooseImageCard(
                       width: Sizes.dimen_100.w,
                       decoration: BoxDecoration(
                           image: DecorationImage(
-                              image: CachedNetworkImageProvider(theVal!),
+                              image: CachedNetworkImageProvider(
+                                theVal!,
+                                cacheManager: getItInstance<CacheServiceImpl>()
+                                    .getDefaultCacheOptions(),
+                              ),
                               fit: BoxFit.cover,
                               colorFilter: ColorFilter.mode(
                                   Colors.black.withOpacity(0.5),

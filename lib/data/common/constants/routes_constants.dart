@@ -12,4 +12,6 @@ class Routes {
   static const String collectionMain = "/collection-main";
   static const String subCollection = "/collection-subcollection";
   static const String addCollectionSearch = "/add-collection-search";
+  static const String downloadView = "/download-view";
+  static const String downloadTest = "/download-test";
 }

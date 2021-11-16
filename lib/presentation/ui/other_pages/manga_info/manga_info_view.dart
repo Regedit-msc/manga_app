@@ -37,6 +37,7 @@ import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/data/services/snackbar/snackbar_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
+import 'package:webcomic/presentation/router.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
@@ -636,6 +637,18 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                     padding: EdgeInsets.all(8.0),
                                     child:
                                         Icon(Icons.info, color: Colors.white),
+                                  ),
+                                ),
+                                ScaleAnim(
+                                  onTap: () {
+                                   // Download
+                                    Navigator.pushNamed(context, Routes.downloadView,
+                                        arguments: MangaInformationForDownload(mangaDetails: widget.mangaDetails, chapterList: mangaInfo!.data.chapterList, colorPalette:  _imageAndColor != null?_imageAndColor!.palette: null));
+                                  },
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child:
+                                    Icon(Icons.download, color: Colors.white),
                                   ),
                                 ),
                               ],

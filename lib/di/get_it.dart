@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webcomic/data/common/constants/api_constants.dart';
 import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/api/unsplash_api.dart';
+import 'package:webcomic/data/services/cache/cache_service.dart';
 import 'package:webcomic/data/services/database/db.dart';
 import 'package:webcomic/data/services/deep_link/deep_link.service.dart';
 import 'package:webcomic/data/services/dialog/dialogs.dart';
@@ -19,10 +20,12 @@ import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/data/services/settings/settings_service.dart';
 import 'package:webcomic/data/services/snackbar/snackbar_service.dart';
+import 'package:webcomic/data/services/toast/toast_service.dart';
 import 'package:webcomic/presentation/themes/theme_controller.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
@@ -45,7 +48,8 @@ Future init() async {
   final http.Client _client = http.Client();
   SharedPreferences sharedPref = await SharedPreferences.getInstance();
   getItInstance.registerSingleton<SharedPreferences>(sharedPref);
-
+  getItInstance
+      .registerLazySingleton<ToastServiceImpl>(() => ToastServiceImpl());
   getItInstance.registerLazySingleton<ValueNotifier<GraphQLClient>>(() =>
       ValueNotifier(GraphQLClient(
           link: HttpLink(ApiConstants.httpLink),
@@ -63,12 +67,11 @@ Future init() async {
   getItInstance.registerLazySingleton<FirebaseFirestore>(() => _firestore);
   getItInstance.registerLazySingleton<SharedServiceImpl>(
       () => SharedServiceImpl(prefs: getItInstance()));
-  getItInstance.registerSingleton<SettingsServiceImpl>(
-      SettingsServiceImpl(getItInstance()));
+  getItInstance.registerSingleton<SettingsServiceImpl>(SettingsServiceImpl(
+      sharedPrefs: getItInstance(), toastServiceImpl: getItInstance()));
   getItInstance
       .registerSingleton<ThemeController>(ThemeController(getItInstance()));
-  getItInstance
-      .registerSingleton<DialogServiceImpl>(DialogServiceImpl());
+  getItInstance.registerSingleton<DialogServiceImpl>(DialogServiceImpl());
   getItInstance.registerLazySingleton<DynamicLinkServiceImpl>(
       () => DynamicLinkServiceImpl(getItInstance(), getItInstance()));
   getItInstance.registerLazySingleton<UnsplashApiServiceImpl>(
@@ -80,6 +83,9 @@ Future init() async {
       () => NavigationServiceImpl());
   getItInstance.registerLazySingleton<GQLRawApiServiceImpl>(() =>
       GQLRawApiServiceImpl(prefs: getItInstance(), client: getItInstance()));
+  getItInstance.registerLazySingleton<CacheServiceImpl>(
+      () => CacheServiceImpl(getItInstance()));
+
   getItInstance.registerFactory(
     () => BottomNavigationCubit(),
   );
@@ -116,6 +122,9 @@ Future init() async {
   );
   getItInstance.registerSingleton<DatabaseHelper>(DatabaseHelper.instance);
   getItInstance.registerFactory(
-        () => ThemeCubit(getItInstance()),
+    () => ThemeCubit(getItInstance()),
+  );
+  getItInstance.registerFactory(
+    () => ToDownloadCubit(gqlRawApiServiceImpl: getItInstance()),
   );
 }

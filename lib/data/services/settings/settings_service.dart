@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:webcomic/data/common/constants/settings_constants.dart';
 import 'package:webcomic/data/models/settings_model.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
+import 'package:webcomic/data/services/toast/toast_service.dart';
 
 abstract class SettingsService {
   ThemeMode themeMode();
@@ -16,8 +18,9 @@ abstract class SettingsService {
 
 class SettingsServiceImpl extends SettingsService {
   SharedServiceImpl sharedPrefs;
-
-  SettingsServiceImpl(this.sharedPrefs);
+  ToastServiceImpl toastServiceImpl;
+  SettingsServiceImpl(
+      {required this.sharedPrefs, required this.toastServiceImpl});
   @override
   ThemeMode themeMode() {
     switch (sharedPrefs.getUserThemePreference()) {
@@ -37,12 +40,18 @@ class SettingsServiceImpl extends SettingsService {
     switch (theme) {
       case ThemeMode.system:
         await sharedPrefs.setUserThemePreference("system");
+        toastServiceImpl.showToast(
+            "Switched to System theme.", Toast.LENGTH_SHORT);
         return;
       case ThemeMode.dark:
         await sharedPrefs.setUserThemePreference("dark");
+        toastServiceImpl.showToast(
+            "Switched to Dark theme.", Toast.LENGTH_SHORT);
         return;
       case ThemeMode.light:
         await sharedPrefs.setUserThemePreference("light");
+        toastServiceImpl.showToast(
+            "Switched to Light theme.", Toast.LENGTH_SHORT);
         return;
       default:
         await sharedPrefs.setUserThemePreference("system");
@@ -67,6 +76,8 @@ class SettingsServiceImpl extends SettingsService {
   @override
   Future<void> updateSettings(Settings newSettings) async {
     await sharedPrefs.setSettings(jsonEncode(newSettings.toMap()));
+    toastServiceImpl.showToast(
+        "Settings successfully updated.", Toast.LENGTH_SHORT);
   }
 
   @override

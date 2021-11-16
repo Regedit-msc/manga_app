@@ -12,6 +12,7 @@ import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
+import 'package:webcomic/data/services/cache/cache_service.dart';
 import 'package:webcomic/data/services/dialog/dialogs.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_home_widget.dart';
@@ -133,6 +134,10 @@ class _HomeViewState extends State<HomeView>
                                                 .data![index].imageUrl));
                                   },
                                   child: CachedNetworkImage(
+                                    cacheManager:
+                                        getItInstance<CacheServiceImpl>()
+                                            .getDefaultCacheOptions(),
+                                    key: UniqueKey(),
                                     imageUrl:
                                         newestManga.data![index].imageUrl ?? '',
                                     imageBuilder: (context, imageProvider) =>

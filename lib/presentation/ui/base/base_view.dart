@@ -1,6 +1,10 @@
+import 'dart:isolate';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:webcomic/data/common/constants/categories.dart';
 import 'package:webcomic/data/common/constants/controllers.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
@@ -23,6 +27,7 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/recents_view.dart'
 import 'package:webcomic/presentation/ui/base/base_view_pages/settings_view.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
@@ -39,6 +44,7 @@ class BaseView extends StatefulWidget {
 
 class _BaseViewState extends State<BaseView>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+  ReceivePort _port = ReceivePort();
   List<String> bottomNavBarItems = [
     "HOME",
     "MY",
@@ -100,6 +106,8 @@ class _BaseViewState extends State<BaseView>
           .saveUnsplashLinks(resultingLinks.join(","));
     }
     await dynamicLiksService.handleDynamicLinks();
+    _bindBackgroundIsolate();
+    FlutterDownloader.registerCallback(downloadCallback);
   }
 
   List<String> bottomNavAssets = [
@@ -147,6 +155,45 @@ class _BaseViewState extends State<BaseView>
             statusBarColor: Colors.black));
       }
     }
+  }
+
+  void _bindBackgroundIsolate() {
+    bool isSuccess = IsolateNameServer.registerPortWithName(
+        _port.sendPort, 'downloader_send_port');
+    if (!isSuccess) {
+      _unbindBackgroundIsolate();
+      _bindBackgroundIsolate();
+      return;
+    }
+    _port.listen((dynamic data) {
+      String id = data[0];
+      DownloadTaskStatus status = data[1];
+      int progress = data[2];
+      List<Map<String, dynamic>> currentlyBeingDownloaded =
+          context.read<ToDownloadCubit>().state.downloads;
+      List<Map<String, dynamic>> withoutCurrent = currentlyBeingDownloaded
+          .where((element) => element["taskId"] != id)
+          .toList();
+      Map<String, dynamic> current = currentlyBeingDownloaded
+          .firstWhere((element) => element["taskId"] == id, orElse: () => {});
+      print(current);
+      current["progress"] = progress;
+      current["taskId"] = id;
+      current["status"] = status;
+      context.read<ToDownloadCubit>().setDownload([...withoutCurrent, current]);
+      context.read<ToDownloadCubit>().makeMangasDoneDownloadingFalse();
+    });
+  }
+
+  static void downloadCallback(
+      String id, DownloadTaskStatus status, int progress) {
+    final SendPort? send =
+        IsolateNameServer.lookupPortByName('downloader_send_port');
+    send!.send([id, status, progress]);
+  }
+
+  void _unbindBackgroundIsolate() {
+    IsolateNameServer.removePortNameMapping('downloader_send_port');
   }
 
   @override
