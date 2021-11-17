@@ -67,7 +67,8 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
           valueListenable: chapters,
           builder: (context, List<dynamic> value, child) {
             if (value.isNotEmpty) {
-              return Center(
+              return SingleChildScrollView(
+                scrollDirection: Axis.vertical,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,

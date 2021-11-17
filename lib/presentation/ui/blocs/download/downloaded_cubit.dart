@@ -42,10 +42,12 @@ class DownloadedCubit extends Cubit<DownloadedState> {
 
   void refresh() {
     String downloads = sharedServiceImpl.getDownloadedMangaDetails();
-    List<dynamic> details = jsonDecode(downloads);
-    List<DownloadedManga> downloadedManga =
-        details.map((e) => DownloadedManga.fromMap(e)).toList();
-    emit(DownloadedState(downloadedManga: downloadedManga));
+    if (downloads != '') {
+      List<dynamic> details = jsonDecode(downloads);
+      List<DownloadedManga> downloadedManga =
+          details.map((e) => DownloadedManga.fromMap(e)).toList();
+      emit(DownloadedState(downloadedManga: downloadedManga));
+    }
   }
 
   Future<String> getAppDir() async {

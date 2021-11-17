@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,9 +11,6 @@ import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
-import 'package:webcomic/data/services/cache/cache_service.dart';
-import 'package:webcomic/data/services/dialog/dialogs.dart';
-import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_home_widget.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_tabular.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_genre_card.dart';
@@ -25,6 +21,7 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewe
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/presentation/widgets/network_image_provider.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -70,9 +67,9 @@ class _HomeViewState extends State<HomeView>
         ),
         builder: (QueryResult result, {refetch, fetchMore}) {
           if (result.hasException) {
-            WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-              getItInstance<DialogServiceImpl>().NoNetWorkDialog(refetch!());
-            });
+            // WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+            //   getItInstance<DialogServiceImpl>().NoNetWorkDialog(refetch!());
+            // });
             return NoAnimationLoading();
           }
 
@@ -133,10 +130,10 @@ class _HomeViewState extends State<HomeView>
                                             imageUrl: newestManga
                                                 .data![index].imageUrl));
                                   },
-                                  child: CachedNetworkImage(
-                                    cacheManager:
-                                        getItInstance<CacheServiceImpl>()
-                                            .getDefaultCacheOptions(),
+                                  child: NetworkImageExt(
+                                    // cacheManager:
+                                    //     getItInstance<CacheServiceImpl>()
+                                    //         .getDefaultCacheOptions(),
                                     key: UniqueKey(),
                                     imageUrl:
                                         newestManga.data![index].imageUrl ?? '',

@@ -17,13 +17,13 @@ class CacheServiceImpl extends CacheService {
     DefaultCacheManager().emptyCache();
     imageCache!.clear();
     imageCache!.clearLiveImages();
-    toastServiceImpl.showToast( "Successfully cleared cached images. ", Toast.LENGTH_SHORT);
-
+    toastServiceImpl.showToast(
+        "Successfully cleared cached images. ", Toast.LENGTH_SHORT);
   }
 
   @override
   CacheManager getDefaultCacheOptions() {
     return CacheManager(Config("mangaImagesCache",
-        stalePeriod: Duration(days: 15), maxNrOfCacheObjects: 500));
+        stalePeriod: Duration(days: 15), maxNrOfCacheObjects: 300));
   }
 }

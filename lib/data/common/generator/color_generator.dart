@@ -146,3 +146,25 @@ Future<GeneratedImageBytesAndColor> getImageAndColors(String imageUrl) async {
   return GeneratedImageBytesAndColor(
       palette: paletteGenerator, imageBytes: imageBytes, image: image);
 }
+
+class ImageProviderWithImageBytes {
+  ImageProvider? imageProvider;
+  Uint8List? imageBytes;
+  ImageProviderWithImageBytes({this.imageBytes, this.imageProvider});
+}
+
+Future<ImageProviderWithImageBytes> getImageData({required String url}) async {
+  try {
+    Uint8List imageBytes = (await NetworkAssetBundle(Uri.parse(url)).load(url))
+        .buffer
+        .asUint8List();
+    ImageProvider image = Image.memory(imageBytes).image;
+    if (Uint8List != null) {
+      return ImageProviderWithImageBytes(
+          imageBytes: imageBytes, imageProvider: image);
+    }
+  } catch (e) {
+    return ImageProviderWithImageBytes();
+  }
+  return ImageProviderWithImageBytes();
+}

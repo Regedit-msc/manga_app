@@ -308,35 +308,6 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
             .unique((e) => e.chapterUrl));
 
     String listOfDownloads = sharedServiceImpl.getDownloadedMangaDetails();
-    print(listOfDownloads.length.toString() + " List of downloads");
-    if (listOfDownloads != '') {
-      print(jsonDecode(listOfDownloads).runtimeType);
-
-      List<dynamic> details = jsonDecode(listOfDownloads);
-
-      List<DownloadedManga> downloadedManga =
-          details.map((e) => DownloadedManga.fromMap(e)).toList();
-      DownloadedManga mangaToAdd = DownloadedManga(
-          mangaUrl: mangaUrl,
-          imageUrl: imageUrl,
-          mangaName: mangaName,
-          dateDownloaded: DateTime.now().toString());
-      List<Map<String, dynamic>> newDetails = [...downloadedManga, mangaToAdd]
-          .unique((e) => e.mangaUrl)
-          .map((e) => e.toMap())
-          .toList();
-      await sharedServiceImpl.addDownloadedMangaDetails(jsonEncode(newDetails));
-    } else {
-      DownloadedManga mangaToAdd = DownloadedManga(
-          mangaUrl: mangaUrl,
-          imageUrl: imageUrl,
-          mangaName: mangaName,
-          dateDownloaded: DateTime.now().toString());
-      Map<String, dynamic> newManga = mangaToAdd.toMap();
-      List<Map<String, dynamic>> toEncode = List.from([newManga]);
-      String jsonL = jsonEncode(toEncode);
-      await sharedServiceImpl.addDownloadedMangaDetails(jsonL);
-    }
 
     List<ToDownloadQueue> queueWithoutCurrent = state.toDownloadMangaQueue
         .where((element) => element.mangaUrl != mangaUrl)
@@ -360,6 +331,32 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
       } else {
         continue;
       }
+    }
+
+    if (listOfDownloads != '') {
+      List<dynamic> details = jsonDecode(listOfDownloads);
+      List<DownloadedManga> downloadedManga =
+          details.map((e) => DownloadedManga.fromMap(e)).toList();
+      DownloadedManga mangaToAdd = DownloadedManga(
+          mangaUrl: mangaUrl,
+          imageUrl: imageUrl,
+          mangaName: mangaName,
+          dateDownloaded: DateTime.now().toString());
+      List<Map<String, dynamic>> newDetails = [...downloadedManga, mangaToAdd]
+          .unique((e) => e.mangaUrl)
+          .map((e) => e.toMap())
+          .toList();
+      await sharedServiceImpl.addDownloadedMangaDetails(jsonEncode(newDetails));
+    } else {
+      DownloadedManga mangaToAdd = DownloadedManga(
+          mangaUrl: mangaUrl,
+          imageUrl: imageUrl,
+          mangaName: mangaName,
+          dateDownloaded: DateTime.now().toString());
+      Map<String, dynamic> newManga = mangaToAdd.toMap();
+      List<Map<String, dynamic>> toEncode = List.from([newManga]);
+      String jsonL = jsonEncode(toEncode);
+      await sharedServiceImpl.addDownloadedMangaDetails(jsonL);
     }
   }
 
@@ -478,34 +475,34 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
         downloads: downloadList));
   }
 
-  void makeMangasDoneDownloadingFalse() {
-    List<ToDownloadQueue> queuesStillDownloading = List.from(state
-        .toDownloadMangaQueue
-        .where((element) => element.isDownloading)
-        .toList());
-    List<ToDownloadQueue> queuesNotDownloading = List.from(state
-        .toDownloadMangaQueue
-        .where((element) => !element.isDownloading)
-        .toList());
-    List<Map<String, dynamic>> currentDownloads = state.downloads;
-    for (int i = 0; i < queuesStillDownloading.length; i++) {
-      List<Map<String, dynamic>> onlyThis = currentDownloads
-          .where((element) => element["mangaUrl"] == queuesStillDownloading[i])
-          .toList();
-      // if (onlyThis.isNotEmpty &&
-      //     onlyThis.every((element) => element["progress"] == 100)) {
-      //   print("OnlyThis ${onlyThis.length}");
-      //   queuesStillDownloading[i].isDownloading = false;
-      //   queuesStillDownloading[i].chaptersToDownload = [];
-      // }
-    }
-    emit(ToDownloadState(
-        toDownloadMangaQueue: [
-          ...queuesStillDownloading,
-          ...queuesNotDownloading
-        ].unique((e) => e.mangaUrl),
-        downloads: state.downloads));
-  }
+  // void makeMangasDoneDownloadingFalse() {
+  //   List<ToDownloadQueue> queuesStillDownloading = List.from(state
+  //       .toDownloadMangaQueue
+  //       .where((element) => element.isDownloading)
+  //       .toList());
+  //   List<ToDownloadQueue> queuesNotDownloading = List.from(state
+  //       .toDownloadMangaQueue
+  //       .where((element) => !element.isDownloading)
+  //       .toList());
+  //   List<Map<String, dynamic>> currentDownloads = state.downloads;
+  //   for (int i = 0; i < queuesStillDownloading.length; i++) {
+  //     List<Map<String, dynamic>> onlyThis = currentDownloads
+  //         .where((element) => element["mangaUrl"] == queuesStillDownloading[i])
+  //         .toList();
+  //     // if (onlyThis.isNotEmpty &&
+  //     //     onlyThis.every((element) => element["progress"] == 100)) {
+  //     //   print("OnlyThis ${onlyThis.length}");
+  //     //   queuesStillDownloading[i].isDownloading = false;
+  //     //   queuesStillDownloading[i].chaptersToDownload = [];
+  //     // }
+  //   }
+  //   emit(ToDownloadState(
+  //       toDownloadMangaQueue: [
+  //         ...queuesStillDownloading,
+  //         ...queuesNotDownloading
+  //       ].unique((e) => e.mangaUrl),
+  //       downloads: state.downloads));
+  // }
 
   Future<void> pauseChapterDownload({required String chapterUrl}) async {
     List<Map<String, dynamic>> currentlyBeingDownloaded = state.downloads;
@@ -567,8 +564,8 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
         ToDownloadQueue thisMangaQueue = state.toDownloadMangaQueue.firstWhere(
             (element) => element.mangaUrl == downloadList[i]["mangaUrl"],
             orElse: () => ToDownloadQueue(
-                  mangaUrl: downloadList[i]["mangaUrl"],
-                  mangaName: downloadList[i]["mangaName"],
+                  mangaUrl: '',
+                  mangaName: '',
                 ));
         thisMangaQueue.isDownloading = false;
         thisMangaQueue.chaptersToDownload = [];
@@ -613,6 +610,6 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
         .every((element) => element["status"] == DownloadTaskStatus.complete)) {
       return false;
     }
-    return false;
+    return true;
   }
 }
