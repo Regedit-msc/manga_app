@@ -29,6 +29,7 @@ import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigati
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloading_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
@@ -178,7 +179,7 @@ class _BaseViewState extends State<BaseView>
       DownloadTaskStatus status = data[1];
       int progress = data[2];
       List<Map<String, dynamic>> currentlyBeingDownloaded =
-          context.read<ToDownloadCubit>().state.downloads;
+          context.read<DownloadingCubit>().state.downloads;
       List<Map<String, dynamic>> withoutCurrent = currentlyBeingDownloaded
           .where((element) => element["taskId"] != id)
           .toList();
@@ -189,9 +190,9 @@ class _BaseViewState extends State<BaseView>
       current["status"] = status;
       if (mounted) {
         context
-            .read<ToDownloadCubit>()
+            .read<DownloadingCubit>()
             .setDownload([...withoutCurrent, current]);
-        context.read<ToDownloadCubit>().removeDownloaded();
+        // context.read<ToDownloadCubit>().removeDownloaded();
       }
     });
   }

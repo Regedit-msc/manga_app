@@ -25,6 +25,7 @@ import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.
 import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloading_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
@@ -59,6 +60,7 @@ class _IndexState extends State<Index> {
   late ThemeCubit _themeCubit;
   late ToDownloadCubit _toDownloadCubit;
   late DownloadedCubit _downloadedCubit;
+  late DownloadingCubit _downloadingCubit;
   @override
   void initState() {
     super.initState();
@@ -78,6 +80,7 @@ class _IndexState extends State<Index> {
     _themeCubit = getItInstance<ThemeCubit>();
     _toDownloadCubit = getItInstance<ToDownloadCubit>();
     _downloadedCubit = getItInstance<DownloadedCubit>();
+    _downloadingCubit = getItInstance<DownloadingCubit>();
     var initializationSettingsAndroid =
         ln.AndroidInitializationSettings('@drawable/logo');
     var initializationSettingsIOs = ln.IOSInitializationSettings();
@@ -107,6 +110,7 @@ class _IndexState extends State<Index> {
     _themeCubit.close();
     _toDownloadCubit.close();
     _downloadedCubit.close();
+    _downloadingCubit.close();
     super.dispose();
   }
 
@@ -186,6 +190,7 @@ class _IndexState extends State<Index> {
           BlocProvider<ThemeCubit>.value(value: _themeCubit),
           BlocProvider<ToDownloadCubit>.value(value: _toDownloadCubit),
           BlocProvider<DownloadedCubit>.value(value: _downloadedCubit),
+          BlocProvider<DownloadingCubit>.value(value: _downloadingCubit),
         ],
         child:
             BlocBuilder<ThemeCubit, ThemeState>(builder: (context, themeBloc) {

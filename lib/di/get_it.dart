@@ -27,6 +27,7 @@ import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.
 import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloading_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
@@ -132,6 +133,11 @@ Future init() async {
       toastServiceImpl: getItInstance()));
   getItInstance.registerFactory(
     () => DownloadedCubit(
+        sharedServiceImpl: getItInstance(),
+        navigationServiceImpl: getItInstance()),
+  );
+  getItInstance.registerFactory(
+        () => DownloadingCubit(
         sharedServiceImpl: getItInstance(),
         navigationServiceImpl: getItInstance()),
   );

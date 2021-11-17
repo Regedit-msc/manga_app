@@ -8,6 +8,7 @@ import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
+import 'package:webcomic/data/models/to_download_chapter.dart';
 import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/toast/toast_service.dart';
 import 'package:webcomic/di/get_it.dart';
@@ -15,6 +16,7 @@ import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/router.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloading_cubit.dart';
 
 class DownloadView extends StatefulWidget {
   final MangaInformationForDownload chapterList;
@@ -100,19 +102,16 @@ class _DownloadViewState extends State<DownloadView> {
             mangaUrl: widget.chapterList.mangaDetails.mangaUrl ?? "");
   }
 
-  List<int> totalProgress(ToDownloadState toDownload, String chapterUrl ){
+  List<int> totalProgress(DownloadingState downloading, String chapterUrl ){
     List<Map<String, dynamic>> currentlyBeingDownloaded =
-        toDownload.downloads;
-    print(currentlyBeingDownloaded);
+        downloading.downloads;
     List<Map<String, dynamic>>  downloadStateForChapter = currentlyBeingDownloaded
         .where((element) => element["chapterUrl"] == chapterUrl)
         .toList();
     if(downloadStateForChapter.isNotEmpty){
-      print(downloadStateForChapter.length);
       int imagesLength = downloadStateForChapter[0]["imagesLength"] ?? 0;
       int progressTotal =  downloadStateForChapter.fold(0, (t, e) => t! + e["progress"] as int) ??0;
       int status = getChapterDownloadStatus(downloadStateForChapter);
-      print(progressTotal);
       return[imagesLength, progressTotal, status];
     }
     return [0,0, 0];
@@ -271,8 +270,6 @@ class _DownloadViewState extends State<DownloadView> {
                               return SingleChildScrollView(
                                 scrollDirection: Axis.vertical,
                                 child:!toDownload.toDownloadMangaQueue[getIndexOfManga()].isDownloading?
-
-
                                 Column(
                                   children: [
                                     ...List.generate(value.chapterList.length,
@@ -536,9 +533,17 @@ class _DownloadViewState extends State<DownloadView> {
                                               mainAxisAlignment: MainAxisAlignment.start,
                                               crossAxisAlignment: CrossAxisAlignment.center,
                                               children: [
-                                                PauseOrResume(progress:totalProgress(toDownload,toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl ), toDownload: toDownload,chapterUrl: toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl),
+                                                BlocBuilder<DownloadingCubit, DownloadingState>(
+                                                    builder: (context, downloading) {
+                                                    return PauseOrResume(progress:totalProgress(downloading,toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl ), downloading: downloading,chapterUrl: toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl);
+                                                  }
+                                                ),
                                                 SizedBox(width: Sizes.dimen_4,),
-                                                BuildProgressIndicator(progress:totalProgress(toDownload,toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl ), toDownload: toDownload,chapterUrl: toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl),
+                                                BlocBuilder<DownloadingCubit, DownloadingState>(
+                                                    builder: (context, downloading) {
+                                                    return BuildProgressIndicator(progress:totalProgress(downloading,toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl ), downloading: downloading,chapterUrl: toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterUrl);
+                                                  }
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -638,11 +643,11 @@ class _DownloadViewState extends State<DownloadView> {
 
 
 class PauseOrResume extends StatefulWidget {
-  final ToDownloadState toDownload;
+  final DownloadingState downloading;
 
   final String chapterUrl;
   final List<int> progress;
-  const PauseOrResume({Key? key,required this.toDownload, required this.chapterUrl, required this.progress}) : super(key: key);
+  const PauseOrResume({Key? key,required this.downloading, required this.chapterUrl, required this.progress}) : super(key: key);
 
   @override
   _PauseOrResumeState createState() => _PauseOrResumeState();
@@ -656,7 +661,7 @@ class _PauseOrResumeState extends State<PauseOrResume> {
   }
   void setPauseOrResume(){
     List<Map<String, dynamic>> currentlyBeingDownloaded =
-        widget.toDownload.downloads;
+        widget.downloading.downloads;
     List<Map<String, dynamic>>  downloadStateForChapter = currentlyBeingDownloaded
         .where((element) => element["chapterUrl"] ==  widget.chapterUrl)
         .toList();
@@ -677,14 +682,14 @@ class _PauseOrResumeState extends State<PauseOrResume> {
     if((  widget.progress[1]/( widget.progress[0]*100) ) != 1.0){
       return  isRunning? GestureDetector(
           onTap: () async {
-          await   context.read<ToDownloadCubit>().pauseChapterDownload(chapterUrl: widget.chapterUrl);
+          await   context.read<DownloadingCubit>().pauseChapterDownload(chapterUrl: widget.chapterUrl);
             setState(() {
               isRunning= false;
             });
           },
           child: Icon(Icons.pause, size: Sizes.dimen_20)) : GestureDetector(
           onTap: () async {
-           await  context.read<ToDownloadCubit>().resumeChapterDownload(chapterUrl: widget.chapterUrl);
+           await  context.read<DownloadingCubit>().resumeChapterDownload(chapterUrl: widget.chapterUrl);
             setState(() {
               isRunning= true;
             });
@@ -701,11 +706,11 @@ class _PauseOrResumeState extends State<PauseOrResume> {
 
 
 class BuildProgressIndicator extends StatefulWidget {
-  final ToDownloadState toDownload;
+  final DownloadingState downloading;
 
   final String chapterUrl;
   final List<int> progress;
-  const BuildProgressIndicator({Key? key,required ToDownloadState this.toDownload ,  required String this.chapterUrl, this.progress = const[0,0]}) : super(key: key);
+  const BuildProgressIndicator({Key? key,required DownloadingState this.downloading ,  required String this.chapterUrl, this.progress = const[0,0]}) : super(key: key);
 
   @override
   _BuildProgressIndicatorState createState() => _BuildProgressIndicatorState();
