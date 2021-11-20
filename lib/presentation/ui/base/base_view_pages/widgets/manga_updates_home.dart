@@ -34,9 +34,9 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
             pollInterval: null,
             variables: {"page": 1}),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+          // if (result.hasException) {
+          //   return Text(result.exception.toString());
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();

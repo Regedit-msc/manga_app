@@ -32,9 +32,9 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
             pollInterval: null,
             variables: {"genreUrl": "/browse/?genre=${widget.genre}"}),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+          // if (result.hasException) {
+          //   return Text(result.exception.toString());
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();

@@ -30,8 +30,21 @@ class _OfflineReaderState extends State<OfflineReader> {
   }
 
   @override
+  void dispose() {
+    doCleanUp();
+    super.dispose();
+  }
+
+  void doCleanUp() {
+    Future.delayed(Duration(milliseconds: 100), () {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       body: ValueListenableBuilder(
           valueListenable: folders,
           builder: (context, value, child) {

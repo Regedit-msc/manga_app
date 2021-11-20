@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,6 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewe
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
-import 'package:webcomic/presentation/widgets/network_image_provider.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -66,12 +66,12 @@ class _HomeViewState extends State<HomeView>
           pollInterval: Duration(minutes: 60),
         ),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            // WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-            //   getItInstance<DialogServiceImpl>().NoNetWorkDialog(refetch!());
-            // });
-            return NoAnimationLoading();
-          }
+          // if (result.hasException) {
+          //   // WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+          //   //   getItInstance<DialogServiceImpl>().NoNetWorkDialog(refetch!());
+          //   // });
+          //   return NoAnimationLoading();
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();
@@ -130,7 +130,7 @@ class _HomeViewState extends State<HomeView>
                                             imageUrl: newestManga
                                                 .data![index].imageUrl));
                                   },
-                                  child: NetworkImageExt(
+                                  child: CachedNetworkImage(
                                     // cacheManager:
                                     //     getItInstance<CacheServiceImpl>()
                                     //         .getDefaultCacheOptions(),

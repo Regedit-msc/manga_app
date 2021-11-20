@@ -50,9 +50,9 @@ class _MostClickedMangaState extends State<MostClickedManga> {
           pollInterval: Duration(minutes: 60),
         ),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+          // if (result.hasException) {
+          //   return Text(result.exception.toString());
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();

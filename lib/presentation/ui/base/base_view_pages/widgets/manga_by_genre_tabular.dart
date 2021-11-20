@@ -46,9 +46,9 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
             pollInterval: null,
             variables: {"genreUrl": "/browse/?genre=${widget.genre}"}),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+          // if (result.hasException) {
+          //   return Text(result.exception.toString());
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();
@@ -215,29 +215,30 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                         ),
                                                       ],
                                                     ),
-                                                    Text(newestManga.data
-                                                                .skip(5)
-                                                                .take(5)
-                                                                .toList()[idx]
-                                                                .author
-                                                                .split(':')[1]
-                                                                .length >
-                                                            20
-                                                        ? newestManga.data
-                                                                .skip(5)
-                                                                .take(5)
-                                                                .toList()[idx]
-                                                                .author
-                                                                .split(':')[1]
-                                                                .substring(
-                                                                    0, 20) +
-                                                            "..."
-                                                        : newestManga.data
-                                                            .skip(5)
-                                                            .take(5)
-                                                            .toList()[idx]
-                                                            .author
-                                                            .split(':')[1],
+                                                    Text(
+                                                      newestManga.data
+                                                                  .skip(5)
+                                                                  .take(5)
+                                                                  .toList()[idx]
+                                                                  .author
+                                                                  .split(':')[1]
+                                                                  .length >
+                                                              20
+                                                          ? newestManga.data
+                                                                  .skip(5)
+                                                                  .take(5)
+                                                                  .toList()[idx]
+                                                                  .author
+                                                                  .split(':')[1]
+                                                                  .substring(
+                                                                      0, 20) +
+                                                              "..."
+                                                          : newestManga.data
+                                                              .skip(5)
+                                                              .take(5)
+                                                              .toList()[idx]
+                                                              .author
+                                                              .split(':')[1],
                                                       style: TextStyle(
                                                           color: Colors.grey),
                                                     )
