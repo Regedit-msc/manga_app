@@ -32,8 +32,10 @@ import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/manga_info_with_datum.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/data/models/newest_manga_model.dart';
+import 'package:webcomic/data/models/to_download_queue.dart';
 import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/database/db.dart';
+import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/data/services/snackbar/snackbar_service.dart';
 import 'package:webcomic/di/get_it.dart';
@@ -42,6 +44,7 @@ import 'package:webcomic/presentation/router.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
@@ -62,6 +65,22 @@ class MangaInfo extends StatefulWidget {
 class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
   GeneratedImageBytesAndColor? _imageAndColor = null;
   Future<void> doSetup() async {
+    ToDownloadQueue queueForThisManga =  getItInstance<NavigationServiceImpl>()
+        .navigationKey
+        .currentContext!
+        .read<ToDownloadCubit>().state.toDownloadMangaQueue.firstWhere((element) => element.mangaUrl == widget.mangaDetails.mangaUrl, orElse: () => ToDownloadQueue(
+      mangaUrl: widget.mangaDetails.mangaUrl ?? ''
+    ));
+    if(!queueForThisManga.isDownloading) {
+      getItInstance<NavigationServiceImpl>()
+          .navigationKey
+          .currentContext!
+          .read<ToDownloadCubit>()
+          .createQueue(
+          mangaName: widget.mangaDetails.title ?? "",
+          mangaUrl: widget.mangaDetails.mangaUrl ?? '');
+    }
+
     GeneratedImageBytesAndColor _default =
         await getImageAndColors(widget.mangaDetails.imageUrl ?? '');
     if (mounted) {

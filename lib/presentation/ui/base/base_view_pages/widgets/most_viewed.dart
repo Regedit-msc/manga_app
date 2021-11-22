@@ -100,8 +100,8 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Container(
-                                width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_250,
+                                width: Sizes.dimen_150,
+                                height: Sizes.dimen_270,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
@@ -126,7 +126,7 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                           top: 0,
                                           right: 0,
                                           child: Container(
-                                              width: 100,
+                                              width: 60,
                                               height: 30,
                                               decoration: BoxDecoration(
                                                   borderRadius:
@@ -151,6 +151,7 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                                       .data[index].status,
                                                   style: TextStyle(
                                                       color: Colors.white,
+                                                      fontSize: Sizes.dimen_12.sp,
                                                       fontWeight:
                                                           FontWeight.bold),
                                                 ),

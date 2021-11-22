@@ -46,6 +46,7 @@ class _DownloadViewState extends State<DownloadView> {
         .indexWhere((element) =>
             element.mangaUrl == widget.chapterList.mangaDetails.mangaUrl);
     if (index == -1) {
+      print("Queue index $index");
       getItInstance<NavigationServiceImpl>()
           .navigationKey
           .currentContext!

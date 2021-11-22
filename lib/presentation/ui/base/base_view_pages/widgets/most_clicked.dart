@@ -99,8 +99,8 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                             newestManga.data[index].imageUrl));
                               },
                               child: Container(
-                                width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_250,
+                                width: Sizes.dimen_150,
+                                height: Sizes.dimen_270,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
@@ -136,7 +136,7 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               10.0),
-                                                      color: Colors.transparent,
+                                                      color: Colors.white,
                                                     ),
                                                     child: Row(
                                                       mainAxisAlignment:
@@ -146,9 +146,14 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                                         Text(
                                                           "MOST CLICKED",
                                                           style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontSize: 12.0,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      10,
+                                                                      10,
+                                                                      10,
+                                                                      0.8),
+                                                              fontSize: Sizes
+                                                                  .dimen_12.sp,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold),
