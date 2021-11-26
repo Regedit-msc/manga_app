@@ -4,6 +4,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -22,6 +23,7 @@ import 'package:webcomic/data/services/settings/settings_service.dart';
 import 'package:webcomic/data/services/snackbar/snackbar_service.dart';
 import 'package:webcomic/data/services/toast/toast_service.dart';
 import 'package:webcomic/presentation/themes/theme_controller.dart';
+import 'package:webcomic/presentation/ui/blocs/ads/ads_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
@@ -49,6 +51,8 @@ Future init() async {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final http.Client _client = http.Client();
   SharedPreferences sharedPref = await SharedPreferences.getInstance();
+  final Future<InitializationStatus> initFuture =
+      MobileAds.instance.initialize();
   getItInstance.registerSingleton<SharedPreferences>(sharedPref);
   getItInstance
       .registerLazySingleton<ToastServiceImpl>(() => ToastServiceImpl());
@@ -81,6 +85,7 @@ Future init() async {
 
   getItInstance
       .registerLazySingleton<SnackbarServiceImpl>(() => SnackbarServiceImpl());
+  getItInstance.registerSingleton<Future<InitializationStatus>>(initFuture);
   getItInstance.registerLazySingleton<NavigationServiceImpl>(
       () => NavigationServiceImpl());
   getItInstance.registerLazySingleton<GQLRawApiServiceImpl>(() =>
@@ -137,8 +142,11 @@ Future init() async {
         navigationServiceImpl: getItInstance()),
   );
   getItInstance.registerFactory(
-        () => DownloadingCubit(
+    () => DownloadingCubit(
         sharedServiceImpl: getItInstance(),
         navigationServiceImpl: getItInstance()),
+  );
+  getItInstance.registerFactory(
+    () => AdsCubit(initialization: getItInstance()),
   );
 }

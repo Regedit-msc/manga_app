@@ -9,11 +9,11 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_updates_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
-import 'package:webcomic/data/services/cache/cache_service.dart';
-import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+
+import 'ad_container.dart';
 
 class MangaUpdatesTabView extends StatefulWidget {
   const MangaUpdatesTabView({Key? key}) : super(key: key);
@@ -113,6 +113,7 @@ class _MangaUpdatesTabViewState extends State<MangaUpdatesTabView> {
                             ).toList(),
                           ),
                         ),
+                        AdContainer(),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ValueListenableBuilder(
@@ -170,15 +171,13 @@ class CardItem extends StatelessWidget {
         children: [
           Expanded(
             child: Stack(
+              fit: StackFit.expand,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(Sizes.dimen_4),
                   child: FittedBox(
                     fit: BoxFit.cover,
                     child: CachedNetworkImage(
-                      cacheManager: getItInstance<CacheServiceImpl>()
-                          .getDefaultCacheOptions(),
-                      key: UniqueKey(),
                       fadeInDuration: const Duration(microseconds: 100),
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,

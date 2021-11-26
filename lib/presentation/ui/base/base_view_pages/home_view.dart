@@ -12,6 +12,7 @@ import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
+import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/ad_container.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_home_widget.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_tabular.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_genre_card.dart';
@@ -245,9 +246,11 @@ class _HomeViewState extends State<HomeView>
                             ),
                           ),
                           MangaByGenreTabular(genre: "Shounen"),
+                          AdContainer(),
                           MangaByGenreHome(genre: "Fantasy"),
                           MangaByGenreHome(genre: "Cooking"),
                           MangaByGenreTabular(genre: "Manhwa"),
+                          AdContainer(),
                           MangaByGenreHome(genre: "Medical"),
                           MangaByGenreHome(genre: "One Shot"),
                         ],
