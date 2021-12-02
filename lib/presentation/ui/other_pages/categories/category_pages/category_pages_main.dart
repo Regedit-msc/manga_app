@@ -9,7 +9,6 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
-import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/ad_container.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class CategoryViewMain extends StatefulWidget {
@@ -111,7 +110,7 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
                             ).toList(),
                           ),
                         ),
-                        AdContainer(),
+                        //TODO: Fix ads and update
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ValueListenableBuilder(

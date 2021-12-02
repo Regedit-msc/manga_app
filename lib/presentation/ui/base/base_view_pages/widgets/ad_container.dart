@@ -60,14 +60,7 @@ class _AdContainerState extends State<AdContainer> {
                 ),
               ),
             )
-          : Container(
-              width: double.infinity,
-              height: 66.0,
-              color:
-                  themeBloc.themeMode != ThemeMode.dark && context.isLightMode()
-                      ? Colors.grey[100]
-                      : AppColor.vulcan,
-            );
+          : Container();
     });
   }
 }
