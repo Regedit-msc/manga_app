@@ -1,20 +1,25 @@
 import 'package:flutter/cupertino.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:webcomic/data/common/constants/categories.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/manga_info_with_datum.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart';
 import 'package:webcomic/presentation/ui/base/base_view.dart';
+import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/download_chapter_list.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
 import 'package:webcomic/presentation/ui/other_pages/categories/category_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/collections/add_to_collection.dart';
 import 'package:webcomic/presentation/ui/other_pages/collections/collection_main_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/collections/collection_search.dart';
 import 'package:webcomic/presentation/ui/other_pages/collections/collection_subcollection_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/collections/create_collection.dart';
+import 'package:webcomic/presentation/ui/other_pages/download/download_page.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_info/manga_info_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_info/summary/summary_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_reader/manga_reader.dart';
+import 'package:webcomic/presentation/ui/other_pages/manga_reader/offline_reader.dart';
 import 'package:webcomic/presentation/ui/other_pages/search/search_view.dart';
 import 'package:webcomic/presentation/ui/splash/splash.dart';
 
@@ -47,7 +52,7 @@ class CustomRouter {
       case Routes.mangaInfo:
         return PageTransition(
             child: MangaInfo(mangaDetails: setting.arguments as Datum),
-            type: PageTransitionType.rightToLeft,
+            type: PageTransitionType.fade,
             settings: setting);
       case Routes.mangaReader:
         return PageTransition(
@@ -66,6 +71,12 @@ class CustomRouter {
                 fromAddToCollectionPage: setting.arguments as bool),
             type: PageTransitionType.fade,
             settings: setting);
+      case Routes.downloadView:
+        return PageTransition(
+            child: DownloadView(
+                chapterList: setting.arguments as MangaInformationForDownload),
+            type: PageTransitionType.fade,
+            settings: setting);
       case Routes.addCollectionSearch:
         return PageTransition(
             child:
@@ -81,8 +92,10 @@ class CustomRouter {
       case Routes.subCollection:
         final data = setting.arguments as SubcollectionFields;
         return PageTransition(
-            child:
-            CollectionSubcollectionView(collectionId: data.collectionId, subCollectionId: data.subcollectionId,),
+            child: CollectionSubcollectionView(
+              collectionId: data.collectionId,
+              subCollectionId: data.subcollectionId,
+            ),
             type: PageTransitionType.fade,
             settings: setting);
       case Routes.mangaSearch:
@@ -98,16 +111,42 @@ class CustomRouter {
             child: SummaryView(mangaInfo: setting.arguments as GetMangaInfo),
             type: PageTransitionType.fade,
             settings: setting);
+      case Routes.downloadedChaptersView:
+        return PageTransition(
+            child: DownloadChapterListView(
+              downloadedManga: setting.arguments as DownloadedManga,
+            ),
+            type: PageTransitionType.fade,
+            settings: setting);
+      case Routes.offlineReader:
+        return PageTransition(
+            child: OfflineReader(
+              props: setting.arguments as OfflineReaderProps,
+            ),
+            type: PageTransitionType.fade,
+            settings: setting);
       default:
         break;
     }
   }
 }
 
-class SubcollectionFields{
-  final String  collectionId;
+class SubcollectionFields {
+  final String collectionId;
 
-  final String  subcollectionId;
+  final String subcollectionId;
 
-  SubcollectionFields({ required this.collectionId, required this.subcollectionId});
+  SubcollectionFields(
+      {required this.collectionId, required this.subcollectionId});
+}
+
+class MangaInformationForDownload {
+  final List<ChapterList> chapterList;
+  final Datum mangaDetails;
+  final PaletteGenerator? colorPalette;
+  MangaInformationForDownload({
+    required this.chapterList,
+    required this.mangaDetails,
+    this.colorPalette,
+  });
 }

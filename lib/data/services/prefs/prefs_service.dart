@@ -16,6 +16,10 @@ abstract class SharedService {
   bool firstTimeOnCollections();
   Future<void> saveUnsplashLinks(String links);
   Future<void> setFirstTimeOnCollectionsToFalse();
+  String? getSettings();
+  Future<void> setSettings(String settings);
+  Future<void> addDownloadedMangaDetails(String details);
+  String getDownloadedMangaDetails();
 }
 
 class SharedServiceImpl extends SharedService {
@@ -96,5 +100,24 @@ class SharedServiceImpl extends SharedService {
   @override
   Future<void> setFirstTimeOnCollectionsToFalse() async {
     await prefs.setBool("FIRST_TIME_ON_COLLECTIONS", false);
+  }
+
+  @override
+  String? getSettings() {
+    return prefs.getString("SETTINGS") ?? null;
+  }
+
+  @override
+  Future<void> setSettings(String settings) async {
+    await prefs.setString("SETTINGS", settings);
+  }
+
+  @override
+  Future<void> addDownloadedMangaDetails(String details) async{
+    await prefs.setString("DOWNLOADED_MANGA", details);
+  }
+  @override
+  String getDownloadedMangaDetails() {
+    return prefs.getString("DOWNLOADED_MANGA")?? '';
   }
 }

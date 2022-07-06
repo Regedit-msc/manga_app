@@ -22,11 +22,14 @@ class Sizes {
   static const double dimen_24 = 24;
   static const double dimen_32 = 32;
   static const double dimen_30 = 30;
+  static const double dimen_35 = 35;
   static const double dimen_40 = 40;
   static const double dimen_48 = 48;
   static const double dimen_60 = 60;
   static const double dimen_64 = 64;
   static const double dimen_80 = 80;
+  static const double dimen_85 = 85;
+  static const double dimen_90 = 90;
   static const double dimen_100 = 100;
   static const double dimen_105 = 105;
   static const double dimen_110 = 110;
@@ -43,6 +46,7 @@ class Sizes {
 
   static const double dimen_230 = 230;
   static const double dimen_250 = 250;
+  static const double dimen_270 = 270;
   static const double dimen_300 = 300;
   static const double dimen_350 = 350;
   static const double dimen_400 = 400;

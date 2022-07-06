@@ -6,11 +6,11 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/most_viewed_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
+import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MostViewedManga extends StatefulWidget {
@@ -52,9 +52,9 @@ class _MostViewedMangaState extends State<MostViewedManga> {
           pollInterval: Duration(minutes: 60),
         ),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+          // if (result.hasException) {
+          //   return Text(result.exception.toString());
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();
@@ -73,8 +73,6 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                   child: Text(
                     "Most Viewed Today",
                     style: TextStyle(
-                        color:
-                            context.isLightMode() ? Colors.black : Colors.white,
                         fontSize: Sizes.dimen_16.sp,
                         fontWeight: FontWeight.bold),
                   ),
@@ -102,8 +100,8 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Container(
-                                width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_250,
+                                width: Sizes.dimen_150,
+                                height: Sizes.dimen_270,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
@@ -114,7 +112,7 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                           height: Sizes.dimen_200,
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
-                                                Sizes.dimen_8),
+                                                Sizes.dimen_4),
                                             child: CachedNetworkImage(
                                                 fit: BoxFit.cover,
                                                 placeholder: (ctx, string) {
@@ -124,6 +122,41 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                                     .data[index].imageUrl),
                                           ),
                                         ),
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: Container(
+                                              width: 60,
+                                              height: 30,
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                          bottomLeft:
+                                                              Radius.circular(
+                                                                  Sizes
+                                                                      .dimen_8),
+                                                          topRight: Radius
+                                                              .circular(Sizes
+                                                                  .dimen_4)),
+                                                  color: newestManga.data[index]
+                                                              .status
+                                                              .trim()
+                                                              .toLowerCase() ==
+                                                          "ongoing"
+                                                      ? AppColor.vulcan
+                                                      : Colors.transparent),
+                                              child: Center(
+                                                child: Text(
+                                                  newestManga
+                                                      .data[index].status,
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: Sizes.dimen_12.sp,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              )),
+                                        ),
                                         index == 0
                                             ? Align(
                                                 alignment:
@@ -132,7 +165,7 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Container(
-                                                    width: Sizes.dimen_120.w,
+                                                    width: Sizes.dimen_100,
                                                     decoration: BoxDecoration(
                                                       border: Border.all(
                                                           color: Colors.white),
@@ -153,7 +186,8 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                                                   Colors.white,
                                                               fontWeight:
                                                                   FontWeight
-                                                                      .bold),
+                                                                      .bold,
+                                                              fontSize: 12.0),
                                                         ),
                                                       ],
                                                     ),
@@ -173,8 +207,14 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                         clipBehavior: Clip.hardEdge,
                                         children: [
                                           Text(
-                                            newestManga.data[index].title,
+                                            newestManga.data[index].title
+                                                .trim(),
+                                            maxLines: 1,
+                                            textAlign: TextAlign.start,
                                             overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: Sizes.dimen_14.sp,
+                                                fontWeight: FontWeight.w700),
                                           ),
                                         ]),
                                   )

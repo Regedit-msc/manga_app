@@ -30,9 +30,9 @@ class _MangaByGenreCardState extends State<MangaByGenreCard> {
             pollInterval: null,
             variables: {"genreUrl": "/browse/?genre=${widget.genre}"}),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+          // if (result.hasException) {
+          //   return Text(result.exception.toString());
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();
@@ -51,7 +51,7 @@ class _MangaByGenreCardState extends State<MangaByGenreCard> {
                   width: Sizes.dimen_150.w,
                   height: Sizes.dimen_60,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(Sizes.dimen_4),
                       image: DecorationImage(
                           colorFilter: ColorFilter.mode(
                               Colors.black.withOpacity(0.5), BlendMode.darken),

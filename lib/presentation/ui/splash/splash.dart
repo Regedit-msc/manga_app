@@ -3,14 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
-import 'package:webcomic/data/common/constants/size_constants.dart';
-import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/models/google_models/user.dart';
+import 'package:webcomic/data/models/settings_model.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
+import 'package:webcomic/data/services/settings/settings_service.dart';
 import 'package:webcomic/di/get_it.dart';
+import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 
 class Splash extends StatefulWidget {
@@ -38,13 +39,16 @@ class _SplashState extends State<Splash> {
           .read<UserFromGoogleCubit>()
           .setUser(UserFromGoogle.fromMap(jsonDecode(userDetails)));
     }
+    Settings settings = getItInstance<SettingsServiceImpl>().getSettings();
+    context.read<SettingsCubit>().setSettings(settings);
+    context.read<ThemeCubit>().initTheme();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: TweenAnimationBuilder(
-        duration: Duration(milliseconds: 3000),
+        duration: Duration(milliseconds: 1000),
         builder: (context, double value, child) {
           return Opacity(
             opacity: value,
@@ -54,11 +58,8 @@ class _SplashState extends State<Splash> {
         tween: Tween<double>(begin: 0.0, end: 1.0),
         child: Center(
           child: callSvg(
-              context.isLightMode()
-                  ? "assets/logo_light.svg"
-                  : 'assets/logo_light.svg',
-              width: Sizes.dimen_40.w,
-              height: Sizes.dimen_40.h),
+            "assets/tcomic.svg",
+          ),
         ),
       ),
     );

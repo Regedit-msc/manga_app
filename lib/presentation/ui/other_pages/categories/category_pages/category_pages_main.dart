@@ -57,9 +57,9 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
                     "/browse/?genre=${widget.category}&filter=Random&results=1"
               }),
           builder: (QueryResult result, {refetch, fetchMore}) {
-            if (result.hasException) {
-              return Text(result.exception.toString());
-            }
+            // if (result.hasException) {
+            //   return Text(result.exception.toString());
+            // }
 
             if (result.isLoading) {
               return NoAnimationLoading();
@@ -79,7 +79,7 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
                       children: [
                         Expanded(
                           child: GridView.count(
-                            childAspectRatio: constraints.biggest.aspectRatio,
+                            childAspectRatio: 1 / 1.8,
                             shrinkWrap: true,
                             crossAxisCount: 3,
                             physics: BouncingScrollPhysics(),
@@ -110,6 +110,7 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
                             ).toList(),
                           ),
                         ),
+                        //TODO: Fix ads and update
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ValueListenableBuilder(
@@ -159,20 +160,26 @@ class CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: Sizes.dimen_100.h,
+      // width: double.infinity,
+      // height: Sizes.dimen_100.h,
       child: Column(
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(Sizes.dimen_10.sp),
-              child: CachedNetworkImage(
-                fadeInDuration: const Duration(microseconds: 100),
-                imageUrl: imageUrl,
+              borderRadius: BorderRadius.circular(Sizes.dimen_4),
+              child: FittedBox(
                 fit: BoxFit.cover,
-                placeholder: (ctx, string) {
-                  return NoAnimationLoading();
-                },
+                child: CachedNetworkImage(
+                  fadeInDuration: const Duration(microseconds: 100),
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (ctx, string) {
+                    return Container(
+                        width: Sizes.dimen_40,
+                        height: Sizes.dimen_40,
+                        child: NoAnimationLoading());
+                  },
+                ),
               ),
             ),
           ),

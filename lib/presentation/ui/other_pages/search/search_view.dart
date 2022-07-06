@@ -16,6 +16,7 @@ import 'package:webcomic/data/models/newest_manga_model.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
+import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
@@ -48,6 +49,7 @@ class _SearchState extends State<Search> {
   void dispose() {
     _debounce?.cancel();
     searchController.dispose();
+    isSearching.dispose();
     super.dispose();
   }
 
@@ -145,37 +147,55 @@ class _SearchState extends State<Search> {
                                           child: Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: ListTile(
-                                              onTap: () {
-                                                Navigator.pushNamed(
-                                                    context, Routes.mangaInfo,
-                                                    arguments: Datum(
-                                                        mangaUrl: mangaResults
-                                                            .mangaSearchResults[
-                                                                index]
-                                                            .mangaUrl,
-                                                        imageUrl: mangaResults
-                                                            .mangaSearchResults[
-                                                                index]
-                                                            .imageUrl,
-                                                        title: mangaResults
-                                                            .mangaSearchResults[
-                                                                index]
-                                                            .title));
-                                              },
-                                              title: Text(mangaResults
-                                                      .mangaSearchResults[index]
-                                                      .title ??
-                                                  ''),
-                                              leading: CircleAvatar(
-                                                backgroundImage:
-                                                    CachedNetworkImageProvider(
-                                                        mangaResults
-                                                                .mangaSearchResults[
-                                                                    index]
-                                                                .imageUrl ??
-                                                            ''),
-                                              ),
-                                            ),
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        horizontal: 0.0),
+                                                onTap: () {
+                                                  Navigator.pushNamed(
+                                                      context, Routes.mangaInfo,
+                                                      arguments: Datum(
+                                                          mangaUrl: mangaResults
+                                                              .mangaSearchResults[
+                                                                  index]
+                                                              .mangaUrl,
+                                                          imageUrl: mangaResults
+                                                              .mangaSearchResults[
+                                                                  index]
+                                                              .imageUrl,
+                                                          title: mangaResults
+                                                              .mangaSearchResults[
+                                                                  index]
+                                                              .title));
+                                                },
+                                                title: Text(mangaResults
+                                                        .mangaSearchResults[
+                                                            index]
+                                                        .title ??
+                                                    ''),
+                                                leading: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          Sizes.dimen_4),
+                                                  child: CachedNetworkImage(
+                                                      width: Sizes.dimen_70,
+                                                      height: Sizes.dimen_70,
+                                                      fit: BoxFit.cover,
+                                                      placeholder:
+                                                          (ctx, string) {
+                                                        return Container(
+                                                            width:
+                                                                Sizes.dimen_70,
+                                                            height:
+                                                                Sizes.dimen_70,
+                                                            child:
+                                                                NoAnimationLoading());
+                                                      },
+                                                      imageUrl: mangaResults
+                                                              .mangaSearchResults[
+                                                                  index]
+                                                              .imageUrl ??
+                                                          ''),
+                                                )),
                                           ),
                                         );
                                       })

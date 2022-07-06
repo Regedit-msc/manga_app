@@ -20,16 +20,21 @@ import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/router.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/themes/text.dart';
-import 'package:webcomic/presentation/themes/theme_controller.dart';
+import 'package:webcomic/presentation/ui/blocs/ads/ads_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloading_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
+import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 
 import '../main.dart';
@@ -52,6 +57,12 @@ class _IndexState extends State<Index> {
   late ShowCollectionCubit _showCollectionCubit;
   late UserFromGoogleCubit _userFromGoogleCubit;
   late CollectionCardsCubit _collectionCardsCubit;
+  late SettingsCubit _settingsCubit;
+  late ThemeCubit _themeCubit;
+  late ToDownloadCubit _toDownloadCubit;
+  late DownloadedCubit _downloadedCubit;
+  late DownloadingCubit _downloadingCubit;
+  late AdsCubit _adsCubit;
   @override
   void initState() {
     super.initState();
@@ -67,6 +78,12 @@ class _IndexState extends State<Index> {
     _subsCubit = getItInstance<SubsCubit>();
     _userFromGoogleCubit = getItInstance<UserFromGoogleCubit>();
     _collectionCardsCubit = getItInstance<CollectionCardsCubit>();
+    _settingsCubit = getItInstance<SettingsCubit>();
+    _themeCubit = getItInstance<ThemeCubit>();
+    _toDownloadCubit = getItInstance<ToDownloadCubit>();
+    _downloadedCubit = getItInstance<DownloadedCubit>();
+    _downloadingCubit = getItInstance<DownloadingCubit>();
+    _adsCubit = getItInstance<AdsCubit>();
     var initializationSettingsAndroid =
         ln.AndroidInitializationSettings('@drawable/logo');
     var initializationSettingsIOs = ln.IOSInitializationSettings();
@@ -77,7 +94,6 @@ class _IndexState extends State<Index> {
         onSelectNotification: onSelectNotification);
 
     setUpFcmToken();
-    initTheme();
     initFcmNotifications();
   }
 
@@ -93,11 +109,13 @@ class _IndexState extends State<Index> {
     _showCollectionCubit.close();
     _userFromGoogleCubit.close();
     _collectionCardsCubit.close();
+    _settingsCubit.close();
+    _themeCubit.close();
+    _toDownloadCubit.close();
+    _downloadedCubit.close();
+    _downloadingCubit.close();
+    _adsCubit.close();
     super.dispose();
-  }
-
-  void initTheme() async {
-    await getItInstance<ThemeController>().loadTheme();
   }
 
   void setUpFcmToken() async {
@@ -132,6 +150,30 @@ class _IndexState extends State<Index> {
     //   statusBarColor: Colors.transparent,
     // ));
 
+    Color? getColor(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return AppColor.violet;
+      }
+      return Colors.grey[800];
+    }
+
+    Color? getColorLight(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return AppColor.vulcan;
+      }
+      return Colors.grey[200];
+    }
+
     return GraphQLProvider(
       client: getItInstance<ValueNotifier<GraphQLClient>>(),
       child: MultiBlocProvider(
@@ -148,56 +190,98 @@ class _IndexState extends State<Index> {
           BlocProvider<ShowCollectionCubit>.value(value: _showCollectionCubit),
           BlocProvider<CollectionCardsCubit>.value(
               value: _collectionCardsCubit),
+          BlocProvider<SettingsCubit>.value(value: _settingsCubit),
+          BlocProvider<ThemeCubit>.value(value: _themeCubit),
+          BlocProvider<ToDownloadCubit>.value(value: _toDownloadCubit),
+          BlocProvider<DownloadedCubit>.value(value: _downloadedCubit),
+          BlocProvider<DownloadingCubit>.value(value: _downloadingCubit),
+          BlocProvider<AdsCubit>.value(value: _adsCubit),
         ],
-        child: AnimatedBuilder(
-          builder: (context, widget) {
-            return MaterialApp(
-              navigatorKey:
-                  getItInstance<NavigationServiceImpl>().navigationKey,
-              debugShowCheckedModeBanner: false,
-              title: 'Webcomic',
-              themeMode: getItInstance<ThemeController>().themeMode,
-              theme: ThemeData(
-                scaffoldBackgroundColor: Colors.white,
-                brightness: Brightness.light,
-                indicatorColor: AppColor.vulcan,
-                tabBarTheme: TabBarTheme(
-                    unselectedLabelColor: Colors.grey,
-                    unselectedLabelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: Sizes.dimen_14.sp),
-                    labelColor: AppColor.vulcan,
-                    labelStyle: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: Sizes.dimen_14.sp)),
-                appBarTheme: AppBarTheme(
-                    iconTheme: IconThemeData(color: Colors.black),
-                    elevation: 0.0,
-                    backgroundColor: Colors.white,
-                    titleTextStyle: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: Sizes.dimen_22.sp)),
-                visualDensity: VisualDensity.adaptivePlatformDensity,
-                textTheme: ThemeText.getTextLightTheme(),
-              ),
-              darkTheme: ThemeData(
-                  brightness: Brightness.dark,
-                  scaffoldBackgroundColor: AppColor.vulcan,
+        child:
+            BlocBuilder<ThemeCubit, ThemeState>(builder: (context, themeBloc) {
+          if (themeBloc.themeMode == ThemeMode.dark) {
+            SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark
+                .copyWith(
+                    statusBarIconBrightness: Brightness.light,
+                    statusBarColor: Colors.black));
+          } else if (themeBloc.themeMode == ThemeMode.light) {
+            SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
+                .copyWith(
+                    statusBarIconBrightness: Brightness.dark,
+                    statusBarColor: Colors.white));
+          } else {
+            final brightness =
+                MediaQueryData.fromWindow(WidgetsBinding.instance!.window)
+                    .platformBrightness;
+            if (brightness == Brightness.light) {
+              SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
+                  .copyWith(
+                      statusBarIconBrightness: Brightness.dark,
+                      statusBarColor: Colors.white));
+            } else {
+              SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark
+                  .copyWith(
+                      statusBarIconBrightness: Brightness.light,
+                      statusBarColor: Colors.black));
+            }
+          }
+          return AnimatedSwitcher(
+              duration: Duration(seconds: 1),
+              child: MaterialApp(
+                navigatorKey:
+                    getItInstance<NavigationServiceImpl>().navigationKey,
+                debugShowCheckedModeBanner: false,
+                title: 'Tcomic',
+                themeMode: themeBloc.themeMode,
+                theme: ThemeData(
+                  scaffoldBackgroundColor: Colors.white,
+                  brightness: Brightness.light,
+                  indicatorColor: AppColor.vulcan,
+                  tabBarTheme: TabBarTheme(
+                      unselectedLabelColor: Colors.grey,
+                      unselectedLabelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: Sizes.dimen_14.sp),
+                      labelColor: AppColor.vulcan,
+                      labelStyle: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: Sizes.dimen_14.sp)),
+                  appBarTheme: AppBarTheme(
+                      iconTheme: IconThemeData(color: Colors.black),
+                      elevation: 0.0,
+                      backgroundColor: Colors.white,
+                      titleTextStyle: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: Sizes.dimen_22.sp)),
                   visualDensity: VisualDensity.adaptivePlatformDensity,
-                  textTheme: ThemeText.getTextTheme(),
-                  appBarTheme: const AppBarTheme(
-                    iconTheme: IconThemeData(color: Colors.white),
-                    elevation: 0,
-                    backgroundColor: AppColor.vulcan,
-                  )),
-              initialRoute: Routes.initRoute,
-              onGenerateRoute: (settings) =>
-                  CustomRouter.generateRoutes(settings),
-            );
-          },
-          animation: getItInstance<ThemeController>(),
-        ),
+                  textTheme: ThemeText.getTextLightTheme(),
+                  switchTheme: SwitchThemeData(
+                    thumbColor: MaterialStateProperty.all(AppColor.vulcan),
+                    trackColor:
+                        MaterialStateProperty.resolveWith(getColorLight),
+                  ),
+                ),
+                darkTheme: ThemeData(
+                    switchTheme: SwitchThemeData(
+                      thumbColor: MaterialStateProperty.all(AppColor.violet),
+                      trackColor: MaterialStateProperty.resolveWith(getColor),
+                    ),
+                    brightness: Brightness.dark,
+                    indicatorColor: Colors.white,
+                    scaffoldBackgroundColor: AppColor.vulcan,
+                    visualDensity: VisualDensity.adaptivePlatformDensity,
+                    textTheme: ThemeText.getTextTheme(),
+                    appBarTheme: const AppBarTheme(
+                      iconTheme: IconThemeData(color: Colors.white),
+                      elevation: 0,
+                      backgroundColor: AppColor.vulcan,
+                    )),
+                initialRoute: Routes.initRoute,
+                onGenerateRoute: (settings) =>
+                    CustomRouter.generateRoutes(settings),
+              ));
+        }),
       ),
     );
   }

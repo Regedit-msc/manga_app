@@ -6,7 +6,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/most_clicked_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
@@ -51,9 +50,9 @@ class _MostClickedMangaState extends State<MostClickedManga> {
           pollInterval: Duration(minutes: 60),
         ),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+          // if (result.hasException) {
+          //   return Text(result.exception.toString());
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();
@@ -72,8 +71,6 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                   child: Text(
                     "Most Clicked Today",
                     style: TextStyle(
-                        color:
-                            context.isLightMode() ? Colors.black : Colors.white,
                         fontSize: Sizes.dimen_16.sp,
                         fontWeight: FontWeight.bold),
                   ),
@@ -102,8 +99,8 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                             newestManga.data[index].imageUrl));
                               },
                               child: Container(
-                                width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_250,
+                                width: Sizes.dimen_150,
+                                height: Sizes.dimen_270,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
@@ -114,7 +111,7 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                           height: Sizes.dimen_200,
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
-                                                Sizes.dimen_8),
+                                                Sizes.dimen_4),
                                             child: CachedNetworkImage(
                                                 fit: BoxFit.cover,
                                                 placeholder: (ctx, string) {
@@ -132,14 +129,14 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Container(
-                                                    width: Sizes.dimen_120.w,
+                                                    width: Sizes.dimen_100,
                                                     decoration: BoxDecoration(
                                                       border: Border.all(
                                                           color: Colors.white),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               10.0),
-                                                      color: Colors.transparent,
+                                                      color: Colors.white,
                                                     ),
                                                     child: Row(
                                                       mainAxisAlignment:
@@ -149,8 +146,14 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                                         Text(
                                                           "MOST CLICKED",
                                                           style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      10,
+                                                                      10,
+                                                                      10,
+                                                                      0.8),
+                                                              fontSize: Sizes
+                                                                  .dimen_12.sp,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold),
@@ -173,8 +176,14 @@ class _MostClickedMangaState extends State<MostClickedManga> {
                                         clipBehavior: Clip.hardEdge,
                                         children: [
                                           Text(
-                                            newestManga.data[index].title,
+                                            newestManga.data[index].title
+                                                .trim(),
+                                            maxLines: 1,
+                                            textAlign: TextAlign.start,
                                             overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: Sizes.dimen_14.sp,
+                                                fontWeight: FontWeight.w700),
                                           ),
                                         ]),
                                   )

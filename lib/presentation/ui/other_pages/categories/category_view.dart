@@ -161,7 +161,10 @@ class _CategoryViewState extends State<CategoryView>
         controller: _tabController,
         children: [
           ...List.generate(tabs.length, (index) {
-            return CategoryViewMain(category: tabs[index]);
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CategoryViewMain(category: tabs[index]),
+            );
           })
         ],
       ),

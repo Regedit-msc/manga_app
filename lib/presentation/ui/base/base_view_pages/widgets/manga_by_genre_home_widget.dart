@@ -6,10 +6,11 @@ import 'package:webcomic/data/common/constants/categories.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
+import 'package:webcomic/data/services/cache/cache_service.dart';
+import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
@@ -31,9 +32,9 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
             pollInterval: null,
             variables: {"genreUrl": "/browse/?genre=${widget.genre}"}),
         builder: (QueryResult result, {refetch, fetchMore}) {
-          if (result.hasException) {
-            return Text(result.exception.toString());
-          }
+          // if (result.hasException) {
+          //   return Text(result.exception.toString());
+          // }
 
           if (result.isLoading) {
             return NoAnimationLoading();
@@ -60,9 +61,6 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                         child: Text(
                           widget.genre,
                           style: TextStyle(
-                              color: context.isLightMode()
-                                  ? Colors.black
-                                  : Colors.white,
                               fontSize: Sizes.dimen_16.sp,
                               fontWeight: FontWeight.bold),
                         ),
@@ -71,9 +69,6 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                         padding: const EdgeInsets.all(8.0),
                         child: Icon(
                           Icons.arrow_forward_ios,
-                          color: context.isLightMode()
-                              ? Colors.black
-                              : Colors.white,
                           size: Sizes.dimen_16.sp,
                         ),
                       ),
@@ -105,51 +100,29 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                                             .data[index].mangaImage));
                               },
                               child: Container(
-                                width: Sizes.dimen_150.w,
-                                height: Sizes.dimen_250,
+                                width: Sizes.dimen_150,
+                                height: Sizes.dimen_200,
                                 child: Column(children: [
                                   Expanded(
                                     flex: 3,
-                                    child: Stack(
-                                      children: [
-                                        Container(
-                                          width: double.infinity,
-                                          height: Sizes.dimen_200,
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                                Sizes.dimen_8),
-                                            child: CachedNetworkImage(
+                                    child: Container(
+                                        width: double.infinity,
+                                        height: Sizes.dimen_200,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              Sizes.dimen_4),
+                                          child: CachedNetworkImage(
+                                              cacheManager: getItInstance<
+                                                      CacheServiceImpl>()
+                                                  .getDefaultCacheOptions(),
+                                              key: UniqueKey(),
                                               fit: BoxFit.cover,
-                                              imageUrl: newestManga
-                                                  .data[index].mangaImage,
                                               placeholder: (ctx, string) {
                                                 return NoAnimationLoading();
                                               },
-                                            ),
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment: Alignment.bottomCenter,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(
-                                                      Sizes.dimen_10),
-                                                  topRight: Radius.circular(
-                                                      Sizes.dimen_10)),
-                                              color: Colors.transparent,
-                                            ),
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  Icons.analytics_outlined,
-                                                  color: Colors.white,
-                                                )),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                              imageUrl: newestManga
+                                                  .data[index].mangaImage),
+                                        )),
                                   ),
                                   SizedBox(
                                     height: Sizes.dimen_8.h,
@@ -160,9 +133,24 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                                         clipBehavior: Clip.hardEdge,
                                         children: [
                                           Text(
-                                            newestManga.data[index].mangaTitle,
+                                            newestManga.data[index].mangaTitle
+                                                .trim(),
+                                            maxLines: 1,
+                                            textAlign: TextAlign.start,
                                             overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: Sizes.dimen_14.sp,
+                                                fontWeight: FontWeight.w700),
                                           ),
+                                          Text(newestManga.data[index].stats
+                                                      .trim()
+                                                      .length >
+                                                  0
+                                              ? newestManga.data[index].stats
+                                                  .replaceAll("-eng-li", '')
+                                                  .replaceAll("Latest",
+                                                      "Latest Chapter")
+                                              : '')
                                         ]),
                                   )
                                 ]),

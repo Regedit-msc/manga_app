@@ -28,7 +28,7 @@ class _SummaryViewState extends State<SummaryView> {
           toolbarHeight: Sizes.dimen_20.h,
           actions: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding:EdgeInsets.only(left:15.0),
               child: GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
@@ -36,7 +36,7 @@ class _SummaryViewState extends State<SummaryView> {
                 child: Icon(
                   Icons.clear,
                   color: context.isLightMode() ? Colors.black : Colors.white,
-                  size: 30.0,
+                  size: Sizes.dimen_30.w,
                 ),
               ),
             )
@@ -72,7 +72,9 @@ class _SummaryViewState extends State<SummaryView> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(widget.mangaInfo.data.summary.trim()),
+                  child: Text(widget.mangaInfo.data.summary.trim(),
+                    textAlign: TextAlign.justify,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -83,7 +85,9 @@ class _SummaryViewState extends State<SummaryView> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(widget.mangaInfo.data.description.trim()),
+                  child: Text(widget.mangaInfo.data.description.trim(),
+                    textAlign: TextAlign.justify,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),

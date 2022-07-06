@@ -4,9 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
-import 'package:webcomic/data/services/prefs/prefs_service.dart';
-import 'package:webcomic/data/services/snackbar/snackbar_service.dart';
-import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
@@ -19,27 +16,25 @@ class CollectionsView extends StatefulWidget {
   _CollectionsViewState createState() => _CollectionsViewState();
 }
 
-class _CollectionsViewState extends State<CollectionsView>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  void didChangeDependencies() {
-    doSetup();
-    super.didChangeDependencies();
-  }
-
-  void doSetup() {
-    bool firstTimeHere =
-        getItInstance<SharedServiceImpl>().firstTimeOnCollections();
-    if (firstTimeHere) {
-      getItInstance<SnackbarServiceImpl>().showSnack(context,
-          "Welcome to collections.\n Here can create share and also view yours and others comic collections.\n What are you waiting for? Tap soomething to get the ball rolling. P.S remind me to change this to a dialog with images. Thanks!!");
-      getItInstance<SharedServiceImpl>().setFirstTimeOnCollectionsToFalse();
-    }
-  }
+class _CollectionsViewState extends State<CollectionsView> {
+  // @override
+  // void didChangeDependencies() {
+  //   doSetup();
+  //   super.didChangeDependencies();
+  // }
+  //
+  // void doSetup() {
+  //   bool firstTimeHere =
+  //       getItInstance<SharedServiceImpl>().firstTimeOnCollections();
+  //   if (firstTimeHere) {
+  //     getItInstance<SnackbarServiceImpl>().showSnack(context,
+  //         "Welcome to collections.\n Here can create share and also view yours and others comic collections.\n What are you waiting for? Tap soomething to get the ball rolling. P.S remind me to change this to a dialog with images. Thanks!!");
+  //     getItInstance<SharedServiceImpl>().setFirstTimeOnCollectionsToFalse();
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return SafeArea(
       child: Scaffold(
         body: Column(
@@ -130,8 +125,4 @@ class _CollectionsViewState extends State<CollectionsView>
       ),
     );
   }
-
-  @override
-  // TODO: implement wantKeepAlive
-  bool get wantKeepAlive => true;
 }
