@@ -9,7 +9,6 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newsestMMdl;
-import 'package:webcomic/data/services/deep_link/deep_link.service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
@@ -97,14 +96,14 @@ class _CollectionSubcollectionViewState
                               onTap: () async {
                                 String url =
                                     "https://compound.com/collection/subcollection?collectionId=${widget.collectionId}&subcollectionId=${widget.subCollectionId}";
-                                String dynamicLink = await getItInstance<
-                                        DynamicLinkServiceImpl>()
-                                    .createLink(url,
-                                        isSubCollection: true,
-                                        title: data["name"],
-                                        desc: data["description"]);
-
-                                Share.share(dynamicLink);
+                                // String dynamicLink = await getItInstance<
+                                //         DynamicLinkServiceImpl>()
+                                //     .createLink(url,
+                                //         isSubCollection: true,
+                                //         title: data["name"],
+                                //         desc: data["description"]);
+                                //
+                                // Share.share(dynamicLink);
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),

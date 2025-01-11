@@ -15,8 +15,8 @@ class CacheServiceImpl extends CacheService {
   @override
   void clearCache() {
     DefaultCacheManager().emptyCache();
-    imageCache!.clear();
-    imageCache!.clearLiveImages();
+    imageCache.clear();
+    imageCache.clearLiveImages();
     toastServiceImpl.showToast(
         "Successfully cleared cached images. ", Toast.LENGTH_SHORT);
   }

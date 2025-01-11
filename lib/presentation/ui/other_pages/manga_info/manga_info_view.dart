@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -65,20 +63,24 @@ class MangaInfo extends StatefulWidget {
 class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
   GeneratedImageBytesAndColor? _imageAndColor = null;
   Future<void> doSetup() async {
-    ToDownloadQueue queueForThisManga =  getItInstance<NavigationServiceImpl>()
+    ToDownloadQueue queueForThisManga = getItInstance<NavigationServiceImpl>()
         .navigationKey
         .currentContext!
-        .read<ToDownloadCubit>().state.toDownloadMangaQueue.firstWhere((element) => element.mangaUrl == widget.mangaDetails.mangaUrl, orElse: () => ToDownloadQueue(
-      mangaUrl: widget.mangaDetails.mangaUrl ?? ''
-    ));
-    if(!queueForThisManga.isDownloading) {
+        .read<ToDownloadCubit>()
+        .state
+        .toDownloadMangaQueue
+        .firstWhere(
+            (element) => element.mangaUrl == widget.mangaDetails.mangaUrl,
+            orElse: () =>
+                ToDownloadQueue(mangaUrl: widget.mangaDetails.mangaUrl ?? ''));
+    if (!queueForThisManga.isDownloading) {
       getItInstance<NavigationServiceImpl>()
           .navigationKey
           .currentContext!
           .read<ToDownloadCubit>()
           .createQueue(
-          mangaName: widget.mangaDetails.title ?? "",
-          mangaUrl: widget.mangaDetails.mangaUrl ?? '');
+              mangaName: widget.mangaDetails.title ?? "",
+              mangaUrl: widget.mangaDetails.mangaUrl ?? '');
     }
 
     GeneratedImageBytesAndColor _default =
@@ -426,16 +428,15 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                   ElevatedButton(
                                                     style: ElevatedButton
                                                         .styleFrom(
-                                                      primary: context
-                                                              .isLightMode()
-                                                          ? AppColor.vulcan
-                                                          : Colors
-                                                              .white, // background
-                                                      onPrimary: context
+                                                      foregroundColor: context
                                                               .isLightMode()
                                                           ? Colors.white
                                                           : Colors
-                                                              .black, // foreground
+                                                              .black, backgroundColor: context
+                                                              .isLightMode()
+                                                          ? AppColor.vulcan
+                                                          : Colors
+                                                              .white, // foreground
                                                     ),
                                                     onPressed: () async {
                                                       GoogleSignInAccount?
@@ -574,12 +575,12 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                               TapGestureRecognizer()
                                                                 ..onTap =
                                                                     () async {
-                                                                  String url =
+                                                                  Uri url = Uri.parse(
                                                                       AppPolicies
-                                                                          .TERMS_LINK;
-                                                                  if (await canLaunch(
+                                                                          .TERMS_LINK);
+                                                                  if (await canLaunchUrl(
                                                                       url)) {
-                                                                    await launch(
+                                                                    await launchUrl(
                                                                         url);
                                                                   } else {
                                                                     print(
@@ -611,13 +612,12 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                               TapGestureRecognizer()
                                                                 ..onTap =
                                                                     () async {
-                                                                  print("Tap");
-                                                                  String url =
-                                                                      AppPolicies
-                                                                          .PRIVACY_LINK;
-                                                                  if (await canLaunch(
+                                                                  Uri url =
+                                                                      Uri.parse(AppPolicies
+                                                                          .PRIVACY_LINK);
+                                                                  if (await canLaunchUrl(
                                                                       url)) {
-                                                                    await launch(
+                                                                    await launchUrl(
                                                                         url);
                                                                   } else {
                                                                     print(
@@ -661,14 +661,22 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                 ),
                                 ScaleAnim(
                                   onTap: () {
-                                   // Download
-                                    Navigator.pushNamed(context, Routes.downloadView,
-                                        arguments: MangaInformationForDownload(mangaDetails: widget.mangaDetails, chapterList: mangaInfo!.data.chapterList, colorPalette:  _imageAndColor != null?_imageAndColor!.palette: PaletteGenerator.fromColors([])));
+                                    // Download
+                                    Navigator.pushNamed(
+                                        context, Routes.downloadView,
+                                        arguments: MangaInformationForDownload(
+                                            mangaDetails: widget.mangaDetails,
+                                            chapterList:
+                                                mangaInfo!.data.chapterList,
+                                            colorPalette: _imageAndColor != null
+                                                ? _imageAndColor!.palette
+                                                : PaletteGenerator.fromColors(
+                                                    [])));
                                   },
                                   child: Padding(
                                     padding: EdgeInsets.all(8.0),
-                                    child:
-                                    Icon(Icons.download, color: Colors.white),
+                                    child: Icon(Icons.download,
+                                        color: Colors.white),
                                   ),
                                 ),
                               ],

@@ -72,7 +72,7 @@ class DownloadingCubit extends Cubit<DownloadingState> {
         String? newTaskId = await FlutterDownloader.retry(
             taskId: downloadStateForChapter[i]["taskId"]);
         if (newTaskId != null) {
-          changeTaskID(downloadStateForChapter[i]["taskId"], newTaskId!);
+          changeTaskID(downloadStateForChapter[i]["taskId"], newTaskId);
         }
       }
     }

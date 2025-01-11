@@ -23,7 +23,7 @@ class NotificationService {
         'In App Notifications',
         importance: ln.Importance.max,
         priority: ln.Priority.high);
-    var iosDetails = ln.IOSNotificationDetails();
+    var iosDetails = ln.DarwinNotificationDetails();
     var generalNotificationDetails =
         ln.NotificationDetails(android: androidDetails, iOS: iosDetails);
     await flutterLocalNotificationsPlugin.show(
@@ -48,7 +48,7 @@ class NotificationService {
             importance: ln.Importance.max,
             priority: ln.Priority.high,
             styleInformation: bigPictureStyleInformation);
-    var iosDetails = ln.IOSNotificationDetails();
+    var iosDetails = ln.DarwinNotificationDetails();
     final ln.NotificationDetails notificationDetails = ln.NotificationDetails(
         android: androidNotificationDetails, iOS: iosDetails);
     await flutterLocalNotificationsPlugin.show(

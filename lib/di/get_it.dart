@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get_it/get_it.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -15,7 +13,6 @@ import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/api/unsplash_api.dart';
 import 'package:webcomic/data/services/cache/cache_service.dart';
 import 'package:webcomic/data/services/database/db.dart';
-import 'package:webcomic/data/services/deep_link/deep_link.service.dart';
 import 'package:webcomic/data/services/dialog/dialogs.dart';
 import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
@@ -47,12 +44,9 @@ Future init() async {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseDynamicLinks _dynamicLinks = FirebaseDynamicLinks.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final http.Client _client = http.Client();
   SharedPreferences sharedPref = await SharedPreferences.getInstance();
-  final Future<InitializationStatus> initFuture =
-      MobileAds.instance.initialize();
   getItInstance.registerSingleton<SharedPreferences>(sharedPref);
   getItInstance
       .registerLazySingleton<ToastServiceImpl>(() => ToastServiceImpl());
@@ -67,8 +61,6 @@ Future init() async {
   getItInstance.registerLazySingleton<FirebaseAuth>(() => _auth);
   getItInstance.registerLazySingleton<ImagePicker>(() => _picker);
   getItInstance.registerLazySingleton<GoogleSignIn>(() => _googleSignIn);
-  getItInstance
-      .registerLazySingleton<FirebaseDynamicLinks>(() => _dynamicLinks);
   getItInstance.registerLazySingleton<FirebaseStorage>(() => _storage);
   getItInstance.registerLazySingleton<FirebaseFirestore>(() => _firestore);
   getItInstance.registerLazySingleton<SharedServiceImpl>(
@@ -78,14 +70,11 @@ Future init() async {
   getItInstance
       .registerSingleton<ThemeController>(ThemeController(getItInstance()));
   getItInstance.registerSingleton<DialogServiceImpl>(DialogServiceImpl());
-  getItInstance.registerLazySingleton<DynamicLinkServiceImpl>(
-      () => DynamicLinkServiceImpl(getItInstance(), getItInstance()));
   getItInstance.registerLazySingleton<UnsplashApiServiceImpl>(
       () => UnsplashApiServiceImpl(getItInstance()));
 
   getItInstance
       .registerLazySingleton<SnackbarServiceImpl>(() => SnackbarServiceImpl());
-  getItInstance.registerSingleton<Future<InitializationStatus>>(initFuture);
   getItInstance.registerLazySingleton<NavigationServiceImpl>(
       () => NavigationServiceImpl());
   getItInstance.registerLazySingleton<GQLRawApiServiceImpl>(() =>
@@ -146,7 +135,7 @@ Future init() async {
         sharedServiceImpl: getItInstance(),
         navigationServiceImpl: getItInstance()),
   );
-  getItInstance.registerFactory(
-    () => AdsCubit(initialization: getItInstance()),
-  );
+  // getItInstance.registerFactory(
+  //   () => AdsCubit(initialization: getItInstance()),
+  // );
 }

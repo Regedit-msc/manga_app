@@ -328,12 +328,11 @@ class _CreateCollectionState extends State<CreateCollection> {
                     Expanded(
                       child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: context.isLightMode()
-                                ? AppColor.vulcan
-                                : Colors.white, // background
-                            onPrimary: context.isLightMode()
+                            foregroundColor: context.isLightMode()
                                 ? Colors.white
-                                : Colors.black, // foreground
+                                : Colors.black, backgroundColor: context.isLightMode()
+                                ? AppColor.vulcan
+                                : Colors.white, // foreground
                           ),
                           onPressed: () async {
                             UserFromGoogle userDetails =

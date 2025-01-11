@@ -113,7 +113,6 @@ class _MangaUpdatesTabViewState extends State<MangaUpdatesTabView> {
                             ).toList(),
                           ),
                         ),
-                        AdContainer(),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ValueListenableBuilder(

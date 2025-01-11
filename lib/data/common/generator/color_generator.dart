@@ -68,10 +68,10 @@ List<Color> generatePalette(Map<String, dynamic> params) {
 List<Color> extractPixelsColors(Uint8List? bytes) {
   List<Color> colors = [];
 
-  List<int> values = bytes!.buffer.asUint8List();
+  Uint8List values = bytes!.buffer.asUint8List();
   imageLib.Image? image = imageLib.decodeImage(values);
 
-  List<int?> pixels = [];
+  List<imageLib.Pixel?> pixels = [];
 
   int? width = image?.width;
   int? height = image?.height;
@@ -81,9 +81,9 @@ List<Color> extractPixelsColors(Uint8List? bytes) {
 
   for (int j = 1; j < noOfPixelsPerAxis + 1; j++) {
     for (int i = 1; i < noOfPixelsPerAxis + 1; i++) {
-      int? pixel = image?.getPixel(xChunk * i, yChunk * j);
+      imageLib.Pixel? pixel = image?.getPixel(xChunk * i, yChunk * j);
       pixels.add(pixel);
-      colors.add(abgrToColor(pixel!));
+      colors.add(abgrToColor(pixel! as int));
     }
   }
 

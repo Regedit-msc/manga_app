@@ -33,7 +33,7 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
       updateQuery: (previousResultData, fetchMoreResultData) {
         fetchMoreResultData!["getMangaByGenre"]['data'] = [
           ...previousResultData!["getMangaByGenre"]['data'],
-          ...fetchMoreResultData!["getMangaByGenre"]['data']
+          ...fetchMoreResultData["getMangaByGenre"]['data']
         ];
         if (mounted) {
           setState(() {

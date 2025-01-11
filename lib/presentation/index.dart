@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -39,6 +40,18 @@ import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 
 import '../main.dart';
 
+@pragma('vm:entry-point')
+void notificationTapBackground(ln.NotificationResponse notificationResponse) {
+  // ignore: avoid_print
+  print('notification(${notificationResponse.id}) action tapped: '
+      '${notificationResponse.actionId} with'
+      ' payload: ${notificationResponse.payload}');
+  if (notificationResponse.input?.isNotEmpty ?? false) {
+    print(
+        'notification action tapped with input: ${notificationResponse.input}');
+  }
+}
+
 class Index extends StatefulWidget {
   const Index({Key? key}) : super(key: key);
 
@@ -62,7 +75,7 @@ class _IndexState extends State<Index> {
   late ToDownloadCubit _toDownloadCubit;
   late DownloadedCubit _downloadedCubit;
   late DownloadingCubit _downloadingCubit;
-  late AdsCubit _adsCubit;
+  // late AdsCubit _adsCubit;
   @override
   void initState() {
     super.initState();
@@ -83,18 +96,49 @@ class _IndexState extends State<Index> {
     _toDownloadCubit = getItInstance<ToDownloadCubit>();
     _downloadedCubit = getItInstance<DownloadedCubit>();
     _downloadingCubit = getItInstance<DownloadingCubit>();
-    _adsCubit = getItInstance<AdsCubit>();
+    // _adsCubit = getItInstance<AdsCubit>();
     var initializationSettingsAndroid =
         ln.AndroidInitializationSettings('@drawable/logo');
-    var initializationSettingsIOs = ln.IOSInitializationSettings();
+    var initializationSettingsIOS = ln.DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
     var initSetttings = ln.InitializationSettings(
-        android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
-
-    flutterLocalNotificationsPlugin.initialize(initSetttings,
-        onSelectNotification: onSelectNotification);
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    //
+    // flutterLocalNotificationsPlugin.initialize(initSetttings,
+    //     onDidReceiveNotificationResponse:
+    //         (ln.NotificationResponse notificationResponse) {
+    //   onSelectNotification(notificationResponse.payload);
+    // }, onDidReceiveBackgroundNotificationResponse: notificationTapBackground);
 
     setUpFcmToken();
     initFcmNotifications();
+    _requestLocalNotifPermissions();
+  }
+
+  Future<void> _requestLocalNotifPermissions() async {
+    if (Platform.isIOS) {
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              ln.IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    } else if (Platform.isAndroid) {
+      final ln.AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+          flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+              ln.AndroidFlutterLocalNotificationsPlugin>();
+
+      bool enabled =
+          await androidImplementation?.areNotificationsEnabled() ?? false;
+      if (!enabled) {
+        await androidImplementation?.requestNotificationsPermission();
+      }
+    }
   }
 
   @override
@@ -114,16 +158,16 @@ class _IndexState extends State<Index> {
     _toDownloadCubit.close();
     _downloadedCubit.close();
     _downloadingCubit.close();
-    _adsCubit.close();
+    // _adsCubit.close();
     super.dispose();
   }
 
   void setUpFcmToken() async {
     if (getItInstance<SharedServiceImpl>().getAddedToken()) {
-      FirebaseMessaging.instance.onTokenRefresh
-          .listen(getItInstance<GQLRawApiServiceImpl>().updateToken);
+      // FirebaseMessaging.instance.onTokenRefresh
+      //     .listen(getItInstance<GQLRawApiServiceImpl>().updateToken);
     } else {
-      await getItInstance<GQLRawApiServiceImpl>().addToken();
+      // await getItInstance<GQLRawApiServiceImpl>().addToken();
     }
   }
 
@@ -195,7 +239,7 @@ class _IndexState extends State<Index> {
           BlocProvider<ToDownloadCubit>.value(value: _toDownloadCubit),
           BlocProvider<DownloadedCubit>.value(value: _downloadedCubit),
           BlocProvider<DownloadingCubit>.value(value: _downloadingCubit),
-          BlocProvider<AdsCubit>.value(value: _adsCubit),
+          // BlocProvider<AdsCubit>.value(value: _adsCubit),
         ],
         child:
             BlocBuilder<ThemeCubit, ThemeState>(builder: (context, themeBloc) {
@@ -211,7 +255,7 @@ class _IndexState extends State<Index> {
                     statusBarColor: Colors.white));
           } else {
             final brightness =
-                MediaQueryData.fromWindow(WidgetsBinding.instance!.window)
+                MediaQueryData.fromWindow(WidgetsBinding.instance.window)
                     .platformBrightness;
             if (brightness == Brightness.light) {
               SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light

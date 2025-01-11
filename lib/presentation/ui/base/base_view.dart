@@ -17,7 +17,6 @@ import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
 import 'package:webcomic/data/models/unsplash/unsplash_model.dart';
 import 'package:webcomic/data/services/api/unsplash_api.dart';
 import 'package:webcomic/data/services/database/db.dart';
-import 'package:webcomic/data/services/deep_link/deep_link.service.dart';
 import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/di/get_it.dart';
@@ -27,7 +26,6 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/recents_view.dart'
 import 'package:webcomic/presentation/ui/base/base_view_pages/settings_view.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
-import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloading_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
@@ -72,14 +70,12 @@ class _BaseViewState extends State<BaseView>
   void initState() {
     doSetUp();
     baseViewPageController = PageController();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
   }
 
   void doSetUp() async {
     final DatabaseHelper dbInstance = getItInstance<DatabaseHelper>();
-    final DynamicLinkServiceImpl dynamicLiksService =
-        getItInstance<DynamicLinkServiceImpl>();
     List<RecentlyRead>? recents = await dbInstance.getRecentReads();
     List<ChapterRead>? chaptersRead = await dbInstance.getChaptersRead();
     List<Subscribe>? subscribed = await dbInstance.getSubscriptions();
@@ -109,7 +105,6 @@ class _BaseViewState extends State<BaseView>
     }
 
     context.read<DownloadedCubit>().refresh();
-    await dynamicLiksService.handleDynamicLinks();
     _bindBackgroundIsolate();
     FlutterDownloader.registerCallback(downloadCallback);
   }
@@ -198,7 +193,7 @@ class _BaseViewState extends State<BaseView>
   }
 
   static void downloadCallback(
-      String id, DownloadTaskStatus status, int progress) {
+      String id, int status, int progress) {
     final SendPort? send =
         IsolateNameServer.lookupPortByName('downloader_send_port');
     send!.send([id, status, progress]);

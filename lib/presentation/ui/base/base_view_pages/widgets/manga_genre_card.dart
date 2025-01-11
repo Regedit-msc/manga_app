@@ -28,7 +28,7 @@ class _MangaByGenreCardState extends State<MangaByGenreCard> {
         options: QueryOptions(
             document: parseString(MANGA_BY_GENRE),
             pollInterval: null,
-            variables: {"genreUrl": "/browse/?genre=${widget.genre}"}),
+            variables: {"genreUrl": widget.genre }),
         builder: (QueryResult result, {refetch, fetchMore}) {
           // if (result.hasException) {
           //   return Text(result.exception.toString());

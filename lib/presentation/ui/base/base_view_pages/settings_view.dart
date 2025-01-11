@@ -121,10 +121,10 @@ class _SettingsViewState extends State<SettingsView> {
                           themeMode: oldSettings.themeMode);
                       context.read<SettingsCubit>().setSettings(newSettings);
                       if (value) {
-                        await getItInstance<GQLRawApiServiceImpl>().addToken();
+                        // await getItInstance<GQLRawApiServiceImpl>().addToken();
                       } else {
-                        await getItInstance<GQLRawApiServiceImpl>()
-                            .removeToken();
+                        // await getItInstance<GQLRawApiServiceImpl>()
+                        //     .removeToken();
                       }
                     },
                     title: Text('Subscribed comic notifications'),
