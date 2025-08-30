@@ -25,6 +25,9 @@ class MangaInformation {
   Map<String, dynamic> toMap() => {
         "data": data.toMap(),
       };
+
+  @override
+  String toString() => 'MangaInformation(data: ${data.toString()})';
 }
 
 class MangaInformationData {
@@ -42,6 +45,10 @@ class MangaInformationData {
   Map<String, dynamic> toMap() => {
         "getMangaInfo": getMangaInfo.toMap(),
       };
+
+  @override
+  String toString() =>
+      'MangaInformationData(getMangaInfo: ${getMangaInfo.toString()})';
 }
 
 class GetMangaInfo {
@@ -66,6 +73,9 @@ class GetMangaInfo {
         "success": success,
         "data": data.toMap(),
       };
+
+  @override
+  String toString() => 'GetMangaInfo(success: $success, message: $message)';
 }
 
 class GetMangaInfoData {
@@ -80,8 +90,7 @@ class GetMangaInfoData {
       required this.chapterList,
       required this.genres,
       required this.recommendations,
-      required this.mangaSource
-      });
+      required this.mangaSource});
 
   String mangaImage;
   String author;
@@ -129,6 +138,22 @@ class GetMangaInfoData {
             List<dynamic>.from(recommendations.map((x) => x.toMap())),
         "mangaSource": mangaSource
       };
+
+  @override
+  String toString() =>
+      'GetMangaInfoData(author: ' +
+      author +
+      ', status: ' +
+      status +
+      ', chapters: ' +
+      chapterList.length.toString() +
+      ', genres: ' +
+      genres.length.toString() +
+      ', recs: ' +
+      recommendations.length.toString() +
+      ', source: ' +
+      mangaSource +
+      ')';
 }
 
 class ChapterList {
@@ -165,6 +190,16 @@ class ChapterList {
         "mangaTitle": mangaTitle,
         "mangaImage": mangaImage
       };
+
+  @override
+  String toString() =>
+      'ChapterList(title: ' +
+      chapterTitle +
+      ', url: ' +
+      chapterUrl +
+      ', date: ' +
+      dateUploaded +
+      ')';
 }
 
 class Genre {
@@ -185,6 +220,9 @@ class Genre {
         "genreUrl": genreUrl,
         "genre": genre,
       };
+
+  @override
+  String toString() => 'Genre(genre: ' + genre + ', url: ' + genreUrl + ')';
 }
 
 class Recommendation {
@@ -202,4 +240,8 @@ class Recommendation {
 
   Map<String, dynamic> toMap() =>
       {"title": title, "mangaUrl": mangaUrl, "mangaImage": mangaImage};
+
+  @override
+  String toString() =>
+      'Recommendation(title: ' + title + ', url: ' + mangaUrl + ')';
 }

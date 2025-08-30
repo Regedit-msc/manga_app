@@ -235,4 +235,14 @@ class DebugLogger {
     if (statusCode >= 500) return '💥';
     return '❓';
   }
+
+  /// Log any model via its toString override
+  static void logModel(Object? model, {String? label}) {
+    if (!shouldLog) return;
+    final name = label ?? model?.runtimeType.toString() ?? 'Model';
+    print('\n$_tag MODEL');
+    print('├── Type: $name');
+    print('├── ToString: ${model?.toString()}');
+    print('└── Timestamp: ${DateTime.now().toIso8601String()}');
+  }
 }

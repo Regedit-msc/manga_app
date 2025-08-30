@@ -25,6 +25,9 @@ class NewestManga {
   Map<String, dynamic> toMap() => {
         "data": data!.toMap(),
       };
+
+  @override
+  String toString() => 'NewestManga(data: ${data?.toString()})';
 }
 
 class Data {
@@ -41,6 +44,10 @@ class Data {
   Map<String, dynamic> toMap() => {
         "getNewestManga": getNewestManga!.toMap(),
       };
+
+  @override
+  String toString() =>
+      'NewestManga.Data(getNewestManga: ${getNewestManga?.toString()})';
 }
 
 class GetNewestManga extends ResponseEntity {
@@ -50,9 +57,9 @@ class GetNewestManga extends ResponseEntity {
     this.data,
   }) : super(message: message, data: data, success: success);
 
-  String? message;
-  bool? success;
-  List<Datum>? data;
+  final String? message;
+  final bool? success;
+  final List<Datum>? data;
 
   factory GetNewestManga.fromMap(Map<String, dynamic> json) => GetNewestManga(
         message: json["message"],
@@ -65,6 +72,10 @@ class GetNewestManga extends ResponseEntity {
         "success": success,
         "data": List<dynamic>.from(data!.map((x) => x.toMap())),
       };
+
+  @override
+  String toString() =>
+      'GetNewestManga(success: $success, message: $message, items: ${data?.length ?? 0})';
 }
 
 class Datum {
@@ -93,4 +104,8 @@ class Datum {
         "imageUrl": imageUrl,
         "mangaSource": mangaSource,
       };
+
+  @override
+  String toString() =>
+      'NewestManga.Item(title: $title, url: $mangaUrl, source: $mangaSource)';
 }

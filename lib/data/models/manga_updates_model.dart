@@ -23,6 +23,9 @@ class MangaUpdates {
   Map<String, dynamic> toMap() => {
         "data": data.toMap(),
       };
+
+  @override
+  String toString() => 'MangaUpdates(data: ${data.toString()})';
 }
 
 class Data {
@@ -39,6 +42,10 @@ class Data {
   Map<String, dynamic> toMap() => {
         "getMangaPage": getMangaPage.toMap(),
       };
+
+  @override
+  String toString() =>
+      'MangaUpdates.Data(getMangaPage: ${getMangaPage.toString()})';
 }
 
 class GetMangaPage {
@@ -63,6 +70,14 @@ class GetMangaPage {
         "success": success,
         "data": List<dynamic>.from(data.map((x) => x.toMap())),
       };
+
+  @override
+  String toString() =>
+      'GetMangaPage(success: ' +
+      success.toString() +
+      ', items: ' +
+      data.length.toString() +
+      ')';
 }
 
 class Datum {

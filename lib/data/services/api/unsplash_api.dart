@@ -41,9 +41,11 @@ class UnsplashApiServiceImpl extends UnSplashApiService {
 
       if (res.statusCode == 200) {
         Map<String, dynamic> responseJson = jsonDecode(res.body);
-        print(responseJson);
         List<Result> unsplash =
             List.from(responseJson["results"].map((e) => Result.fromMap(e)));
+        for (final r in unsplash.take(3)) {
+          DebugLogger.logModel(r, label: 'UnsplashResult');
+        }
         return unsplash;
       }
       return null;

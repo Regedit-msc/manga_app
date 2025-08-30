@@ -7,4 +7,12 @@ class MangaInfoWithDatum {
   Datum datum;
 
   MangaInfoWithDatum({required this.mangaInfo, required this.datum});
+
+  @override
+  String toString() =>
+      'MangaInfoWithDatum(infoSuccess: ' +
+      (mangaInfo?.success.toString() ?? 'null') +
+      ', datum: ' +
+      datum.title.toString() +
+      ')';
 }

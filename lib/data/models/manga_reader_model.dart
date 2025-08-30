@@ -23,6 +23,9 @@ class MangaReader {
   Map<String, dynamic> toMap() => {
         "data": data.toMap(),
       };
+
+  @override
+  String toString() => 'MangaReader(data: ${data.toString()})';
 }
 
 class MangaReaderData {
@@ -39,6 +42,10 @@ class MangaReaderData {
   Map<String, dynamic> toMap() => {
         "getMangaReader": getMangaReader.toMap(),
       };
+
+  @override
+  String toString() =>
+      'MangaReaderData(getMangaReader: ${getMangaReader.toString()})';
 }
 
 class GetMangaReader {
@@ -63,6 +70,9 @@ class GetMangaReader {
         "success": success,
         "data": data.toMap(),
       };
+
+  @override
+  String toString() => 'GetMangaReader(success: $success, message: $message)';
 }
 
 class GetMangaReaderData {
@@ -92,4 +102,16 @@ class GetMangaReaderData {
         "chapterList": List<dynamic>.from(chapterList!.map((x) => x)),
         "mangaSource": mangaSource,
       };
+
+  @override
+  String toString() =>
+      'GetMangaReaderData(chapter: ' +
+      chapter +
+      ', images: ' +
+      images.length.toString() +
+      ', chapterList: ' +
+      (chapterList?.length ?? 0).toString() +
+      ', source: ' +
+      (mangaSource ?? '') +
+      ')';
 }

@@ -31,6 +31,16 @@ class Unsplash {
         "total_pages": totalPages,
         "results": List<dynamic>.from(results.map((x) => x.toMap())),
       };
+
+  @override
+  String toString() =>
+      'Unsplash(total: ' +
+      total.toString() +
+      ', pages: ' +
+      totalPages.toString() +
+      ', results: ' +
+      results.length.toString() +
+      ')';
 }
 
 class Result {
@@ -57,10 +67,20 @@ class Result {
   Map<String, dynamic> toMap() => {
         "id": id,
         "title": title,
-        "description": description == null ? '' : description,
+        "description": description,
         "preview_photos":
             List<dynamic>.from(previewPhotos.map((x) => x.toMap())),
       };
+
+  @override
+  String toString() =>
+      'Unsplash.Result(id: ' +
+      id +
+      ', title: ' +
+      title +
+      ', photos: ' +
+      previewPhotos.length.toString() +
+      ')';
 }
 
 class ResultCoverPhoto {
@@ -143,8 +163,8 @@ class ResultCoverPhoto {
         "height": height,
         "color": color,
         "blur_hash": blurHash,
-        "description": description == null ? "" : description,
-        "alt_description": altDescription == null ? "" : altDescription,
+        "description": description,
+        "alt_description": altDescription,
         "urls": urls.toMap(),
         "links": links.toMap(),
         "categories": List<dynamic>.from(categories.map((x) => x)),
@@ -332,15 +352,14 @@ class User {
         "username": username,
         "name": name,
         "first_name": firstName,
-        "last_name": lastName == null ? "" : lastName,
-        "twitter_username": twitterUsername == null ? "" : twitterUsername,
-        "portfolio_url": portfolioUrl == null ? "" : portfolioUrl,
-        "bio": bio == null ? "" : bio,
-        "location": location == null ? "" : location,
+        "last_name": lastName,
+        "twitter_username": twitterUsername,
+        "portfolio_url": portfolioUrl,
+        "bio": bio,
+        "location": location,
         "links": links.toMap(),
         "profile_image": profileImage.toMap(),
-        "instagram_username":
-            instagramUsername == null ? "" : instagramUsername,
+        "instagram_username": instagramUsername,
         "total_collections": totalCollections,
         "total_likes": totalLikes,
         "total_photos": totalPhotos,
@@ -439,10 +458,9 @@ class Social {
       );
 
   Map<String, dynamic> toMap() => {
-        "instagram_username":
-            instagramUsername == null ? "" : instagramUsername,
-        "portfolio_url": portfolioUrl == null ? "" : portfolioUrl,
-        "twitter_username": twitterUsername == null ? "" : twitterUsername,
+        "instagram_username": instagramUsername,
+        "portfolio_url": portfolioUrl,
+        "twitter_username": twitterUsername,
         "paypal_email": paypalEmail,
       };
 }
@@ -700,8 +718,8 @@ class SourceCoverPhoto {
         "height": height,
         "color": color,
         "blur_hash": blurHash,
-        "description": description == null ? "" : description,
-        "alt_description": altDescription == null ? "" : altDescription,
+        "description": description,
+        "alt_description": altDescription,
         "urls": urls.toMap(),
         "links": links.toMap(),
         "categories": List<dynamic>.from(categories.map((x) => x)),

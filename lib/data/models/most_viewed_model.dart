@@ -23,6 +23,9 @@ class MostViewedManga {
   Map<String, dynamic> toMap() => {
         "data": data.toMap(),
       };
+
+  @override
+  String toString() => 'MostViewedManga(data: ${data.toString()})';
 }
 
 class Data {
@@ -40,6 +43,10 @@ class Data {
   Map<String, dynamic> toMap() => {
         "getMostViewedManga": getMostViewedManga.toMap(),
       };
+
+  @override
+  String toString() =>
+      'MostViewedManga.Data(getMostViewedManga: ${getMostViewedManga.toString()})';
 }
 
 class GetMostViewedManga {
@@ -65,6 +72,14 @@ class GetMostViewedManga {
         "success": success,
         "data": List<dynamic>.from(data.map((x) => x.toMap())),
       };
+
+  @override
+  String toString() =>
+      'GetMostViewedManga(success: ' +
+      success.toString() +
+      ', items: ' +
+      data.length.toString() +
+      ')';
 }
 
 class Datum {

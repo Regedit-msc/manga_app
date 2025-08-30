@@ -27,6 +27,9 @@ class MangaSearchResults {
   Map<String, dynamic> toMap() => {
         "data": data.toMap(),
       };
+
+  @override
+  String toString() => 'MangaSearchResults(data: ${data.toString()})';
 }
 
 class Data {
@@ -43,6 +46,10 @@ class Data {
   Map<String, dynamic> toMap() => {
         "mangaSearch": mangaSearch.toMap(),
       };
+
+  @override
+  String toString() =>
+      'MangaSearchResults.Data(mangaSearch: ${mangaSearch.toString()})';
 }
 
 class MangaSearch {
@@ -67,4 +74,12 @@ class MangaSearch {
         "success": success,
         "data": List<dynamic>.from(data.map((x) => x.toMap())),
       };
+
+  @override
+  String toString() =>
+      'MangaSearch(success: ' +
+      success.toString() +
+      ', items: ' +
+      data.length.toString() +
+      ')';
 }

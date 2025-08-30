@@ -50,7 +50,7 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
         return;
       } else {
         final AddTokenResponse res = AddTokenResponse.fromMap(result.data);
-        print(res.addFcmToken!.tokenId);
+        DebugLogger.logModel(res, label: 'AddTokenResponse');
         await prefs.saveUserToken(res.addFcmToken!.tokenId);
         return;
       }
@@ -77,7 +77,7 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
       print(result.exception.toString());
       return;
     } else {
-      print("Success");
+      DebugLogger.logInfo('Update token success');
       prefs.saveUserToken('');
       return;
     }
@@ -107,7 +107,7 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
         print(result.exception.toString());
         return;
       } else {
-        print("Success");
+        DebugLogger.logInfo('Subscribe success');
         return;
       }
     }
@@ -132,7 +132,7 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
     if (result.hasException) {
       print(result.exception.toString());
     } else {
-      print("Success");
+      DebugLogger.logInfo('Remove token success');
     }
   }
 
@@ -157,6 +157,7 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
     } else {
       dynamic mangaToRead = result.data!["getMangaReader"];
       GetMangaReader mangaReader = GetMangaReader.fromMap(mangaToRead);
+      DebugLogger.logModel(mangaReader, label: 'GetMangaReader');
       return GetMangaReaderData(
           chapter: mangaReader.data.chapter,
           images: mangaReader.data.images,

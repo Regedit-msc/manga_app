@@ -25,6 +25,10 @@ class AddTokenResponse {
   Map<String, dynamic> toMap() => {
         "addFcmToken": addFcmToken!.toMap(),
       };
+
+  @override
+  String toString() =>
+      'AddTokenResponse(token: ${addFcmToken?.tokenId}, success: ${addFcmToken?.success})';
 }
 
 class AddFcmToken {
@@ -49,4 +53,12 @@ class AddFcmToken {
         "success": success,
         "tokenID": tokenId,
       };
+
+  @override
+  String toString() =>
+      'AddFcmToken(success: ' +
+      success.toString() +
+      ', tokenId: ' +
+      tokenId +
+      ')';
 }
