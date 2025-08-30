@@ -9,7 +9,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
-import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_tabular.dart';
@@ -255,9 +254,8 @@ class _HomeViewState extends State<HomeView>
                         const SizedBox(height: 10),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Container(
-                            width: ScreenUtil.screenWidth,
-                            height: Sizes.dimen_250,
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
                             child: Stack(
                               children: [
                                 Positioned.fill(
@@ -268,7 +266,7 @@ class _HomeViewState extends State<HomeView>
                                         builder: (context, settingsBloc) {
                                       return CarouselSlider.builder(
                                         options: CarouselOptions(
-                                            height: Sizes.dimen_250,
+                                            aspectRatio: 16 / 9,
                                             viewportFraction: 1.0,
                                             enlargeCenterPage: false,
                                             autoPlayCurve: Curves.ease,
@@ -302,6 +300,10 @@ class _HomeViewState extends State<HomeView>
                                               children: [
                                                 CachedNetworkImage(
                                                   imageUrl: item.imageUrl ?? '',
+                                                  memCacheWidth: 1600,
+                                                  memCacheHeight: 900,
+                                                  maxWidthDiskCache: 1920,
+                                                  maxHeightDiskCache: 1080,
                                                   fit: BoxFit.cover,
                                                   placeholder: (ctx, _) =>
                                                       const SizedBox(),
