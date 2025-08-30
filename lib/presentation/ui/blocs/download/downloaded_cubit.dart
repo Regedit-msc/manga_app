@@ -196,6 +196,54 @@ class DownloadedCubit extends Cubit<DownloadedState> {
     }
   }
 
+  /// Get storage information for a specific manga
+  Future<Map<String, dynamic>> getMangaStorageInfo(String mangaName) async {
+    try {
+      int totalSize = 0;
+      int chapterCount = 0;
+
+      final tasks = await fd.FlutterDownloader.loadTasksWithRawQuery(
+          query:
+              'SELECT * FROM task WHERE saved_dir LIKE "%$mangaName%" AND status=3');
+
+      if (tasks != null) {
+        final Map<String, fd.DownloadTask> uniqueDirs = {};
+        for (final task in tasks) {
+          uniqueDirs[task.savedDir] = task;
+        }
+
+        chapterCount = uniqueDirs.length;
+
+        for (final task in uniqueDirs.values) {
+          final directory = Directory(task.savedDir);
+          if (await directory.exists()) {
+            final files = await directory.list(recursive: true).toList();
+            for (final file in files) {
+              if (file is File) {
+                final stat = await file.stat();
+                totalSize += stat.size;
+              }
+            }
+          }
+        }
+      }
+
+      return {
+        'totalSize': totalSize,
+        'chapterCount': chapterCount,
+        'formattedSize': _formatBytes(totalSize),
+      };
+    } catch (e) {
+      DebugLogger.logInfo('failed to get manga storage info: $e',
+          category: 'Downloader');
+      return {
+        'totalSize': 0,
+        'chapterCount': 0,
+        'formattedSize': '0 B',
+      };
+    }
+  }
+
   String _formatBytes(int bytes) {
     const suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (bytes == 0) return '0 B';

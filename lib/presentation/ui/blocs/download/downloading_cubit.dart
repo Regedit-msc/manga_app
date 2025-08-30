@@ -11,6 +11,7 @@ import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/data/services/toast/toast_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:webcomic/data/services/download/download_progress_service.dart';
 
 class DownloadingState {
   List<Map<String, dynamic>> downloads;
@@ -24,6 +25,9 @@ class DownloadingCubit extends Cubit<DownloadingState> {
   DownloadingCubit(
       {required this.sharedServiceImpl, required this.navigationServiceImpl})
       : super(DownloadingState());
+
+  // Broadcast progress to floating UI and manager page
+  final DownloadProgressService _progressService = DownloadProgressService();
 
   // Optional soft cap on total concurrent tasks across app
   static const int _globalMaxConcurrentTasks = 6;
@@ -65,6 +69,9 @@ class DownloadingCubit extends Cubit<DownloadingState> {
       ...state.downloads,
       downloadList,
     ]));
+
+    // Seed/update the progress service when a new task joins
+    _updateProgressFromDownloadList();
   }
 
   void changeTaskID(String taskid, String newTaskID) {
@@ -171,6 +178,17 @@ class DownloadingCubit extends Cubit<DownloadingState> {
     list[idx] = current;
     setDownload(list);
 
+    // Log progress for debugging
+    final chapterUrl = current['chapterUrl'] as String? ?? 'unknown';
+    final mangaName = current['mangaName'] as String? ?? 'unknown';
+
+    DebugLogger.logInfo(
+        'download progress: $mangaName - progress: $progress%, status: $status, chapterUrl: $chapterUrl',
+        category: 'Downloader');
+
+    // Update aggregated chapter progress for floating UI
+    _updateProgressFromDownloadList();
+
     // If a single image fails/cancels, we cancel the whole chapter and cleanup its dir
     if (status == DownloadTaskStatus.failed ||
         status == DownloadTaskStatus.canceled) {
@@ -189,6 +207,9 @@ class DownloadingCubit extends Cubit<DownloadingState> {
       if (chapterUrl == null) return;
       DebugLogger.logInfo('chapter failed, cleaning up files: $chapterUrl',
           category: 'Downloader');
+
+      // Notify progress service about failure
+      _updateChapterProgressStatus(chapterUrl, DownloadStatus.failed);
 
       // Cancel all tasks for this chapter
       final tasksForChapter =
@@ -215,6 +236,9 @@ class DownloadingCubit extends Cubit<DownloadingState> {
       final remaining =
           state.downloads.where((e) => e['chapterUrl'] != chapterUrl).toList();
       setDownload(remaining);
+
+      // Remove from progress service as well
+      _progressService.removeChapter(chapterUrl);
     } catch (e) {
       DebugLogger.logInfo('cleanup error: $e', category: 'Downloader');
     }
@@ -243,6 +267,20 @@ class DownloadingCubit extends Cubit<DownloadingState> {
     final mangaName = anyTaskForChapter['mangaName'] as String?;
     final imageUrl = anyTaskForChapter['imageUrl'] as String?;
     if (mangaUrl == null || mangaName == null || imageUrl == null) return;
+
+    // Mark chapter as completed in progress service
+    try {
+      final totalImages = anyTaskForChapter['imagesLength'] as int? ?? 0;
+      _progressService.updateProgress(
+        mangaUrl: mangaUrl,
+        chapterUrl: chapterUrl,
+        totalImages: totalImages,
+        completedImages: totalImages,
+        mangaName: mangaName,
+        chapterName: anyTaskForChapter['chapterName'] as String? ?? '',
+        status: DownloadStatus.completed,
+      );
+    } catch (_) {}
 
     final stillActiveForManga = state.downloads.any((e) =>
         e['mangaUrl'] == mangaUrl &&
@@ -292,5 +330,102 @@ class DownloadingCubit extends Cubit<DownloadingState> {
     } catch (e) {
       DebugLogger.logInfo('promote error: $e', category: 'Downloader');
     }
+  }
+
+  // Aggregate current tasks into chapter-level progress and publish
+  void _updateProgressFromDownloadList() {
+    // Group downloads by chapterUrl
+    final chapterGroups = <String, List<Map<String, dynamic>>>{};
+    for (final d in state.downloads) {
+      final chapterUrl = d['chapterUrl'] as String?;
+      if (chapterUrl == null) continue;
+      (chapterGroups[chapterUrl] ??= []).add(d);
+    }
+
+    for (final entry in chapterGroups.entries) {
+      final chapterUrl = entry.key;
+      final downloads = entry.value;
+      if (downloads.isEmpty) continue;
+
+      final first = downloads.first;
+      final mangaUrl = first['mangaUrl'] as String? ?? '';
+      final mangaName = first['mangaName'] as String? ?? '';
+      final chapterName = first['chapterName'] as String? ?? '';
+      final totalImages = first['imagesLength'] as int? ?? 0;
+
+      int totalProgress = 0;
+      int completedTasks = 0;
+      for (final d in downloads) {
+        final status = d['status'] as DownloadTaskStatus?;
+        final prog = d['progress'] as int? ?? 0;
+        if (status == DownloadTaskStatus.complete) {
+          completedTasks++;
+        } else {
+          totalProgress += prog;
+        }
+      }
+
+      int completedImages;
+      if (completedTasks == downloads.length) {
+        completedImages = totalImages;
+      } else {
+        final pct = totalProgress / (downloads.length * 100.0);
+        completedImages = (pct * totalImages).round() + completedTasks;
+        if (completedImages > totalImages) completedImages = totalImages;
+        if (completedImages < 0) completedImages = 0;
+      }
+
+      DownloadStatus status = DownloadStatus.queued;
+      if (downloads.any((d) => d['status'] == DownloadTaskStatus.running)) {
+        status = DownloadStatus.downloading;
+      } else if (downloads
+          .any((d) => d['status'] == DownloadTaskStatus.paused)) {
+        status = DownloadStatus.paused;
+      } else if (downloads
+          .every((d) => d['status'] == DownloadTaskStatus.complete)) {
+        status = DownloadStatus.completed;
+      } else if (downloads
+          .any((d) => d['status'] == DownloadTaskStatus.failed)) {
+        status = DownloadStatus.failed;
+      } else if (downloads
+          .any((d) => d['status'] == DownloadTaskStatus.canceled)) {
+        status = DownloadStatus.cancelled;
+      }
+
+      _progressService.updateProgress(
+        mangaUrl: mangaUrl,
+        chapterUrl: chapterUrl,
+        totalImages: totalImages,
+        completedImages: completedImages,
+        mangaName: mangaName,
+        chapterName: chapterName,
+        status: status,
+      );
+    }
+  }
+
+  void _updateChapterProgressStatus(String chapterUrl, DownloadStatus status) {
+    final downloads =
+        state.downloads.where((d) => d['chapterUrl'] == chapterUrl).toList();
+    if (downloads.isEmpty) return;
+
+    final first = downloads.first;
+    final mangaUrl = first['mangaUrl'] as String? ?? '';
+    final mangaName = first['mangaName'] as String? ?? '';
+    final chapterName = first['chapterName'] as String? ?? '';
+    final totalImages = first['imagesLength'] as int? ?? 0;
+    final totalProgress =
+        downloads.fold<int>(0, (sum, d) => sum + (d['progress'] as int? ?? 0));
+    final completedImages = (totalProgress / 100).round();
+
+    _progressService.updateProgress(
+      mangaUrl: mangaUrl,
+      chapterUrl: chapterUrl,
+      totalImages: totalImages,
+      completedImages: completedImages,
+      mangaName: mangaName,
+      chapterName: chapterName,
+      status: status,
+    );
   }
 }

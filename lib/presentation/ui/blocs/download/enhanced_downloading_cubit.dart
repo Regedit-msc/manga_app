@@ -163,7 +163,7 @@ class EnhancedDownloadingCubit extends Cubit<DownloadingState> {
       _trackDownloadSpeed(chapterUrl, progress, previousProgress);
     }
 
-    // Update progress service with detailed information
+    // Update progress service with detailed information immediately
     _updateProgressFromDownloadList();
 
     // Handle terminal states
@@ -174,7 +174,10 @@ class EnhancedDownloadingCubit extends Cubit<DownloadingState> {
     }
 
     if (status == DownloadTaskStatus.complete) {
-      _tryPromoteChapterIfComplete(current);
+      // Wait a brief moment to ensure all concurrent tasks finish
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _tryPromoteChapterIfComplete(current);
+      });
     }
   }
 
@@ -248,10 +251,32 @@ class EnhancedDownloadingCubit extends Cubit<DownloadingState> {
       final chapterName = firstDownload['chapterName'] as String? ?? '';
       final totalImages = firstDownload['imagesLength'] as int? ?? 0;
 
-      // Calculate progress and status
-      final totalProgress =
-          downloads.fold(0, (sum, d) => sum + (d['progress'] as int? ?? 0));
-      final completedImages = (totalProgress / 100).round();
+      // Calculate progress and status - fix progress calculation
+      int totalProgress = 0;
+      int completedTasks = 0;
+      for (final d in downloads) {
+        final progress = d['progress'] as int? ?? 0;
+        final status = d['status'] as DownloadTaskStatus?;
+
+        if (status == DownloadTaskStatus.complete) {
+          completedTasks++;
+        } else {
+          totalProgress += progress;
+        }
+      }
+
+      // More accurate completed images calculation
+      int completedImages;
+      if (completedTasks == downloads.length) {
+        // All tasks complete
+        completedImages = totalImages;
+      } else {
+        // Calculate based on progress and completed tasks
+        final progressPercentage = totalProgress / (downloads.length * 100.0);
+        completedImages =
+            (progressPercentage * totalImages).round() + completedTasks;
+        completedImages = completedImages.clamp(0, totalImages);
+      }
 
       DownloadStatus status = DownloadStatus.queued;
       if (downloads.any((d) => d['status'] == DownloadTaskStatus.running)) {
@@ -382,10 +407,28 @@ class EnhancedDownloadingCubit extends Cubit<DownloadingState> {
     // If every task for the chapter is complete, promote to completed
     final allComplete = tasksForChapter
         .every((e) => e['status'] == DownloadTaskStatus.complete);
-    if (!allComplete) return;
+    if (!allComplete) {
+      // Update progress for partially complete chapter
+      _updateProgressFromDownloadList();
+      return;
+    }
 
-    // Update progress service
-    _updateChapterProgressStatus(chapterUrl, DownloadStatus.completed);
+    // Update progress service with complete status
+    final firstTask = tasksForChapter.first;
+    final mangaUrl = firstTask['mangaUrl'] as String? ?? '';
+    final mangaName = firstTask['mangaName'] as String? ?? '';
+    final chapterName = firstTask['chapterName'] as String? ?? '';
+    final totalImages = firstTask['imagesLength'] as int? ?? 0;
+
+    _progressService.updateProgress(
+      mangaUrl: mangaUrl,
+      chapterUrl: chapterUrl,
+      totalImages: totalImages,
+      completedImages: totalImages, // Mark as fully complete
+      mangaName: mangaName,
+      chapterName: chapterName,
+      status: DownloadStatus.completed,
+    );
 
     // Clean up tracking data
     _chapterSpeeds.remove(chapterUrl);
@@ -397,11 +440,9 @@ class EnhancedDownloadingCubit extends Cubit<DownloadingState> {
     setDownload(remaining);
 
     // Check if manga is complete
-    final mangaUrl = anyTaskForChapter['mangaUrl'] as String?;
-    final mangaName = anyTaskForChapter['mangaName'] as String?;
     final imageUrl = anyTaskForChapter['imageUrl'] as String?;
 
-    if (mangaUrl == null || mangaName == null || imageUrl == null) return;
+    if (mangaUrl.isEmpty || mangaName.isEmpty || imageUrl == null) return;
 
     final stillActiveForManga = state.downloads.any((e) =>
         e['mangaUrl'] == mangaUrl &&
@@ -409,7 +450,14 @@ class EnhancedDownloadingCubit extends Cubit<DownloadingState> {
             e['status'] == DownloadTaskStatus.enqueued ||
             e['status'] == DownloadTaskStatus.paused));
 
-    if (stillActiveForManga) return;
+    if (stillActiveForManga) {
+      // Continue tracking progress for remaining chapters
+      _updateProgressFromDownloadList();
+      return;
+    }
+
+    // Remove completed chapter from progress tracking
+    _progressService.removeChapter(chapterUrl);
 
     // Promote manga to downloaded list
     try {

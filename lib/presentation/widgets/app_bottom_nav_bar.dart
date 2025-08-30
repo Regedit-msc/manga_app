@@ -7,6 +7,7 @@ import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
+import 'package:webcomic/presentation/widgets/download/floating_download_progress.dart';
 
 /// A lightweight BottomNavigationBar that rebuilds only when relevant state changes.
 class AppBottomNavBar extends StatelessWidget {
@@ -104,12 +105,21 @@ class AppBottomNavBar extends StatelessWidget {
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: callSvg(
-                        asset,
-                        color: iconColor,
-                        width: Sizes.dimen_24,
-                        height: Sizes.dimen_24,
-                      ),
+                      child: i == 1 // MY tab - add download notification badge
+                          ? DownloadNotificationBadge(
+                              child: callSvg(
+                                asset,
+                                color: iconColor,
+                                width: Sizes.dimen_24,
+                                height: Sizes.dimen_24,
+                              ),
+                            )
+                          : callSvg(
+                              asset,
+                              color: iconColor,
+                              width: Sizes.dimen_24,
+                              height: Sizes.dimen_24,
+                            ),
                     ),
                   ),
                   label: _labels[i],

@@ -25,6 +25,7 @@ import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/presentation/widgets/download/floating_download_progress.dart';
 
 class RecentsView extends StatefulWidget {
   const RecentsView({Key? key}) : super(key: key);
@@ -53,6 +54,9 @@ class _RecentsViewState extends State<RecentsView>
     return Scaffold(
       appBar: AppBar(
         title: const Text("My comics"),
+        actions: [
+          CompactDownloadProgress(),
+        ],
         bottom: TabBar(
           isScrollable: true,
           controller: recentsViewController,

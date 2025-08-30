@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webcomic/data/services/download/download_progress_service.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
-import 'package:webcomic/presentation/ui/blocs/download/enhanced_downloading_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloading_cubit.dart';
 import 'package:webcomic/presentation/widgets/download/download_widgets.dart';
 
 class EnhancedDownloadManagementPage extends StatefulWidget {
@@ -382,7 +382,30 @@ class _EnhancedDownloadManagementPageState
           manga.mangaName,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Downloaded: ${_formatDate(manga.dateDownloaded)}'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Downloaded: ${_formatDate(manga.dateDownloaded)}'),
+            FutureBuilder<Map<String, dynamic>>(
+              future: context
+                  .read<DownloadedCubit>()
+                  .getMangaStorageInfo(manga.mangaName),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final data = snapshot.data!;
+                  return Text(
+                    'Storage: ${data['formattedSize']} • ${data['chapterCount']} chapters',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) => _handleMangaAction(value, manga),
           itemBuilder: (context) => [
@@ -731,13 +754,13 @@ class _EnhancedDownloadManagementPageState
   }
 
   void _pauseChapter(String chapterUrl) async {
-    await context.read<EnhancedDownloadingCubit>().pauseChapterDownload(
+    await context.read<DownloadingCubit>().pauseChapterDownload(
           chapterUrl: chapterUrl,
         );
   }
 
   void _resumeChapter(String chapterUrl) async {
-    await context.read<EnhancedDownloadingCubit>().resumeChapterDownload(
+    await context.read<DownloadingCubit>().resumeChapterDownload(
           chapterUrl: chapterUrl,
         );
   }

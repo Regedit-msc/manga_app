@@ -42,6 +42,7 @@ import 'package:webcomic/presentation/ui/loading/loading.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_info/manga_info_shimmer.dart';
 import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
+import 'package:webcomic/presentation/widgets/download/floating_download_progress.dart';
 
 class MangaInfo extends StatefulWidget {
   final Datum mangaDetails;
@@ -517,6 +518,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                     color: AppColor.royalBlue),
                               ),
                             ),
+                            CompactDownloadProgress(),
                           ],
                         )
                       ],

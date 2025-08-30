@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webcomic/data/services/download/download_progress_service.dart';
-import 'package:webcomic/presentation/ui/blocs/download/enhanced_downloading_cubit.dart';
+import 'package:webcomic/presentation/ui/blocs/download/downloading_cubit.dart';
 import 'package:webcomic/presentation/widgets/download/download_widgets.dart';
 
 class EnhancedDownloadQueueWidget extends StatefulWidget {
@@ -250,7 +250,7 @@ class _EnhancedDownloadQueueWidgetState
 
   void _pauseChapter(String chapterUrl) async {
     try {
-      await context.read<EnhancedDownloadingCubit>().pauseChapterDownload(
+      await context.read<DownloadingCubit>().pauseChapterDownload(
             chapterUrl: chapterUrl,
           );
     } catch (e) {
@@ -260,7 +260,7 @@ class _EnhancedDownloadQueueWidgetState
 
   void _resumeChapter(String chapterUrl) async {
     try {
-      await context.read<EnhancedDownloadingCubit>().resumeChapterDownload(
+      await context.read<DownloadingCubit>().resumeChapterDownload(
             chapterUrl: chapterUrl,
           );
     } catch (e) {

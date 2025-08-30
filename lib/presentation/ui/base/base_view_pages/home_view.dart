@@ -23,6 +23,7 @@ import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/widgets/design/section_header.dart';
+import 'package:webcomic/presentation/widgets/download/floating_download_progress.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -167,6 +168,11 @@ class _HomeViewState extends State<HomeView>
             backgroundColor: Colors.transparent,
             elevation: 0,
             scrolledUnderElevation: 0,
+            actions: [
+              // Compact download progress indicator
+              CompactDownloadProgress(),
+              const SizedBox(width: 12),
+            ],
           ),
           body: Query(
             options: QueryOptions(

@@ -30,6 +30,7 @@ import 'package:webcomic/presentation/ui/other_pages/categories/category_view.da
 import 'package:webcomic/presentation/ui/other_pages/collections/collections_view.dart';
 import 'package:webcomic/presentation/widgets/app_bottom_nav_bar.dart';
 import 'package:webcomic/presentation/widgets/download/download_widgets.dart';
+import 'package:webcomic/presentation/widgets/download/floating_download_progress.dart';
 
 /// flutter_downloader background callback must be a top-level entry-point
 /// so the VM can find it in AOT mode.
@@ -212,13 +213,8 @@ class _BaseViewState extends State<BaseView>
               ),
             ],
           ),
-          // Floating download indicator
-          FloatingDownloadIndicator(
-            onTap: () {
-              // Navigate to download queue page when implemented
-              // Navigator.pushNamed(context, '/download-queue');
-            },
-          ),
+          // Enhanced floating download progress indicator
+          FloatingDownloadProgress(),
         ],
       ),
     );

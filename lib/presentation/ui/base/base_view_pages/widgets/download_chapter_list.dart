@@ -183,7 +183,9 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
                       ),
                 ),
                 FutureBuilder<Map<String, dynamic>>(
-                  future: context.read<DownloadedCubit>().getStorageInfo(),
+                  future: context
+                      .read<DownloadedCubit>()
+                      .getMangaStorageInfo(widget.downloadedManga.mangaName),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return Text(
@@ -415,7 +417,9 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
         return AlertDialog(
           title: const Text('Storage Information'),
           content: FutureBuilder<Map<String, dynamic>>(
-            future: context.read<DownloadedCubit>().getStorageInfo(),
+            future: context
+                .read<DownloadedCubit>()
+                .getMangaStorageInfo(widget.downloadedManga.mangaName),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Column(

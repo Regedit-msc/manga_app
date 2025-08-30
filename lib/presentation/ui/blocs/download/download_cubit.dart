@@ -200,7 +200,9 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
         'enqueue image download: mangaUrl=$mangaUrl chapterUrl=$chapterUrl imageIndex=$imageName',
         category: 'Downloader');
     final dir = await getApplicationDocumentsDirectory();
-    var _localPath = dir.path + "/" + chapterDirName;
+    // Save under a per-manga folder so storage can be computed per manga reliably
+    final safeMangaFolder = _safeMangaFolderName(mangaName);
+    var _localPath = '${dir.path}/downloads/$safeMangaFolder/$chapterDirName';
     final savedDir = Directory(_localPath);
     if (!await savedDir.exists()) {
       await savedDir.create(recursive: true);
@@ -371,6 +373,11 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
       }
     }
     // Defer adding to "downloaded" list until completion is confirmed in DownloadingCubit.
+  }
+
+  String _safeMangaFolderName(String name) {
+    // Replace path separators only; keep other characters so LIKE "%mangaName%" works
+    return name.replaceAll(RegExp(r'[\\/]+'), ' ').trim();
   }
 
   void removeAllChaptersFromMangaListInQueue({required String mangaUrl}) {
