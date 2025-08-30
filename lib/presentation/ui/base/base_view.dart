@@ -29,6 +29,7 @@ import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/other_pages/categories/category_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/collections/collections_view.dart';
 import 'package:webcomic/presentation/widgets/app_bottom_nav_bar.dart';
+import 'package:webcomic/presentation/widgets/download/download_widgets.dart';
 
 /// flutter_downloader background callback must be a top-level entry-point
 /// so the VM can find it in AOT mode.
@@ -187,19 +188,38 @@ class _BaseViewState extends State<BaseView>
     // }
     return Scaffold(
       bottomNavigationBar: const AppBottomNavBar(),
-      body: BlocListener<BottomNavigationCubit, int>(
-        listener: (context, idx) {
-          // Keep the PageView in sync without rebuilding AppBottomNavBar.
-          baseViewPageController?.jumpToPage(idx);
-        },
-        child: PageView(
-          controller: baseViewPageController,
-          physics: const NeverScrollableScrollPhysics(),
-          onPageChanged: (int index) {
-            context.read<BottomNavigationCubit>().setPage(index);
-          },
-          children: pagesForBottomNavWithCollection,
-        ),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              // Global download progress bar
+              GlobalDownloadProgressBar(),
+              Expanded(
+                child: BlocListener<BottomNavigationCubit, int>(
+                  listener: (context, idx) {
+                    // Keep the PageView in sync without rebuilding AppBottomNavBar.
+                    baseViewPageController?.jumpToPage(idx);
+                  },
+                  child: PageView(
+                    controller: baseViewPageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (int index) {
+                      context.read<BottomNavigationCubit>().setPage(index);
+                    },
+                    children: pagesForBottomNavWithCollection,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Floating download indicator
+          FloatingDownloadIndicator(
+            onTap: () {
+              // Navigate to download queue page when implemented
+              // Navigator.pushNamed(context, '/download-queue');
+            },
+          ),
+        ],
       ),
     );
   }
