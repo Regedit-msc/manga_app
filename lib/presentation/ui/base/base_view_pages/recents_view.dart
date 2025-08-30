@@ -92,7 +92,9 @@ class _RecentsViewState extends State<RecentsView>
                                     chapterTitle:
                                         recentState.recents[index].chapterTitle,
                                     mostRecentReadDate:
-                                        DateTime.now().toString());
+                                        DateTime.now().toString(),
+                                    mangaSource:
+                                        recentState.recents[index].mangaSource);
                                 List<RecentlyRead> recents =
                                     context.read<RecentsCubit>().state.recents;
                                 List<RecentlyRead> withoutCurrentRead = recents
@@ -118,7 +120,8 @@ class _RecentsViewState extends State<RecentsView>
                                             .recents[index].chapterTitle,
                                         dateUploaded: recentState
                                             .recents[index].mostRecentReadDate,
-                                        mangaSource: null));
+                                        mangaSource: recentState
+                                            .recents[index].mangaSource));
                               },
                               child: Container(
                                 decoration: BoxDecoration(

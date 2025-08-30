@@ -184,7 +184,8 @@ class _MangaReaderState extends State<MangaReader> {
         imageUrl: widget.chapterList.mangaImage,
         chapterUrl: theNextChapterUrl,
         chapterTitle: theNextChapterTitle,
-        mostRecentReadDate: DateTime.now().toString());
+        mostRecentReadDate: DateTime.now().toString(),
+        mangaSource: widget.chapterList.mangaSource);
     chapterName.value = recentlyRead.chapterTitle;
     List<RecentlyRead> recents = context.read<RecentsCubit>().state.recents;
     List<ChapterRead> chaptersRead =

@@ -11,6 +11,8 @@ class RecentlyRead {
 
   final String chapterTitle;
 
+  final String? mangaSource;
+
   RecentlyRead({
     required this.title,
     required this.mangaUrl,
@@ -18,6 +20,7 @@ class RecentlyRead {
     required this.chapterUrl,
     required this.chapterTitle,
     required this.mostRecentReadDate,
+    this.mangaSource,
   });
 
   static const String tblName = 'recent';
@@ -27,6 +30,7 @@ class RecentlyRead {
   static const String colTitle = "title";
   static const String colChapterUrl = "chapterUrl";
   static const String colChapterTitle = "chapterTitle";
+  static const String colMangaSource = "mangaSource";
 
   static const List<String> columnsToSelect = [
     RecentlyRead.colMangaUrl,
@@ -34,7 +38,8 @@ class RecentlyRead {
     RecentlyRead.colChapterTitle,
     RecentlyRead.colChapterUrl,
     RecentlyRead.colMostRecentReadDate,
-    RecentlyRead.colTitle
+    RecentlyRead.colTitle,
+    RecentlyRead.colMangaSource
   ];
 
   factory RecentlyRead.fromMap(Map<String, dynamic> json) => RecentlyRead(
@@ -43,7 +48,8 @@ class RecentlyRead {
       mangaUrl: json["mangaUrl"],
       chapterTitle: json["chapterTitle"],
       mostRecentReadDate: json["mostRecentReadDate"],
-      imageUrl: json["imageUrl"]);
+      imageUrl: json["imageUrl"],
+      mangaSource: json["mangaSource"]);
 
   Map<String, dynamic> toMap() => {
         "chapterUrl": chapterUrl,
@@ -51,6 +57,7 @@ class RecentlyRead {
         "imageUrl": imageUrl,
         "mostRecentReadDate": mostRecentReadDate,
         "title": title,
-        "mangaUrl": mangaUrl
+        "mangaUrl": mangaUrl,
+        "mangaSource": mangaSource
       };
 }

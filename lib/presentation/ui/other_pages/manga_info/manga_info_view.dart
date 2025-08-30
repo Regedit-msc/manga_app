@@ -799,24 +799,26 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                         RecentlyRead recentlyRead =
                                             RecentlyRead(
                                                 title:
-                                                    widget.mangaDetails.title ??
+                                                    widget.mangaDetails
+                                                            .title ??
                                                         '',
-                                                mangaUrl: widget.mangaDetails
-                                                        .mangaUrl ??
-                                                    '',
+                                                mangaUrl:
+                                                    widget.mangaDetails
+                                                            .mangaUrl ??
+                                                        '',
                                                 imageUrl: widget.mangaDetails
                                                         .imageUrl ??
                                                     "",
-                                                chapterUrl: mi
-                                                    .data
-                                                    .chapterList[index]
-                                                    .chapterUrl,
-                                                chapterTitle: mi
-                                                    .data
-                                                    .chapterList[index]
-                                                    .chapterTitle,
+                                                chapterUrl:
+                                                    mi.data.chapterList[index]
+                                                        .chapterUrl,
+                                                chapterTitle:
+                                                    mi.data.chapterList[index]
+                                                        .chapterTitle,
                                                 mostRecentReadDate:
-                                                    DateTime.now().toString());
+                                                    DateTime.now().toString(),
+                                                mangaSource:
+                                                    mi.data.mangaSource);
                                         List<RecentlyRead> recents = context
                                             .read<RecentsCubit>()
                                             .state

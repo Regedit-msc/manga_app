@@ -9,7 +9,7 @@ import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
 
 class DatabaseHelper {
   static const _databaseName = "webcomic.db";
-  static const _databaseVersion = 1;
+  static const _databaseVersion = 2; // Increment version for schema change
   static final DatabaseHelper instance = DatabaseHelper._();
   DatabaseHelper._();
   Database? _database;
@@ -23,7 +23,9 @@ class DatabaseHelper {
     Directory dataDirectory = await getApplicationDocumentsDirectory();
     String dbPath = join(dataDirectory.path, _databaseName);
     return await openDatabase(dbPath,
-        version: _databaseVersion, onCreate: _onCreateDB);
+        version: _databaseVersion,
+        onCreate: _onCreateDB,
+        onUpgrade: _onUpgrade);
   }
 
   _onCreateDB(Database db, int version) async {
@@ -34,7 +36,8 @@ class DatabaseHelper {
     ${RecentlyRead.colImageUrl}  TEXT NOT NULL,
     ${RecentlyRead.colMostRecentReadDate}  TEXT NOT NULL,
     ${RecentlyRead.colTitle}  TEXT NOT NULL,
-    ${RecentlyRead.colChapterUrl}  TEXT NOT NULL   
+    ${RecentlyRead.colChapterUrl}  TEXT NOT NULL,
+    ${RecentlyRead.colMangaSource}  TEXT   
     )
    ''');
     await db.execute('''
@@ -51,6 +54,15 @@ class DatabaseHelper {
     ${ChapterRead.colMangaUrl} TEXT NOT NULL
     )
    ''');
+  }
+
+  _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add mangaSource column to existing RecentlyRead table
+      await db.execute('''
+        ALTER TABLE ${RecentlyRead.tblName} ADD COLUMN ${RecentlyRead.colMangaSource} TEXT
+      ''');
+    }
   }
 
   insertRecentlyRead(RecentlyRead manga) async {
