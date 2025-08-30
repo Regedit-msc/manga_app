@@ -195,10 +195,10 @@ class _HomeViewState extends State<HomeView>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 8),
+                      // Keep search usable even while loading
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12),
-                        child:
-                            SizedBox(height: 48, child: ShimmerBox(height: 48)),
+                        child: QuickSearchBar(),
                       ),
                       const SizedBox(height: 10),
                       Padding(
@@ -237,218 +237,265 @@ class _HomeViewState extends State<HomeView>
                 );
               }
 
-              final mangaInfo = result.data?["getNewestManga"];
-              if (mangaInfo != null) {
-                newestMMdl.GetNewestManga newestManga =
-                    newestMMdl.GetNewestManga.fromMap(mangaInfo);
-                context
-                    .read<MangaSlideShowCubit>()
-                    .setNoOfItems(newestManga.data!.length);
+              final hasError = result.hasException;
+              final data = result.data?['getNewestManga'];
+              final newestManga = (data != null)
+                  ? newestMMdl.GetNewestManga.fromMap(data)
+                  : null;
+              final isEmptyData =
+                  newestManga?.data == null || newestManga!.data!.isEmpty;
+
+              // Fallback: even if the homepage query fails or returns empty,
+              // keep search functional and show a lightweight UI.
+              if (hasError || isEmptyData) {
                 return RefreshIndicator(
                   onRefresh: () async {
-                    await refetch!();
+                    if (refetch != null) await refetch();
                     await _warmup();
                   },
                   child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                          child: const QuickSearchBar(),
+                        const SizedBox(height: 8),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
+                          child: QuickSearchBar(),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: AspectRatio(
-                            aspectRatio: 16 / 9,
-                            child: Stack(
-                              children: [
-                                Positioned.fill(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: BlocBuilder<SettingsCubit,
-                                            SettingsState>(
-                                        builder: (context, settingsBloc) {
-                                      return CarouselSlider.builder(
-                                        options: CarouselOptions(
-                                            aspectRatio: 16 / 9,
-                                            viewportFraction: 1.0,
-                                            enlargeCenterPage: false,
-                                            autoPlayCurve: Curves.ease,
-                                            autoPlay: true,
-                                            autoPlayInterval: Duration(
-                                                seconds: settingsBloc.settings
-                                                    .newMangaSliderDuration),
-                                            autoPlayAnimationDuration:
-                                                const Duration(
-                                                    milliseconds: 350),
-                                            onPageChanged: (i, reason) {
-                                              context
-                                                  .read<MangaSlideShowCubit>()
-                                                  .setIndex(i + 1);
-                                            }),
-                                        itemBuilder: (_, index, __) {
-                                          final item = newestManga.data![index];
-                                          return GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).pushNamed(
-                                                  Routes.mangaInfo,
-                                                  arguments: newestMMdl.Datum(
-                                                      title: item.title,
-                                                      mangaUrl: item.mangaUrl,
-                                                      mangaSource:
-                                                          item.mangaSource,
-                                                      imageUrl: item.imageUrl));
-                                            },
-                                            child: Stack(
-                                              fit: StackFit.expand,
-                                              children: [
-                                                CachedNetworkImage(
-                                                  imageUrl: item.imageUrl ?? '',
-                                                  memCacheWidth: 1600,
-                                                  memCacheHeight: 900,
-                                                  maxWidthDiskCache: 1920,
-                                                  maxHeightDiskCache: 1080,
-                                                  fit: BoxFit.cover,
-                                                  placeholder: (ctx, _) =>
-                                                      const SizedBox(),
-                                                  errorWidget: (ctx, url,
-                                                          err) =>
-                                                      const Icon(Icons.error),
-                                                ),
-                                                Container(
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: [
-                                                        Colors.transparent,
-                                                        Colors.black54
-                                                      ],
-                                                      begin: Alignment.center,
-                                                      end: Alignment
-                                                          .bottomCenter,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  left: 16,
-                                                  right: 16,
-                                                  bottom: 16,
-                                                  child: Text(
-                                                    item.title ?? '',
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .titleLarge
-                                                        ?.copyWith(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                        itemCount: newestManga.data!.length,
-                                      );
-                                    }),
-                                  ),
-                                ),
-                                const Align(
-                                    alignment: Alignment.bottomRight,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(10.0),
-                                      child: SlideShowIndicator(),
-                                    )),
-                              ],
-                            ),
+                          child: Text(
+                            'Explore via search while we load the homepage…',
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ),
+                        const SizedBox(height: 12),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Column(
-                            children: [
-                              SizedBox(
-                                height: Sizes.dimen_10.h,
-                              ),
-                              const GenreChipsRow(genres: [
-                                'Action',
-                                'Horror',
-                                'Webtoons',
-                                'Isekai',
-                                'Comedy',
-                                'Sports'
-                              ]),
-                              const SizedBox(height: 8),
-                              const MangaUpdatesHome(),
-                              const MostViewedManga(),
-                              const MostClickedManga(),
-                              const SectionHeader(title: 'Genres'),
-                              SizedBox(
-                                height: Sizes.dimen_2.h,
-                              ),
-                              const MangaByGenreTabular(genre: "Action"),
-                              const MangaByGenreTabular(genre: "Horror"),
-                              const MangaByGenreTabular(genre: "Webtoons"),
-                              SingleChildScrollView(
-                                physics: const BouncingScrollPhysics(),
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: [
-                                    Column(
-                                      children: [
-                                        const MangaByGenreCard(genre: "Action"),
-                                        const MangaByGenreCard(
-                                            genre: "Martial Arts"),
-                                        const MangaByGenreCard(
-                                            genre: "Tragedy"),
-                                      ],
-                                    ),
-                                    Column(
-                                      children: [
-                                        const MangaByGenreCard(genre: "Adult"),
-                                        const MangaByGenreCard(genre: "Horror"),
-                                        const MangaByGenreCard(genre: "Mecha"),
-                                      ],
-                                    ),
-                                    Column(
-                                      children: [
-                                        const MangaByGenreCard(genre: "Sports"),
-                                        const MangaByGenreCard(genre: "Isekai"),
-                                        const MangaByGenreCard(genre: "Love"),
-                                      ],
-                                    ),
-                                    Column(
-                                      children: [
-                                        const MangaByGenreCard(genre: "Comedy"),
-                                        const MangaByGenreCard(
-                                            genre: "School Life"),
-                                        const MangaByGenreCard(genre: "Sci Fi"),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // MangaByGenreTabular(genre: "Shounen"),
-                              // MangaByGenreHome(genre: "Fantasy"),
-                              // MangaByGenreHome(genre: "Cooking"),
-                              // MangaByGenreTabular(genre: "Manhwa"),
-                              // MangaByGenreHome(genre: "Medical"),
-                              // MangaByGenreHome(genre: "One Shot"),
-                            ],
-                          ),
-                        )
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: shimmerBanner(
+                              height: Sizes.dimen_250,
+                              radius: BorderRadius.circular(16)),
+                        ),
+                        const SizedBox(height: 12),
+                        shimmerChips(),
+                        const SizedBox(height: 8),
+                        const SectionHeader(title: 'UPDATES'),
+                        shimmerHorizontalCards(
+                            imageHeight: 200, cardWidth: 150, withTitle: true),
+                        const SectionHeader(title: 'Most Viewed Today'),
+                        shimmerHorizontalCards(
+                            imageHeight: 200, cardWidth: 150, withTitle: true),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
                 );
               }
-              return Container();
+
+              // Success UI
+              context
+                  .read<MangaSlideShowCubit>()
+                  .setNoOfItems(newestManga.data!.length);
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await refetch!();
+                  await _warmup();
+                },
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                        child: const QuickSearchBar(),
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child:
+                                      BlocBuilder<SettingsCubit, SettingsState>(
+                                          builder: (context, settingsBloc) {
+                                    return CarouselSlider.builder(
+                                      options: CarouselOptions(
+                                          aspectRatio: 16 / 9,
+                                          viewportFraction: 1.0,
+                                          enlargeCenterPage: false,
+                                          autoPlayCurve: Curves.ease,
+                                          autoPlay: true,
+                                          autoPlayInterval: Duration(
+                                              seconds: settingsBloc.settings
+                                                  .newMangaSliderDuration),
+                                          autoPlayAnimationDuration:
+                                              const Duration(milliseconds: 350),
+                                          onPageChanged: (i, reason) {
+                                            context
+                                                .read<MangaSlideShowCubit>()
+                                                .setIndex(i + 1);
+                                          }),
+                                      itemBuilder: (_, index, __) {
+                                        final item = newestManga.data![index];
+                                        return GestureDetector(
+                                          onTap: () {
+                                            Navigator.of(context).pushNamed(
+                                                Routes.mangaInfo,
+                                                arguments: newestMMdl.Datum(
+                                                    title: item.title,
+                                                    mangaUrl: item.mangaUrl,
+                                                    mangaSource:
+                                                        item.mangaSource,
+                                                    imageUrl: item.imageUrl));
+                                          },
+                                          child: Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              CachedNetworkImage(
+                                                imageUrl: item.imageUrl ?? '',
+                                                memCacheWidth: 1600,
+                                                memCacheHeight: 900,
+                                                maxWidthDiskCache: 1920,
+                                                maxHeightDiskCache: 1080,
+                                                fit: BoxFit.cover,
+                                                placeholder: (ctx, _) =>
+                                                    const SizedBox(),
+                                                errorWidget: (ctx, url, err) =>
+                                                    const Icon(Icons.error),
+                                              ),
+                                              Container(
+                                                decoration: const BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      Colors.transparent,
+                                                      Colors.black54
+                                                    ],
+                                                    begin: Alignment.center,
+                                                    end: Alignment.bottomCenter,
+                                                  ),
+                                                ),
+                                              ),
+                                              Positioned(
+                                                left: 16,
+                                                right: 16,
+                                                bottom: 16,
+                                                child: Text(
+                                                  item.title ?? '',
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleLarge
+                                                      ?.copyWith(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      itemCount: newestManga.data!.length,
+                                    );
+                                  }),
+                                ),
+                              ),
+                              const Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(10.0),
+                                    child: SlideShowIndicator(),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: Sizes.dimen_10.h,
+                            ),
+                            const GenreChipsRow(genres: [
+                              'Action',
+                              'Horror',
+                              'Webtoons',
+                              'Isekai',
+                              'Comedy',
+                              'Sports'
+                            ]),
+                            const SizedBox(height: 8),
+                            const MangaUpdatesHome(),
+                            const MostViewedManga(),
+                            const MostClickedManga(),
+                            const SectionHeader(title: 'Genres'),
+                            SizedBox(
+                              height: Sizes.dimen_2.h,
+                            ),
+                            const MangaByGenreTabular(genre: "Action"),
+                            const MangaByGenreTabular(genre: "Horror"),
+                            const MangaByGenreTabular(genre: "Webtoons"),
+                            SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  Column(
+                                    children: [
+                                      const MangaByGenreCard(genre: "Action"),
+                                      const MangaByGenreCard(
+                                          genre: "Martial Arts"),
+                                      const MangaByGenreCard(genre: "Tragedy"),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: [
+                                      const MangaByGenreCard(genre: "Adult"),
+                                      const MangaByGenreCard(genre: "Horror"),
+                                      const MangaByGenreCard(genre: "Mecha"),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: [
+                                      const MangaByGenreCard(genre: "Sports"),
+                                      const MangaByGenreCard(genre: "Isekai"),
+                                      const MangaByGenreCard(genre: "Love"),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: [
+                                      const MangaByGenreCard(genre: "Comedy"),
+                                      const MangaByGenreCard(
+                                          genre: "School Life"),
+                                      const MangaByGenreCard(genre: "Sci Fi"),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // MangaByGenreTabular(genre: "Shounen"),
+                            // MangaByGenreHome(genre: "Fantasy"),
+                            // MangaByGenreHome(genre: "Cooking"),
+                            // MangaByGenreTabular(genre: "Manhwa"),
+                            // MangaByGenreHome(genre: "Medical"),
+                            // MangaByGenreHome(genre: "One Shot"),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              );
             },
           )),
     );
