@@ -14,7 +14,8 @@ abstract class GQLRawApiService {
   Future<dynamic> updateToken(String token);
   Future<dynamic> subscribe(String mangaTitle);
   Future<void> removeToken();
-  Future<GetMangaReaderData?>? getChapterImages(String chapterUrl);
+  Future<GetMangaReaderData?>? getChapterImages(
+      String chapterUrl, String source);
 }
 
 class GQLRawApiServiceImpl extends GQLRawApiService {
@@ -137,10 +138,14 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
   }
 
   @override
-  Future<GetMangaReaderData?>? getChapterImages(String chapterUrl) async {
+  Future<GetMangaReaderData?>? getChapterImages(
+      String chapterUrl, String source) async {
     final QueryOptions options = QueryOptions(
       document: parseString(MANGA_READER),
-      variables: <String, dynamic>{'chapterUrl': chapterUrl},
+      variables: <String, dynamic>{
+        'chapterUrl': chapterUrl,
+        'source': source,
+      },
     );
 
     // Log the query

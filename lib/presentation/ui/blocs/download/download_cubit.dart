@@ -265,8 +265,10 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
           .unique((e) => e.mangaUrl),
     ));
     for (int i = 0; i < queueForThisManga.chaptersToDownload.length; i++) {
-      GetMangaReaderData? chapterDetails = await gqlRawApiServiceImpl
-          .getChapterImages(queueForThisManga.chaptersToDownload[i].chapterUrl);
+      GetMangaReaderData? chapterDetails =
+          await gqlRawApiServiceImpl.getChapterImages(
+              queueForThisManga.chaptersToDownload[i].chapterUrl,
+              queueForThisManga.chaptersToDownload[i].mangaSource ?? '');
       if (chapterDetails != null) {
         print("Images length ${chapterDetails.images.length}");
         await this.doImageStuffs(
