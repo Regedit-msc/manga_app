@@ -16,7 +16,6 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_genr
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_slideshow_indicator_widget.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_updates_home.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_clicked.dart';
-import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewed.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/quick_search_bar.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/genre_chips_row.dart';
 import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
@@ -189,16 +188,18 @@ class _HomeViewState extends State<HomeView>
 
               if (!_ready || result.isLoading) {
                 // Shimmer skeleton layout for Home page while loading
+                final topInset = kToolbarHeight;
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 8),
+                      // Ensure content starts below the transparent AppBar
+                      SizedBox(height: topInset + 8),
                       // Keep search usable even while loading
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: QuickSearchBar(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: const QuickSearchBar(),
                       ),
                       const SizedBox(height: 10),
                       Padding(
@@ -248,6 +249,7 @@ class _HomeViewState extends State<HomeView>
               // Fallback: even if the homepage query fails or returns empty,
               // keep search functional and show a lightweight UI.
               if (hasError || isEmptyData) {
+                final topInset = kToolbarHeight;
                 return RefreshIndicator(
                   onRefresh: () async {
                     if (refetch != null) await refetch();
@@ -258,10 +260,11 @@ class _HomeViewState extends State<HomeView>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 8),
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
-                          child: QuickSearchBar(),
+                        // Ensure content starts below the transparent AppBar
+                        SizedBox(height: topInset + 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: const QuickSearchBar(),
                         ),
                         const SizedBox(height: 16),
                         Padding(
@@ -298,6 +301,7 @@ class _HomeViewState extends State<HomeView>
               context
                   .read<MangaSlideShowCubit>()
                   .setNoOfItems(newestManga.data!.length);
+              final topInset = kToolbarHeight;
               return RefreshIndicator(
                 onRefresh: () async {
                   await refetch!();
@@ -307,8 +311,10 @@ class _HomeViewState extends State<HomeView>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // Ensure content starts below the transparent AppBar
+                      SizedBox(height: topInset + 8),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: const QuickSearchBar(),
                       ),
                       const SizedBox(height: 10),
