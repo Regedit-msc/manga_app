@@ -226,7 +226,9 @@ class _CollectionSubcollectionViewState
                                           mangaUrl: data["items"][index]
                                               ["mangaUrl"],
                                           imageUrl: data["items"][index]
-                                              ["imageUrl"]));
+                                              ["imageUrl"],
+                                          mangaSource: data["items"][index]
+                                              ["mangaSource"]));
                                 },
                                 child: Container(
                                   width: Sizes.dimen_120.w,

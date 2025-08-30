@@ -15,7 +15,6 @@ import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
-import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 import 'package:webcomic/data/services/debug/debug_graphql_widgets.dart';
 
 class MangaUpdatesHome extends StatefulWidget {
@@ -103,7 +102,9 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                                         mangaUrl:
                                             newestManga.data[index].mangaUrl,
                                         imageUrl:
-                                            newestManga.data[index].imageUrl));
+                                            newestManga.data[index].imageUrl,
+                                        mangaSource: newestManga
+                                            .data[index].mangaSource));
                               },
                               child: BlocBuilder<ThemeCubit, ThemeState>(
                                   builder: (context, themeBloc) {

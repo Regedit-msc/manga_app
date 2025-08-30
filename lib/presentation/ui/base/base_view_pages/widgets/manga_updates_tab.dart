@@ -13,8 +13,6 @@ import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
-import 'ad_container.dart';
-
 class MangaUpdatesTabView extends StatefulWidget {
   const MangaUpdatesTabView({Key? key}) : super(key: key);
 
@@ -99,7 +97,9 @@ class _MangaUpdatesTabViewState extends State<MangaUpdatesTabView> {
                                             mangaUrl: newestManga
                                                 .data[index].mangaUrl,
                                             imageUrl: newestManga
-                                                .data[index].imageUrl));
+                                                .data[index].imageUrl,
+                                            mangaSource: newestManga
+                                                .data[index].mangaSource));
                                   },
                                   child: CardItem(
                                       imageUrl:

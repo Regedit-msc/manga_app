@@ -99,7 +99,9 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
                                             mangaUrl: newestManga
                                                 .data[index].mangaUrl,
                                             imageUrl: newestManga
-                                                .data[index].mangaImage));
+                                                .data[index].mangaImage,
+                                            mangaSource: newestManga
+                                                .data[index].mangaSource));
                                   },
                                   child: CardItem(
                                       imageUrl:

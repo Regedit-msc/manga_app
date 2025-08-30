@@ -11,7 +11,6 @@ import 'package:webcomic/data/models/most_viewed_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
-import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MostViewedManga extends StatefulWidget {
   const MostViewedManga({Key? key}) : super(key: key);
@@ -96,7 +95,9 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                       mangaUrl:
                                           newestManga.data[index].mangaUrl,
                                       imageUrl:
-                                          newestManga.data[index].imageUrl));
+                                          newestManga.data[index].imageUrl,
+                                      mangaSource:
+                                          newestManga.data[index].mangaSource));
                             },
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -153,7 +154,8 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                                       .data[index].status,
                                                   style: TextStyle(
                                                       color: Colors.white,
-                                                      fontSize: Sizes.dimen_12.sp,
+                                                      fontSize:
+                                                          Sizes.dimen_12.sp,
                                                       fontWeight:
                                                           FontWeight.bold),
                                                 ),

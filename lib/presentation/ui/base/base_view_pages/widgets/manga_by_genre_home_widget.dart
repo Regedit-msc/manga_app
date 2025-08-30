@@ -96,8 +96,10 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
                                             newestManga.data[index].mangaTitle,
                                         mangaUrl:
                                             newestManga.data[index].mangaUrl,
-                                        imageUrl: newestManga
-                                            .data[index].mangaImage));
+                                        imageUrl:
+                                            newestManga.data[index].mangaImage,
+                                        mangaSource: newestManga
+                                            .data[index].mangaSource));
                               },
                               child: Container(
                                 width: Sizes.dimen_150,

@@ -1,18 +1,12 @@
-import 'dart:convert';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/generator/custom_palette_generator.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webcomic/data/common/constants/collection_constants.dart';
 import 'package:webcomic/data/common/constants/privacy.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
@@ -22,7 +16,6 @@ import 'package:webcomic/data/common/generator/color_generator.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
-import 'package:webcomic/data/models/google_models/user.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
@@ -45,10 +38,8 @@ import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.
 import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
-import 'package:webcomic/presentation/ui/blocs/show_collection_view/show_collection_view_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
-import 'package:webcomic/presentation/ui/blocs/user/user_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/loading.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
@@ -170,6 +161,23 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
     //   systemNavigationBarColor: Colors.black,
     //   statusBarColor: Colors.transparent,
     // ));
+    String computeSource() {
+      final src = widget.mangaDetails.mangaSource;
+      if (src != null && src.isNotEmpty) return src;
+      final url = widget.mangaDetails.mangaUrl;
+      if (url != null && url.isNotEmpty) {
+        final parsed = Uri.tryParse(url);
+        if (parsed != null && parsed.hasScheme) {
+          // origin = scheme://host[:port]
+          final origin = '${parsed.scheme}://${parsed.host}' +
+              (parsed.hasPort ? ':${parsed.port}' : '');
+          return origin;
+        }
+      }
+      // Fallback default (same as used in genre queries)
+      return 'https://www.mgeko.cc';
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Query(
@@ -177,7 +185,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
             document: parseString(GET_MANGA_INFO),
             variables: {
               'mangaUrl': widget.mangaDetails.mangaUrl ?? '',
-              "source": widget.mangaDetails.mangaSource ?? ''
+              "source": computeSource()
             },
             pollInterval: null,
           ),
@@ -194,6 +202,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
             }
 
             if (mangaInfo != null) {
+              final GetMangaInfo mi = mangaInfo;
               return RefreshIndicator(
                 onRefresh: () async {
                   await refetch!();
@@ -1036,21 +1045,22 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                             crossAxisSpacing: 4.0,
                             mainAxisSpacing: 4.0,
                             children: List.generate(
-                                mangaInfo!.data.recommendations.length,
-                                (index) {
+                                mi.data.recommendations.length, (index) {
                               return ScaleAnim(
                                 onTap: () {
                                   Navigator.of(context).pushReplacementNamed(
                                       Routes.mangaInfo,
                                       arguments: newestMMdl.Datum(
-                                          title: mangaInfo!.data
-                                              .recommendations[index].title,
-                                          mangaUrl: mangaInfo!.data
+                                          title: mi.data.recommendations[index]
+                                              .title,
+                                          mangaUrl: mi.data
                                               .recommendations[index].mangaUrl,
-                                          imageUrl: mangaInfo!
+                                          imageUrl: mi
                                               .data
                                               .recommendations[index]
-                                              .mangaImage));
+                                              .mangaImage,
+                                          // Use current page's source for recommended items
+                                          mangaSource: mi.data.mangaSource));
                                 },
                                 child: Column(
                                   children: [
@@ -1063,11 +1073,10 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                           borderRadius: BorderRadius.circular(
                                               Sizes.dimen_4),
                                           child: CachedNetworkImage(
-                                            imageUrl: mangaInfo!
-                                                    .data
-                                                    .recommendations[index]
-                                                    .mangaImage ??
-                                                '',
+                                            imageUrl: mi
+                                                .data
+                                                .recommendations[index]
+                                                .mangaImage,
                                             imageBuilder:
                                                 (context, imageProvider) =>
                                                     Container(
@@ -1093,8 +1102,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                     Padding(
                                       padding: const EdgeInsets.only(left: 8.0),
                                       child: Text(
-                                        mangaInfo!
-                                            .data.recommendations[index].title
+                                        mi.data.recommendations[index].title
                                             .trim(),
                                         maxLines: 1,
                                         textAlign: TextAlign.start,

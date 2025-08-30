@@ -12,7 +12,6 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
-import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 
 class MangaByGenreTabular extends StatefulWidget {
   final String genre;
@@ -137,7 +136,12 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                     imageUrl: newestManga.data
                                                         .take(5)
                                                         .toList()[idx]
-                                                        .mangaImage));
+                                                        .mangaImage,
+                                                    mangaSource: newestManga
+                                                        .data
+                                                        .take(5)
+                                                        .toList()[idx]
+                                                        .mangaSource));
                                           },
                                           child: Row(
                                             mainAxisAlignment:
@@ -176,8 +180,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                            // return NoAnimationLoading();
-                                                            return const SizedBox();
+                                                        // return NoAnimationLoading();
+                                                        return const SizedBox();
                                                       },
                                                     ),
                                                   ),
@@ -296,7 +300,13 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                         .skip(5)
                                                         .take(5)
                                                         .toList()[idx]
-                                                        .mangaImage));
+                                                        .mangaImage,
+                                                    mangaSource: newestManga
+                                                        .data
+                                                        .skip(5)
+                                                        .take(5)
+                                                        .toList()[idx]
+                                                        .mangaSource));
                                           },
                                           child: Row(
                                             mainAxisAlignment:
@@ -336,8 +346,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                            // return NoAnimationLoading();
-                                                            return const SizedBox();
+                                                        // return NoAnimationLoading();
+                                                        return const SizedBox();
                                                       },
                                                     ),
                                                   ),
@@ -459,7 +469,13 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                         .skip(10)
                                                         .take(5)
                                                         .toList()[idx]
-                                                        .mangaImage));
+                                                        .mangaImage,
+                                                    mangaSource: newestManga
+                                                        .data
+                                                        .skip(10)
+                                                        .take(5)
+                                                        .toList()[idx]
+                                                        .mangaSource));
                                           },
                                           child: Row(
                                             mainAxisAlignment:
@@ -499,8 +515,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                            // return NoAnimationLoading();
-                                                            return const SizedBox();
+                                                        // return NoAnimationLoading();
+                                                        return const SizedBox();
                                                       },
                                                     ),
                                                   ),
@@ -622,7 +638,13 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                         .skip(15)
                                                         .take(5)
                                                         .toList()[idx]
-                                                        .mangaImage));
+                                                        .mangaImage,
+                                                    mangaSource: newestManga
+                                                        .data
+                                                        .skip(15)
+                                                        .take(5)
+                                                        .toList()[idx]
+                                                        .mangaSource));
                                           },
                                           child: Row(
                                             mainAxisAlignment:
@@ -662,8 +684,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                            // return NoAnimationLoading();
-                                                            return const SizedBox();
+                                                        // return NoAnimationLoading();
+                                                        return const SizedBox();
                                                       },
                                                     ),
                                                   ),
