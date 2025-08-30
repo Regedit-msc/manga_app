@@ -17,6 +17,8 @@ import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_search/manga_search_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/data/services/debug/debug_logger.dart';
+import 'package:webcomic/data/services/debug/debug_logger.dart';
 
 class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
@@ -35,8 +37,22 @@ class _SearchState extends State<Search> {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       isSearching.value = true;
-      QueryResult result = await client.query(QueryOptions(
-          document: parseString(MANGA_SEARCH), variables: {"term": query}));
+
+      final queryOptions = QueryOptions(
+          document: parseString(MANGA_SEARCH), variables: {"term": query});
+
+      // Log the search query
+      DebugLogger.logApiCall(
+        operationType: 'GraphQL Query',
+        operationName: 'mangaSearch - Search for: "$query"',
+        variables: {"term": query},
+      );
+
+      QueryResult result = await client.query(queryOptions);
+
+      // Log the search response
+      DebugLogger.logGraphQLResponse(
+          result, 'mangaSearch - Search for: "$query"');
 
       final resultData = result.data?["mangaSearch"];
       MangaSearch mangaSearchRes = MangaSearch.fromMap(resultData);

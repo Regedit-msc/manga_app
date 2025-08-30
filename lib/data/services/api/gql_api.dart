@@ -5,6 +5,7 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/gql_api_models/add_token_model.dart';
 import 'package:webcomic/data/models/manga_reader_model.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
+import 'package:webcomic/data/services/debug/debug_logger.dart';
 
 import '../../../main.dart';
 
@@ -32,10 +33,18 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
           'userId': userID != "" ? userID : uuid
         },
       );
+
+      // Log the mutation
+      DebugLogger.logGraphQLMutation(options);
+
       if (userID == '') {
         await prefs.saveUserID(uuid);
       }
       final QueryResult result = await client.mutate(options);
+
+      // Log the response
+      DebugLogger.logGraphQLResponse(result, 'addToken');
+
       if (result.hasException) {
         print(result.exception.toString());
         return;
@@ -55,7 +64,15 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
       document: parseString(ADD_TOKEN),
       variables: <String, dynamic>{'token': token, 'userId': userID},
     );
+
+    // Log the mutation
+    DebugLogger.logGraphQLMutation(options);
+
     final QueryResult result = await client.mutate(options);
+
+    // Log the response
+    DebugLogger.logGraphQLResponse(result, 'updateToken');
+
     if (result.hasException) {
       print(result.exception.toString());
       return;
@@ -77,7 +94,15 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
           'mangaTitle': mangaTitle
         },
       );
+
+      // Log the mutation
+      DebugLogger.logGraphQLMutation(options);
+
       final QueryResult result = await client.mutate(options);
+
+      // Log the response
+      DebugLogger.logGraphQLResponse(result, 'subscribe');
+
       if (result.hasException) {
         print(result.exception.toString());
         return;
@@ -95,7 +120,15 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
       document: parseString(REMOVE_TOKEN),
       variables: <String, dynamic>{'userId': userID},
     );
+
+    // Log the mutation
+    DebugLogger.logGraphQLMutation(options);
+
     final QueryResult result = await client.mutate(options);
+
+    // Log the response
+    DebugLogger.logGraphQLResponse(result, 'removeToken');
+
     if (result.hasException) {
       print(result.exception.toString());
     } else {
@@ -104,21 +137,30 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
   }
 
   @override
-  Future<GetMangaReaderData?>? getChapterImages(String chapterUrl) async{
+  Future<GetMangaReaderData?>? getChapterImages(String chapterUrl) async {
     final QueryOptions options = QueryOptions(
       document: parseString(MANGA_READER),
       variables: <String, dynamic>{'chapterUrl': chapterUrl},
     );
 
+    // Log the query
+    DebugLogger.logGraphQLOperation(options);
+
     final QueryResult result = await client.query(options);
+
+    // Log the response
+    DebugLogger.logGraphQLResponse(result, 'getChapterImages');
+
     if (result.hasException) {
       print(result.exception.toString());
       return null;
     } else {
       dynamic mangaToRead = result.data!["getMangaReader"];
       GetMangaReader mangaReader = GetMangaReader.fromMap(mangaToRead);
-      return GetMangaReaderData(chapter: mangaReader.data.chapter, images: mangaReader.data.images, chapterList: mangaReader.data.chapterList);
+      return GetMangaReaderData(
+          chapter: mangaReader.data.chapter,
+          images: mangaReader.data.images,
+          chapterList: mangaReader.data.chapterList);
     }
   }
-
 }

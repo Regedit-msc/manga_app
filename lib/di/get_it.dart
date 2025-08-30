@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webcomic/data/common/constants/api_constants.dart';
 import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/api/unsplash_api.dart';
+import 'package:webcomic/data/services/api/debug_http_client.dart';
+import 'package:webcomic/data/services/navigation/debug_navigation_observer.dart';
 import 'package:webcomic/data/services/cache/cache_service.dart';
 import 'package:webcomic/data/services/database/db.dart';
 import 'package:webcomic/data/services/dialog/dialogs.dart';
@@ -46,6 +48,8 @@ Future init() async {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   // final GoogleSignIn _googleSignIn = GoogleSignIn();
   final http.Client _client = http.Client();
+  // Wrap the HTTP client with debug logging in debug mode
+  final http.Client _debugClient = DebugHttpClient(_client);
   SharedPreferences sharedPref = await SharedPreferences.getInstance();
   getItInstance.registerSingleton<SharedPreferences>(sharedPref);
   getItInstance
@@ -54,7 +58,7 @@ Future init() async {
       ValueNotifier(GraphQLClient(
           link: HttpLink(ApiConstants.httpLink),
           cache: GraphQLCache(store: HiveStore()))));
-  getItInstance.registerLazySingleton<http.Client>(() => _client);
+  getItInstance.registerLazySingleton<http.Client>(() => _debugClient);
   getItInstance.registerSingleton<GraphQLClient>(GraphQLClient(
       link: HttpLink(ApiConstants.httpLink),
       cache: GraphQLCache(store: HiveStore())));
@@ -81,6 +85,10 @@ Future init() async {
       GQLRawApiServiceImpl(prefs: getItInstance(), client: getItInstance()));
   getItInstance.registerLazySingleton<CacheServiceImpl>(
       () => CacheServiceImpl(getItInstance()));
+
+  // Register debug navigation observer
+  getItInstance.registerLazySingleton<DebugNavigationObserver>(
+      () => DebugNavigationObserver());
 
   getItInstance.registerFactory(
     () => BottomNavigationCubit(),

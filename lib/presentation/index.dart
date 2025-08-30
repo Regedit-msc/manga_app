@@ -15,6 +15,7 @@ import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/navigation/navigation_service.dart';
+import 'package:webcomic/data/services/navigation/debug_navigation_observer.dart';
 import 'package:webcomic/data/services/notification/notification_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/di/get_it.dart';
@@ -274,6 +275,9 @@ class _IndexState extends State<Index> {
               child: MaterialApp(
                 navigatorKey:
                     getItInstance<NavigationServiceImpl>().navigationKey,
+                navigatorObservers: [
+                  getItInstance<DebugNavigationObserver>(),
+                ],
                 debugShowCheckedModeBanner: false,
                 title: 'Tcomic',
                 themeMode: themeBloc.themeMode,

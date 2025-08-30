@@ -16,6 +16,7 @@ import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/data/services/debug/debug_graphql_widgets.dart';
 
 class MangaUpdatesHome extends StatefulWidget {
   const MangaUpdatesHome({Key? key}) : super(key: key);
@@ -28,11 +29,12 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Query(
+      child: GraphQLDebugHelper.loggedQuery(
         options: QueryOptions(
             document: parseString(MANGA_UPDATE),
             pollInterval: null,
             variables: {"page": 1}),
+        operationName: 'getMangaPage - Manga Updates',
         builder: (QueryResult result, {refetch, fetchMore}) {
           // if (result.hasException) {
           //   return Text(result.exception.toString());
