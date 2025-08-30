@@ -92,7 +92,6 @@ List<Color> extractPixelsColors(Uint8List? bytes) {
 
 Future<List<Color>> extractColors(String photo) async {
   List<Color> colors = [];
-  List<Color> sortedColors = [];
   List<Color> palette = [];
 
   Color primary = Colors.blueGrey;
@@ -118,10 +117,16 @@ Future<List<Color>> extractColors(String photo) async {
 }
 
 /// Flutter pallette
+// Simple in-memory cache to avoid recomputing palettes on rebuilds
+final Map<String, PaletteGenerator> _paletteCache = {};
 Future<PaletteGenerator> getPalette(String imageUrl) async {
+  if (_paletteCache.containsKey(imageUrl)) {
+    return _paletteCache[imageUrl]!;
+  }
   final paletteGenerator = await PaletteGenerator.fromImageProvider(
     Image.network(imageUrl).image,
   );
+  _paletteCache[imageUrl] = paletteGenerator;
   return paletteGenerator;
 }
 
@@ -143,6 +148,7 @@ Future<GeneratedImageBytesAndColor> getImageAndColors(String imageUrl) async {
   final paletteGenerator = await PaletteGenerator.fromImageProvider(
     image,
   );
+  _paletteCache[imageUrl] = paletteGenerator;
   return GeneratedImageBytesAndColor(
       palette: paletteGenerator, imageBytes: imageBytes, image: image);
 }
@@ -153,18 +159,22 @@ class ImageProviderWithImageBytes {
   ImageProviderWithImageBytes({this.imageBytes, this.imageProvider});
 }
 
+// Simple image bytes cache to reduce repeat decodes during fast rebuilds
+final Map<String, ImageProviderWithImageBytes> _imageDataCache = {};
 Future<ImageProviderWithImageBytes> getImageData({required String url}) async {
+  if (_imageDataCache.containsKey(url)) {
+    return _imageDataCache[url]!;
+  }
   try {
     Uint8List imageBytes = (await NetworkAssetBundle(Uri.parse(url)).load(url))
         .buffer
         .asUint8List();
     ImageProvider image = Image.memory(imageBytes).image;
-    if (Uint8List != null) {
-      return ImageProviderWithImageBytes(
-          imageBytes: imageBytes, imageProvider: image);
-    }
+    final data = ImageProviderWithImageBytes(
+        imageBytes: imageBytes, imageProvider: image);
+    _imageDataCache[url] = data;
+    return data;
   } catch (e) {
     return ImageProviderWithImageBytes();
   }
-  return ImageProviderWithImageBytes();
 }

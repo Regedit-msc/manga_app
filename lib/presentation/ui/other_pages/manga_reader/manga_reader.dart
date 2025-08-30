@@ -39,24 +39,21 @@ class MangaReader extends StatefulWidget {
 }
 
 class _MangaReaderState extends State<MangaReader> {
-  // TODO: INTRO TO READER
   final ScrollController _scrollController = ScrollController();
-  ValueNotifier<bool> isLoading = ValueNotifier(true);
-  ValueNotifier<String> chapterName = ValueNotifier('');
+  final ValueNotifier<bool> isLoading = ValueNotifier(true);
+  final ValueNotifier<String> chapterName = ValueNotifier('');
   TapDownDetails? tapDownDetails;
   late TransformationController controller;
-  final ValueNotifier<Matrix4> notifier = ValueNotifier(Matrix4.identity());
   bool showAppBar = false;
+
   Future preLoadImages(List<String> listOfUrls) async {
-    await Future.wait(
-        listOfUrls.map((image) => cacheImage(context, image)).toList());
-    if (mounted) {
-      isLoading.value = false;
-    }
+    await Future.wait(listOfUrls.map((image) => cacheImage(context, image)));
+    if (mounted) isLoading.value = false;
   }
 
   Future cacheImage(BuildContext context, String image) =>
       precacheImage(CachedNetworkImageProvider(image), context);
+
   FetchMoreOptions toNewPageOptions(String newChapterUrl) {
     return FetchMoreOptions(
       variables: {'chapterUrl': newChapterUrl},
@@ -69,103 +66,53 @@ class _MangaReaderState extends State<MangaReader> {
   @override
   void initState() {
     chapterName.value = widget.chapterList.chapterTitle;
-    // doSetup();
     controller = TransformationController();
     _scrollController.addListener(scrollListener);
-    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive,
-    // );
     super.initState();
   }
 
   @override
   void dispose() {
-    // doCleanUp();
     chapterName.dispose();
     isLoading.dispose();
     controller.dispose();
     _scrollController.removeListener(scrollListener);
     _scrollController.dispose();
-    print("Dispose");
-
     super.dispose();
-  }
-
-  void doCleanUp() {
-    Future.delayed(Duration(milliseconds: 500), () {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    });
   }
 
   Brightness getBrightNess() {
     final brightness = MediaQuery.of(context).platformBrightness;
     final theme = context.read<ThemeCubit>().state.themeMode;
-    if (theme == ThemeMode.dark) {
-      return Brightness.light;
-    } else if (theme == ThemeMode.light) {
-      return Brightness.dark;
-    } else {
-      if (brightness == Brightness.light) {
-        return Brightness.dark;
-      } else {
-        return Brightness.light;
-      }
-    }
+    if (theme == ThemeMode.dark) return Brightness.light;
+    if (theme == ThemeMode.light) return Brightness.dark;
+    return brightness == Brightness.light ? Brightness.dark : Brightness.light;
   }
 
   Color getOverlayColor() {
     final brightness = MediaQuery.of(context).platformBrightness;
     final theme = context.read<ThemeCubit>().state.themeMode;
-    if (theme == ThemeMode.dark) {
-      return AppColor.vulcan;
-    } else if (theme == ThemeMode.light) {
-      return Colors.white;
-    } else {
-      if (brightness == Brightness.light) {
-        return Colors.white;
-      } else {
-        return AppColor.vulcan;
-      }
-    }
+    if (theme == ThemeMode.dark) return AppColor.vulcan;
+    if (theme == ThemeMode.light) return Colors.white;
+    return brightness == Brightness.light ? Colors.white : AppColor.vulcan;
   }
 
   void scrollListener() {
-    if (mounted) {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
-        setState(() {
-          showAppBar = true;
-        });
-      } else {
-        if (showAppBar) {
-          setState(() {
-            showAppBar = false;
-          });
-        }
-      }
+    if (!mounted) return;
+    final atEnd = _scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent;
+    if (atEnd && !showAppBar) {
+      setState(() => showAppBar = true);
+    } else if (!atEnd && showAppBar) {
+      setState(() => showAppBar = false);
     }
   }
 
-  void doSetup() {
-    if (mounted) {
-      Future.delayed(Duration(seconds: 10), () {
-        if (!mounted) return;
-        setState(() {
-          showAppBar = true;
-        });
-      });
-      Future.delayed(Duration(seconds: 2), () {
-        if (!mounted) return;
-        setState(() {
-          showAppBar = false;
-        });
-      });
-    }
-  }
-
-  Future<void> doTheFunStuff(
-      {String theNextChapterUrl = '',
-      String theNextChapterTitle = "",
-      dynamic fetchMore}) async {
+  Future<void> doTheFunStuff({
+    String theNextChapterUrl = '',
+    String theNextChapterTitle = "",
+    dynamic fetchMore,
+  }) async {
     final DatabaseHelper dbInstance = getItInstance<DatabaseHelper>();
     ChapterRead newChapter = ChapterRead(
         mangaUrl: widget.chapterList.mangaUrl, chapterUrl: theNextChapterUrl);
@@ -195,7 +142,6 @@ class _MangaReaderState extends State<MangaReader> {
         .setResults([...withoutCurrentChapter, newChapter]);
     await fetchMore!(toNewPageOptions(theNextChapterUrl));
     await dbInstance.updateOrInsertChapterRead(newChapter);
-
     await dbInstance.updateOrInsertRecentlyRead(recentlyRead);
   }
 
@@ -227,15 +173,11 @@ class _MangaReaderState extends State<MangaReader> {
               Container(
                 width: Sizes.dimen_140.w,
                 height: Sizes.dimen_50.h,
-                child: mangaReader != null
-                    ? CachedNetworkImage(
-                        imageUrl: mangaReader.data.images![1],
-                        fit: BoxFit.cover,
-                        placeholder: (ctx, string) {
-                          return Loading();
-                        },
-                      )
-                    : Container(),
+                child: CachedNetworkImage(
+                  imageUrl: mangaReader.data.images[1],
+                  fit: BoxFit.cover,
+                  placeholder: (ctx, string) => const Loading(),
+                ),
               ),
               Container(
                 margin: EdgeInsets.only(left: Sizes.dimen_40.w),
@@ -252,7 +194,7 @@ class _MangaReaderState extends State<MangaReader> {
         ),
       );
     } else if (currentChapter == theLastChapter) {
-      return Text("Last Chapter");
+      return const Text("Last Chapter");
     }
 
     return Container();
@@ -304,7 +246,6 @@ class _MangaReaderState extends State<MangaReader> {
                     .state
                     .settings
                     .preloadImages) {
-                  print("Preload");
                   preLoadImages(mangaReader.data.images);
                 } else {
                   isLoading.value = false;
@@ -316,177 +257,164 @@ class _MangaReaderState extends State<MangaReader> {
                           ? LayoutBuilder(builder: (context, contraint) {
                               return Stack(
                                 children: [
-                                  SingleChildScrollView(
+                                  ListView.builder(
                                     controller: _scrollController,
-                                    scrollDirection: Axis.vertical,
-                                    child: Column(
-                                      children: [
-                                        ...List.generate(
-                                            mangaReader.data.images.length,
-                                            (index) {
-                                          return GestureDetector(
-                                            onTap: () {
-                                              if (mounted) {
-                                                setState(() {
-                                                  showAppBar = !showAppBar;
-                                                });
-                                              }
-                                            },
-                                            onDoubleTap: () {
-                                              final double scale = 2;
-                                              final position =
-                                                  tapDownDetails!.localPosition;
-                                              final x =
-                                                  -position.dx * (scale - 1);
-                                              final y =
-                                                  -position.dy * (scale - 1);
+                                    itemCount:
+                                        mangaReader.data.images.length + 1,
+                                    itemBuilder: (context, idx) {
+                                      if (idx <
+                                          mangaReader.data.images.length) {
+                                        final index = idx;
+                                        return GestureDetector(
+                                          onTap: () {
+                                            if (mounted) {
+                                              setState(() {
+                                                showAppBar = !showAppBar;
+                                              });
+                                            }
+                                          },
+                                          onDoubleTap: () {
+                                            final double scale = 2;
+                                            final position =
+                                                tapDownDetails!.localPosition;
+                                            final x =
+                                                -position.dx * (scale - 1);
+                                            final y =
+                                                -position.dy * (scale - 1);
 
-                                              final zoomed = Matrix4.identity()
-                                                ..translate(x, y)
-                                                ..scale(scale);
-                                              final value =
-                                                  controller.value.isIdentity()
-                                                      ? zoomed
-                                                      : Matrix4.identity();
-                                              controller.value = value;
-                                            },
-                                            onDoubleTapDown: (details) =>
-                                                tapDownDetails = details,
-                                            child: InteractiveViewer(
-                                              transformationController:
-                                                  controller,
-                                              clipBehavior: Clip.none,
-                                              // scaleEnabled: true,
-                                              panEnabled: true,
-                                              child: FittedBox(
-                                                child: CachedNetworkImage(
-                                                  fadeInDuration:
-                                                      const Duration(
-                                                          microseconds: 100),
-                                                  imageUrl: mangaReader
-                                                      .data.images[index],
-                                                  fit: BoxFit.cover,
-                                                  placeholder: (ctx, string) {
-                                                    return Container(
-                                                        height: ScreenUtil
-                                                            .screenHeight,
-                                                        width: ScreenUtil
-                                                            .screenWidth,
-                                                        child:
-                                                            NoAnimationLoading());
-                                                  },
-                                                ),
-                                              ),
+                                            final zoomed = Matrix4.identity()
+                                              ..translate(x, y)
+                                              ..scale(scale);
+                                            final value =
+                                                controller.value.isIdentity()
+                                                    ? zoomed
+                                                    : Matrix4.identity();
+                                            controller.value = value;
+                                          },
+                                          onDoubleTapDown: (details) =>
+                                              tapDownDetails = details,
+                                          child: InteractiveViewer(
+                                            transformationController:
+                                                controller,
+                                            clipBehavior: Clip.none,
+                                            panEnabled: true,
+                                            child: CachedNetworkImage(
+                                              fadeInDuration: const Duration(
+                                                  microseconds: 100),
+                                              imageUrl: mangaReader
+                                                  .data.images[index],
+                                              fit: BoxFit.fitWidth,
+                                              placeholder: (ctx, string) {
+                                                return Container(
+                                                    height:
+                                                        ScreenUtil.screenHeight,
+                                                    width:
+                                                        ScreenUtil.screenWidth,
+                                                    child:
+                                                        NoAnimationLoading());
+                                              },
                                             ),
-                                          );
-                                        }),
-                                        contraint.biggest.height <
-                                                ScreenUtil.screenHeight
-                                            ? Container()
-                                            : GestureDetector(
-                                                onTap: () async {
-                                                  int theInitialChapter =
-                                                      int.parse(widget
-                                                          .chapterList
-                                                          .chapterTitle
-                                                          .replaceAll("-", " ")
-                                                          .split(" ")[widget
-                                                              .chapterList
-                                                              .chapterTitle
-                                                              .replaceAll(
-                                                                  "-", " ")
-                                                              .split(" ")
-                                                              .indexWhere(
-                                                                  (element) =>
-                                                                      element ==
-                                                                      "chapter") +
-                                                          1]);
-                                                  int theCurrentChapter =
-                                                      int.parse(mangaReader
-                                                          .data.chapter
-                                                          .replaceAll("-", " ")
-                                                          .split(" ")[mangaReader
-                                                              .data.chapter
-                                                              .replaceAll(
-                                                                  "-", " ")
-                                                              .split(" ")
-                                                              .indexWhere(
-                                                                  (element) =>
-                                                                      element ==
-                                                                      "chapter") +
-                                                          1]);
-                                                  int theNextChapter =
-                                                      theCurrentChapter + 1;
-                                                  String theNextChapterUrl =
-                                                      widget
-                                                          .chapterList.chapterUrl
-                                                          .replaceAll(
-                                                              theInitialChapter
-                                                                  .toString(),
-                                                              theNextChapter
-                                                                  .toString());
-                                                  print(theNextChapterUrl);
-                                                  String theNextChapterTitle =
-                                                      widget.chapterList
-                                                          .chapterTitle
-                                                          .replaceAll(
-                                                              theInitialChapter
-                                                                  .toString(),
-                                                              theNextChapter
-                                                                  .toString());
-                                                  int theLastChapter =
-                                                      int.parse(mangaReader
-                                                          .data.chapterList![0]
-                                                          .replaceAll("-", " ")
-                                                          .split(" ")[mangaReader
-                                                              .data
-                                                              .chapterList![0]
-                                                              .replaceAll(
-                                                                  "-", " ")
-                                                              .split(" ")
-                                                              .indexWhere(
-                                                                  (element) =>
-                                                                      element ==
-                                                                      "chapter") +
-                                                          1]);
+                                          ),
+                                        );
+                                      }
+                                      // trailing next-chapter card
+                                      return contraint.biggest.height <
+                                              ScreenUtil.screenHeight
+                                          ? const SizedBox.shrink()
+                                          : GestureDetector(
+                                              onTap: () async {
+                                                int theInitialChapter =
+                                                    int.parse(widget.chapterList
+                                                        .chapterTitle
+                                                        .replaceAll("-", " ")
+                                                        .split(" ")[widget
+                                                            .chapterList
+                                                            .chapterTitle
+                                                            .replaceAll(
+                                                                "-", " ")
+                                                            .split(" ")
+                                                            .indexWhere(
+                                                                (element) =>
+                                                                    element ==
+                                                                    "chapter") +
+                                                        1]);
+                                                int theCurrentChapter =
+                                                    int.parse(mangaReader
+                                                        .data.chapter
+                                                        .replaceAll("-", " ")
+                                                        .split(" ")[mangaReader
+                                                            .data.chapter
+                                                            .replaceAll(
+                                                                "-", " ")
+                                                            .split(" ")
+                                                            .indexWhere(
+                                                                (element) =>
+                                                                    element ==
+                                                                    "chapter") +
+                                                        1]);
+                                                int theNextChapter =
+                                                    theCurrentChapter + 1;
+                                                String theNextChapterUrl = widget
+                                                    .chapterList.chapterUrl
+                                                    .replaceAll(
+                                                        theInitialChapter
+                                                            .toString(),
+                                                        theNextChapter
+                                                            .toString());
+                                                String theNextChapterTitle =
+                                                    widget.chapterList
+                                                        .chapterTitle
+                                                        .replaceAll(
+                                                            theInitialChapter
+                                                                .toString(),
+                                                            theNextChapter
+                                                                .toString());
+                                                int theLastChapter = int.parse(
+                                                    mangaReader
+                                                        .data.chapterList![0]
+                                                        .replaceAll("-", " ")
+                                                        .split(" ")[mangaReader
+                                                            .data
+                                                            .chapterList![0]
+                                                            .replaceAll(
+                                                                "-", " ")
+                                                            .split(" ")
+                                                            .indexWhere(
+                                                                (element) =>
+                                                                    element ==
+                                                                    "chapter") +
+                                                        1]);
 
-                                                  ///  if the current chapter is lesser than the last chapter
-                                                  if (theCurrentChapter <
-                                                      theLastChapter) {
-                                                    await doTheFunStuff(
-                                                        theNextChapterTitle:
-                                                            theNextChapterTitle,
-                                                        theNextChapterUrl:
-                                                            theNextChapterUrl,
-                                                        fetchMore: fetchMore);
-                                                  }
+                                                if (theCurrentChapter <
+                                                    theLastChapter) {
+                                                  await doTheFunStuff(
+                                                      theNextChapterTitle:
+                                                          theNextChapterTitle,
+                                                      theNextChapterUrl:
+                                                          theNextChapterUrl,
+                                                      fetchMore: fetchMore);
+                                                }
+                                              },
+                                              child: ValueListenableBuilder(
+                                                valueListenable: isLoading,
+                                                builder:
+                                                    (context, bool loading, _) {
+                                                  return !loading
+                                                      ? Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child: checkLast(
+                                                              mangaReader.data
+                                                                  .chapterList,
+                                                              mangaReader
+                                                                  .data.chapter,
+                                                              mangaReader))
+                                                      : const SizedBox.shrink();
                                                 },
-                                                child: Container(
-                                                  child: ValueListenableBuilder(
-                                                      valueListenable:
-                                                          isLoading,
-                                                      builder: (context,
-                                                          bool loading, _) {
-                                                        return !loading
-                                                            ? Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        8.0),
-                                                                child: checkLast(
-                                                                    mangaReader
-                                                                        .data
-                                                                        .chapterList,
-                                                                    mangaReader
-                                                                        .data
-                                                                        .chapter,
-                                                                    mangaReader))
-                                                            : Container();
-                                                      }),
-                                                ),
-                                              )
-                                      ],
-                                    ),
+                                              ),
+                                            );
+                                    },
                                   ),
                                   Positioned(
                                       bottom: 0,
@@ -499,8 +427,8 @@ class _MangaReaderState extends State<MangaReader> {
                                               height: kToolbarHeight,
                                               child: Row(
                                                 children: [
-                                                  Expanded(
-                                                      child: Row(children: [])),
+                                                  const Expanded(
+                                                      child: SizedBox.shrink()),
                                                   Expanded(
                                                     child: Row(
                                                       mainAxisAlignment:
@@ -669,7 +597,6 @@ class _MangaReaderState extends State<MangaReader> {
                                                                         "chapter") +
                                                                 1]);
 
-                                                            ///  if the current chapter is lesser than the last chapter
                                                             if (theCurrentChapter <
                                                                 theLastChapter) {
                                                               await doTheFunStuff(
@@ -781,12 +708,6 @@ class _MangaReaderState extends State<MangaReader> {
                                                         flex: 1,
                                                         child: GestureDetector(
                                                           onTap: () {
-                                                            // Navigator.of(context).pushReplacementNamed(
-                                                            //     Routes.mangaInfo,
-                                                            //     arguments: newestMMdl.Datum(
-                                                            //         title: widget.chapterList.mangaTitle,
-                                                            //         mangaUrl: widget.chapterList.mangaUrl,
-                                                            //         imageUrl: widget.chapterList.mangaImage));
                                                             Navigator.of(context).pushNamedAndRemoveUntil(
                                                                 Routes
                                                                     .mangaInfo,
@@ -837,7 +758,7 @@ class _MangaReaderState extends State<MangaReader> {
                                 ],
                               );
                             })
-                          : Loading();
+                          : const Loading();
                     });
               }
               return Container();

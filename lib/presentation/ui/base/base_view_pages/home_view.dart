@@ -12,8 +12,6 @@ import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
-import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/ad_container.dart';
-import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_home_widget.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_by_genre_tabular.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_genre_card.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/manga_slideshow_indicator_widget.dart';
@@ -124,8 +122,8 @@ class _HomeViewState extends State<HomeView>
                                       Navigator.of(context).pushNamed(
                                           Routes.mangaInfo,
                                           arguments: newestMMdl.Datum(
-                                              title:
-                                                  newestManga.data![index].title,
+                                              title: newestManga
+                                                  .data![index].title,
                                               mangaUrl: newestManga
                                                   .data![index].mangaUrl,
                                               mangaSource: newestManga
@@ -137,9 +135,9 @@ class _HomeViewState extends State<HomeView>
                                       // cacheManager:
                                       //     getItInstance<CacheServiceImpl>()
                                       //         .getDefaultCacheOptions(),
-                                      key: UniqueKey(),
                                       imageUrl:
-                                          newestManga.data![index].imageUrl ?? '',
+                                          newestManga.data![index].imageUrl ??
+                                              '',
                                       imageBuilder: (context, imageProvider) =>
                                           Container(
                                         decoration: BoxDecoration(

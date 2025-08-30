@@ -86,202 +86,183 @@ class _RecentsViewState extends State<RecentsView>
             return Column(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: recentState.recents.length > 0
-                        ? Column(
-                            children: [
-                              ...List.generate(recentState.recents.length,
-                                  (index) {
-                                return GestureDetector(
-                                  onTap: () async {
-                                    final DatabaseHelper dbInstance =
-                                        getItInstance<DatabaseHelper>();
-                                    RecentlyRead recentlyRead = RecentlyRead(
-                                        title: recentState.recents[index].title,
+                  child: recentState.recents.length > 0
+                      ? ListView.builder(
+                          itemCount: recentState.recents.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () async {
+                                final DatabaseHelper dbInstance =
+                                    getItInstance<DatabaseHelper>();
+                                RecentlyRead recentlyRead = RecentlyRead(
+                                    title: recentState.recents[index].title,
+                                    mangaUrl:
+                                        recentState.recents[index].mangaUrl,
+                                    imageUrl:
+                                        recentState.recents[index].imageUrl,
+                                    chapterUrl:
+                                        recentState.recents[index].chapterUrl,
+                                    chapterTitle:
+                                        recentState.recents[index].chapterTitle,
+                                    mostRecentReadDate:
+                                        DateTime.now().toString());
+                                List<RecentlyRead> recents =
+                                    context.read<RecentsCubit>().state.recents;
+                                List<RecentlyRead> withoutCurrentRead = recents
+                                    .where((element) =>
+                                        element.mangaUrl !=
+                                        recentlyRead.mangaUrl)
+                                    .toList();
+                                context.read<RecentsCubit>().setResults(
+                                    [...withoutCurrentRead, recentlyRead]);
+                                await dbInstance
+                                    .updateOrInsertRecentlyRead(recentlyRead);
+                                Navigator.pushNamed(context, Routes.mangaReader,
+                                    arguments: ChapterList(
+                                        mangaImage:
+                                            recentState.recents[index].imageUrl,
+                                        mangaTitle:
+                                            recentState.recents[index].title,
                                         mangaUrl:
                                             recentState.recents[index].mangaUrl,
-                                        imageUrl:
-                                            recentState.recents[index].imageUrl,
                                         chapterUrl: recentState
                                             .recents[index].chapterUrl,
                                         chapterTitle: recentState
                                             .recents[index].chapterTitle,
-                                        mostRecentReadDate:
-                                            DateTime.now().toString());
-                                    List<RecentlyRead> recents = context
-                                        .read<RecentsCubit>()
-                                        .state
-                                        .recents;
-                                    List<RecentlyRead> withoutCurrentRead =
-                                        recents
-                                            .where((element) =>
-                                                element.mangaUrl !=
-                                                recentlyRead.mangaUrl)
-                                            .toList();
-                                    context.read<RecentsCubit>().setResults(
-                                        [...withoutCurrentRead, recentlyRead]);
-                                    await dbInstance.updateOrInsertRecentlyRead(
-                                        recentlyRead);
-                                    Navigator.pushNamed(
-                                        context, Routes.mangaReader,
-                                        arguments: ChapterList(
-                                            mangaImage: recentState
-                                                .recents[index].imageUrl,
-                                            mangaTitle: recentState
-                                                .recents[index].title,
-                                            mangaUrl: recentState
-                                                .recents[index].mangaUrl,
-                                            chapterUrl: recentState
-                                                .recents[index].chapterUrl,
-                                            chapterTitle: recentState
-                                                .recents[index].chapterTitle,
-                                            dateUploaded: recentState
-                                                .recents[index]
-                                                .mostRecentReadDate));
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: Colors.grey.withOpacity(0.3),
-                                            width: 0.1)),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Expanded(
-                                          flex: 4,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
+                                        dateUploaded: recentState.recents[index]
+                                            .mostRecentReadDate));
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.grey.withOpacity(0.3),
+                                        width: 0.1)),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      flex: 4,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: Sizes.dimen_100,
+                                            height: Sizes.dimen_100,
+                                            child: CachedNetworkImage(
+                                              fadeInDuration: const Duration(
+                                                  microseconds: 100),
+                                              imageUrl: recentState
+                                                  .recents[index].imageUrl,
+                                              fit: BoxFit.cover,
+                                              placeholder: (ctx, string) {
+                                                return Container(
+                                                    width: Sizes.dimen_100,
+                                                    height: Sizes.dimen_100,
+                                                    child:
+                                                        NoAnimationLoading());
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: Sizes.dimen_20,
+                                          ),
+                                          Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              Container(
-                                                width: Sizes.dimen_100,
-                                                height: Sizes.dimen_100,
-                                                child: CachedNetworkImage(
-                                                  fadeInDuration:
-                                                      const Duration(
-                                                          microseconds: 100),
-                                                  imageUrl: recentState
-                                                      .recents[index].imageUrl,
-                                                  fit: BoxFit.cover,
-                                                  placeholder: (ctx, string) {
-                                                    return Container(
-                                                        width: Sizes.dimen_100,
-                                                        height: Sizes.dimen_100,
-                                                        child:
-                                                            NoAnimationLoading());
-                                                  },
-                                                ),
+                                              Text(
+                                                recentState.recents[index].title
+                                                            .length <
+                                                        25
+                                                    ? recentState
+                                                        .recents[index].title
+                                                    : recentState.recents[index]
+                                                            .title
+                                                            .substring(0, 20) +
+                                                        "...",
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                               SizedBox(
-                                                width: Sizes.dimen_20,
+                                                height: Sizes.dimen_10,
                                               ),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    recentState.recents[index]
-                                                                .title.length <
-                                                            25
-                                                        ? recentState
-                                                            .recents[index]
-                                                            .title
-                                                        : recentState
-                                                                .recents[index]
-                                                                .title
-                                                                .substring(
-                                                                    0, 20) +
-                                                            "...",
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  SizedBox(
-                                                    height: Sizes.dimen_10,
-                                                  ),
-                                                  Text(
-                                                    recentState.recents[index]
-                                                            .chapterTitle
-                                                            .replaceAll(
-                                                                "-", " ")
-                                                            .split(" ")[
-                                                                recentState.recents[index].chapterTitle.split("-").indexWhere((element) => element == "chapter") +
-                                                                    1]
-                                                            .replaceFirst(
-                                                                "c", "C") +
-                                                        " " +
-                                                        recentState
-                                                            .recents[index]
-                                                            .chapterTitle
-                                                            .replaceAll(
-                                                                "-", " ")
-                                                            .split(" ")[recentState
+                                              Text(
+                                                recentState.recents[index].chapterTitle
+                                                        .replaceAll("-", " ")
+                                                        .split(" ")[recentState
                                                                 .recents[index]
                                                                 .chapterTitle
                                                                 .split("-")
-                                                                .indexWhere(
-                                                                    (element) =>
-                                                                        element == "chapter") +
-                                                            2],
-                                                    style: TextStyle(
-                                                        color: context
-                                                                .isLightMode()
-                                                            ? Colors.black54
-                                                                .withOpacity(
-                                                                    0.5)
-                                                            : Colors.white70),
-                                                  )
-                                                ],
+                                                                .indexWhere((element) =>
+                                                                    element ==
+                                                                    "chapter") +
+                                                            1]
+                                                        .replaceFirst(
+                                                            "c", "C") +
+                                                    " " +
+                                                    recentState.recents[index]
+                                                        .chapterTitle
+                                                        .replaceAll("-", " ")
+                                                        .split(" ")[recentState
+                                                            .recents[index]
+                                                            .chapterTitle
+                                                            .split("-")
+                                                            .indexWhere((element) => element == "chapter") +
+                                                        2],
+                                                style: TextStyle(
+                                                    color: context.isLightMode()
+                                                        ? Colors.black54
+                                                            .withOpacity(0.5)
+                                                        : Colors.white70),
                                               )
                                             ],
-                                          ),
-                                        ),
-                                        Expanded(
-                                            child: Padding(
-                                          padding: EdgeInsets.only(
-                                              right: Sizes.dimen_2),
-                                          child: Text(
-                                            timeago
-                                                .format(DateTime.parse(
-                                                    recentState.recents[index]
-                                                        .mostRecentReadDate))
-                                                .replaceAll("ago", ""),
-                                            style: const TextStyle(
-                                                color: AppColor.violet),
-                                          ),
-                                        )),
-                                      ],
+                                          )
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              })
-                            ],
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    top: ScreenUtil.screenWidth / 2),
-                                child: callSvg("assets/subscribed.svg",
-                                    width: 70.0, height: 70.0),
+                                    Expanded(
+                                        child: Padding(
+                                      padding:
+                                          EdgeInsets.only(right: Sizes.dimen_2),
+                                      child: Text(
+                                        timeago
+                                            .format(DateTime.parse(recentState
+                                                .recents[index]
+                                                .mostRecentReadDate))
+                                            .replaceAll("ago", ""),
+                                        style: const TextStyle(
+                                            color: AppColor.violet),
+                                      ),
+                                    )),
+                                  ],
+                                ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text("No chapter here."),
-                              )
-                            ],
-                          ),
-                  ),
+                            );
+                          },
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  top: ScreenUtil.screenWidth / 2),
+                              child: callSvg("assets/subscribed.svg",
+                                  width: 70.0, height: 70.0),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text("No chapter here."),
+                            )
+                          ],
+                        ),
                 ),
               ],
             );
@@ -294,198 +275,182 @@ class _RecentsViewState extends State<RecentsView>
               child: Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: subsState.subs.length > 0
-                          ? Column(
-                              children: [
-                                ...List.generate(subsState.subs.length,
-                                    (index) {
-                                  return GestureDetector(
-                                    onTap: () async {
-                                      Navigator.pushNamed(
-                                          context, Routes.mangaInfo,
-                                          arguments: newestMMdl.Datum(
-                                              title:
-                                                  subsState.subs[index].title,
-                                              mangaUrl: subsState
-                                                  .subs[index].mangaUrl,
-                                              imageUrl: subsState
-                                                  .subs[index].imageUrl));
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          border: Border.all(
-                                              color:
-                                                  Colors.grey.withOpacity(0.3),
-                                              width: 0.1)),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            flex: 4,
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
+                    child: subsState.subs.length > 0
+                        ? ListView.builder(
+                            itemCount: subsState.subs.length,
+                            itemBuilder: (context, index) {
+                              return GestureDetector(
+                                onTap: () async {
+                                  Navigator.pushNamed(context, Routes.mangaInfo,
+                                      arguments: newestMMdl.Datum(
+                                          title: subsState.subs[index].title,
+                                          mangaUrl:
+                                              subsState.subs[index].mangaUrl,
+                                          imageUrl:
+                                              subsState.subs[index].imageUrl));
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey.withOpacity(0.3),
+                                          width: 0.1)),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        flex: 4,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Stack(
                                               children: [
-                                                Stack(
-                                                  children: [
-                                                    Container(
-                                                      width: Sizes.dimen_100,
-                                                      height: Sizes.dimen_100,
-                                                      child: CachedNetworkImage(
-                                                        fadeInDuration:
-                                                            const Duration(
-                                                                microseconds:
-                                                                    100),
-                                                        imageUrl: subsState
-                                                            .subs[index]
-                                                            .imageUrl,
-                                                        fit: BoxFit.cover,
-                                                        placeholder:
-                                                            (ctx, string) {
-                                                          return Container(
-                                                              width: Sizes
-                                                                  .dimen_100,
-                                                              height: Sizes
-                                                                  .dimen_100,
-                                                              child:
-                                                                  NoAnimationLoading());
-                                                        },
-                                                      ),
-                                                    ),
-                                                    mangaUpdates!
-                                                                .take(50)
-                                                                .toList()
-                                                                .indexWhere((element) =>
-                                                                    element
-                                                                        .title
-                                                                        .toLowerCase() ==
-                                                                    subsState
-                                                                        .subs[
-                                                                            index]
-                                                                        .title
-                                                                        .toLowerCase()) !=
-                                                            -1
-                                                        ? Align(
-                                                            alignment: Alignment
-                                                                .topRight,
-                                                            child:
-                                                                ContinuousScaleAnim(
-                                                              child: Container(
-                                                                decoration: BoxDecoration(
-                                                                    shape: BoxShape
-                                                                        .circle,
-                                                                    color: AppColor
-                                                                        .royalBlue),
-                                                                child: Padding(
-                                                                  padding: EdgeInsets
-                                                                      .all(Sizes
-                                                                          .dimen_4
-                                                                          .w),
-                                                                  child: Text(
-                                                                    "UP",
-                                                                    style: TextStyle(
-                                                                        fontSize: Sizes
-                                                                            .dimen_14
-                                                                            .sp,
-                                                                        color: Colors
-                                                                            .white,
-                                                                        fontWeight:
-                                                                            FontWeight.bold),
-                                                                  ),
-                                                                ),
+                                                Container(
+                                                  width: Sizes.dimen_100,
+                                                  height: Sizes.dimen_100,
+                                                  child: CachedNetworkImage(
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            microseconds: 100),
+                                                    imageUrl: subsState
+                                                        .subs[index].imageUrl,
+                                                    fit: BoxFit.cover,
+                                                    placeholder: (ctx, string) {
+                                                      return Container(
+                                                          width:
+                                                              Sizes.dimen_100,
+                                                          height:
+                                                              Sizes.dimen_100,
+                                                          child:
+                                                              NoAnimationLoading());
+                                                    },
+                                                  ),
+                                                ),
+                                                mangaUpdates!
+                                                            .take(50)
+                                                            .toList()
+                                                            .indexWhere((element) =>
+                                                                element.title
+                                                                    .toLowerCase() ==
+                                                                subsState
+                                                                    .subs[index]
+                                                                    .title
+                                                                    .toLowerCase()) !=
+                                                        -1
+                                                    ? Align(
+                                                        alignment:
+                                                            Alignment.topRight,
+                                                        child:
+                                                            ContinuousScaleAnim(
+                                                          child: Container(
+                                                            decoration: BoxDecoration(
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                                color: AppColor
+                                                                    .royalBlue),
+                                                            child: Padding(
+                                                              padding: EdgeInsets
+                                                                  .all(Sizes
+                                                                      .dimen_4
+                                                                      .w),
+                                                              child: Text(
+                                                                "UP",
+                                                                style: TextStyle(
+                                                                    fontSize: Sizes
+                                                                        .dimen_14
+                                                                        .sp,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
                                                               ),
                                                             ),
-                                                          )
-                                                        : Container(),
-                                                  ],
-                                                ),
-                                                SizedBox(
-                                                  width: Sizes.dimen_20,
-                                                ),
-                                                Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      subsState
-                                                                  .subs[index]
-                                                                  .title
-                                                                  .length <
-                                                              25
-                                                          ? subsState
-                                                              .subs[index].title
-                                                          : subsState
-                                                                  .subs[index]
-                                                                  .title
-                                                                  .substring(
-                                                                      0, 20) +
-                                                              "...",
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                  ],
-                                                )
+                                                          ),
+                                                        ),
+                                                      )
+                                                    : Container(),
                                               ],
                                             ),
-                                          ),
-                                          Expanded(
-                                              child: Padding(
-                                            padding: EdgeInsets.only(
-                                                right: Sizes.dimen_2),
-                                            child: Text(
-                                              timeago
-                                                  .format(DateTime.parse(
-                                                      subsState.subs[index]
-                                                          .dateSubscribed))
-                                                  .replaceAll("ago", ""),
-                                              style: const TextStyle(
-                                                  color: AppColor.violet),
+                                            SizedBox(
+                                              width: Sizes.dimen_20,
                                             ),
-                                          )),
-                                        ],
+                                            Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  subsState.subs[index].title
+                                                              .length <
+                                                          25
+                                                      ? subsState
+                                                          .subs[index].title
+                                                      : subsState
+                                                              .subs[index].title
+                                                              .substring(
+                                                                  0, 20) +
+                                                          "...",
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                })
-                              ],
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      top: ScreenUtil.screenWidth / 2),
-                                  child: callSvg("assets/boruto.svg",
-                                      width: 70.0, height: 70.0),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.all(Sizes.dimen_20.w),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Flexible(
+                                      Expanded(
+                                          child: Padding(
+                                        padding: EdgeInsets.only(
+                                            right: Sizes.dimen_2),
                                         child: Text(
-                                            "You have not subscribed to any comic. You will not get update notifications."),
-                                      ),
+                                          timeago
+                                              .format(DateTime.parse(subsState
+                                                  .subs[index].dateSubscribed))
+                                              .replaceAll("ago", ""),
+                                          style: const TextStyle(
+                                              color: AppColor.violet),
+                                        ),
+                                      )),
                                     ],
                                   ),
-                                )
-                              ],
-                            ),
-                    ),
+                                ),
+                              );
+                            },
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: ScreenUtil.screenWidth / 2),
+                                child: callSvg("assets/boruto.svg",
+                                    width: 70.0, height: 70.0),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(Sizes.dimen_20.w),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                          "You have not subscribed to any comic. You will not get update notifications."),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
                   ),
                 ],
               ),
