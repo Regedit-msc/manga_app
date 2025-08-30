@@ -5,11 +5,12 @@ import "package:path_provider/path_provider.dart";
 import 'package:sqflite/sqflite.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
+import 'package:webcomic/data/models/local_data_models/read_progress_model.dart';
 import 'package:webcomic/data/models/local_data_models/subscribed_model.dart';
 
 class DatabaseHelper {
   static const _databaseName = "webcomic.db";
-  static const _databaseVersion = 2; // Increment version for schema change
+  static const _databaseVersion = 3; // Increment version for schema change
   static final DatabaseHelper instance = DatabaseHelper._();
   DatabaseHelper._();
   Database? _database;
@@ -54,6 +55,15 @@ class DatabaseHelper {
     ${ChapterRead.colMangaUrl} TEXT NOT NULL
     )
    ''');
+    await db.execute('''
+    CREATE TABLE ${ReadProgress.tblName}(
+    ${ReadProgress.colChapterUrl} TEXT PRIMARY KEY,
+    ${ReadProgress.colMangaUrl} TEXT NOT NULL,
+    ${ReadProgress.colLastPageIndex} INTEGER NOT NULL,
+    ${ReadProgress.colTotalPages} INTEGER NOT NULL,
+    ${ReadProgress.colUpdatedAt} TEXT NOT NULL
+    )
+   ''');
   }
 
   _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -61,6 +71,18 @@ class DatabaseHelper {
       // Add mangaSource column to existing RecentlyRead table
       await db.execute('''
         ALTER TABLE ${RecentlyRead.tblName} ADD COLUMN ${RecentlyRead.colMangaSource} TEXT
+      ''');
+    }
+    if (oldVersion < 3) {
+      // Create readprogress table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS ${ReadProgress.tblName}(
+          ${ReadProgress.colChapterUrl} TEXT PRIMARY KEY,
+          ${ReadProgress.colMangaUrl} TEXT NOT NULL,
+          ${ReadProgress.colLastPageIndex} INTEGER NOT NULL,
+          ${ReadProgress.colTotalPages} INTEGER NOT NULL,
+          ${ReadProgress.colUpdatedAt} TEXT NOT NULL
+        )
       ''');
     }
   }
@@ -162,6 +184,43 @@ class DatabaseHelper {
     } catch (e) {
       await insertChapterRead(chapterRead);
     }
+  }
+
+  // ReadProgress helpers
+  Future<void> upsertReadProgress(ReadProgress progress) async {
+    final db = await instance.database;
+    await db.insert(
+      ReadProgress.tblName,
+      progress.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<ReadProgress?> getReadProgress(String chapterUrl) async {
+    final db = await instance.database;
+    final maps = await db.query(
+      ReadProgress.tblName,
+      columns: ReadProgress.columnsToSelect,
+      where: '${ReadProgress.colChapterUrl} = ?',
+      whereArgs: [chapterUrl],
+      limit: 1,
+    );
+    if (maps.isNotEmpty) return ReadProgress.fromMap(maps.first);
+    return null;
+  }
+
+  Future<ReadProgress?> getLastProgressForManga(String mangaUrl) async {
+    final db = await instance.database;
+    final maps = await db.query(
+      ReadProgress.tblName,
+      columns: ReadProgress.columnsToSelect,
+      where: '${ReadProgress.colMangaUrl} = ?',
+      whereArgs: [mangaUrl],
+      orderBy: '${ReadProgress.colUpdatedAt} DESC',
+      limit: 1,
+    );
+    if (maps.isNotEmpty) return ReadProgress.fromMap(maps.first);
+    return null;
   }
 
   Future<int> deleteRecentlyRead(String mangaUrl) async {

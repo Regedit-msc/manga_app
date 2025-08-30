@@ -12,6 +12,7 @@ import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
 import 'package:webcomic/data/models/local_data_models/recently_read_model.dart';
+import 'package:webcomic/data/models/local_data_models/read_progress_model.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';
 import 'package:webcomic/data/models/manga_reader_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
@@ -48,6 +49,10 @@ class _MangaReaderState extends State<MangaReader> {
   bool showAppBar = false;
   // Track the current chapter URL explicitly to make URL-based matching reliable
   late String _currentChapterUrl;
+  // progress tracking
+  int _lastReportedPage = 0;
+  int _totalPages = 0;
+  DateTime _lastSave = DateTime.fromMillisecondsSinceEpoch(0);
 
   // Parse chapter number from strings like "Chapter 12", "Ch. 12.5", "12", "12_extra"
   double? _parseChapterNumber(String raw) {
@@ -312,6 +317,8 @@ class _MangaReaderState extends State<MangaReader> {
     _pageController = PageController();
     _scrollController.addListener(scrollListener);
     _currentChapterUrl = widget.chapterList.chapterUrl;
+    // listen for page scrolls to track progress (approximate using pixels)
+    _pageController.addListener(_handlePageScroll);
     super.initState();
   }
 
@@ -322,10 +329,44 @@ class _MangaReaderState extends State<MangaReader> {
     for (final c in _controllers.values) {
       c.dispose();
     }
+    _persistProgress(force: true);
+    _pageController.removeListener(_handlePageScroll);
     _pageController.dispose();
     _scrollController.removeListener(scrollListener);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _handlePageScroll() {
+    // Vertical PageView uses page property to indicate current page
+    final page = _pageController.positions.isNotEmpty
+        ? _pageController.page ?? _pageController.initialPage.toDouble()
+        : 0.0;
+    final idx = page.round().clamp(0, (_totalPages - 1).clamp(0, 1 << 31));
+    if (idx != _lastReportedPage) {
+      _lastReportedPage = idx;
+      _persistProgress();
+    }
+  }
+
+  Future<void> _persistProgress({bool force = false}) async {
+    if (_totalPages <= 0) return;
+    // save at most every 1.5s unless forced
+    final now = DateTime.now();
+    if (!force && now.difference(_lastSave).inMilliseconds < 1500) return;
+    _lastSave = now;
+    try {
+      final db = getItInstance<DatabaseHelper>();
+      await db.upsertReadProgress(
+        ReadProgress(
+          mangaUrl: widget.chapterList.mangaUrl,
+          chapterUrl: _currentChapterUrl,
+          lastPageIndex: _lastReportedPage,
+          totalPages: _totalPages,
+          updatedAt: now.toIso8601String(),
+        ),
+      );
+    } catch (_) {}
   }
 
   Brightness getBrightNess() {
@@ -525,6 +566,9 @@ class _MangaReaderState extends State<MangaReader> {
                     builder: (context, bool val, child) {
                       return !val
                           ? LayoutBuilder(builder: (context, contraint) {
+                              // set total pages and try restore
+                              _totalPages = mangaReader.data.images.length;
+                              _tryRestoreProgressOnce();
                               return Stack(
                                 children: [
                                   PageView.builder(
@@ -640,6 +684,8 @@ class _MangaReaderState extends State<MangaReader> {
                                                       next.chapterUrl,
                                                   fetchMore: fetchMore,
                                                 );
+                                                _resetProgressOnChapterChange(
+                                                    mangaReader.data);
                                               },
                                               child: ValueListenableBuilder(
                                                 valueListenable: isLoading,
@@ -661,6 +707,42 @@ class _MangaReaderState extends State<MangaReader> {
                                               ),
                                             );
                                     },
+                                  ),
+                                  // Floating page counter (progress)
+                                  Positioned(
+                                    right: 12,
+                                    bottom: 12,
+                                    child: SafeArea(
+                                      top: false,
+                                      left: false,
+                                      child: AnimatedOpacity(
+                                        opacity: 0.92,
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: (context.isLightMode()
+                                                    ? Colors.black87
+                                                    : Colors.white70)
+                                                .withOpacity(0.65),
+                                            borderRadius:
+                                                BorderRadius.circular(24),
+                                          ),
+                                          child: Text(
+                                            '${(_lastReportedPage + 1).clamp(1, _totalPages)} / $_totalPages',
+                                            style: TextStyle(
+                                              fontSize: Sizes.dimen_12.sp,
+                                              color: context.isLightMode()
+                                                  ? Colors.white
+                                                  : AppColor.vulcan,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                   if (showAppBar)
                                     Positioned(
@@ -726,6 +808,8 @@ class _MangaReaderState extends State<MangaReader> {
                                                           prev.chapterTitle,
                                                       fetchMore: fetchMore,
                                                     );
+                                                    _resetProgressOnChapterChange(
+                                                        mangaReader.data);
                                                   },
                                                   child: ElevatedButton.icon(
                                                     onPressed: () async {
@@ -756,6 +840,8 @@ class _MangaReaderState extends State<MangaReader> {
                                                             prev.chapterTitle,
                                                         fetchMore: fetchMore,
                                                       );
+                                                      _resetProgressOnChapterChange(
+                                                          mangaReader.data);
                                                     },
                                                     style: ElevatedButton
                                                         .styleFrom(
@@ -838,6 +924,8 @@ class _MangaReaderState extends State<MangaReader> {
                                                             next.chapterUrl,
                                                         fetchMore: fetchMore,
                                                       );
+                                                      _resetProgressOnChapterChange(
+                                                          mangaReader.data);
                                                     },
                                                     style: ElevatedButton
                                                         .styleFrom(
@@ -931,23 +1019,64 @@ class _MangaReaderState extends State<MangaReader> {
                                                           ),
                                                         ),
                                                       ),
-                                                      ValueListenableBuilder(
-                                                        builder: (context,
-                                                            String value, _) {
-                                                          return Text(
-                                                            formatChapterTitle(
-                                                                value),
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: Sizes
-                                                                  .dimen_20.sp,
-                                                            ),
-                                                          );
-                                                        },
-                                                        valueListenable:
-                                                            chapterName,
+                                                      Expanded(
+                                                        child:
+                                                            ValueListenableBuilder(
+                                                          builder: (context,
+                                                              String value, _) {
+                                                            return Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: [
+                                                                Text(
+                                                                  widget
+                                                                      .chapterList
+                                                                      .mangaTitle,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize: Sizes
+                                                                        .dimen_12
+                                                                        .sp,
+                                                                    color: context.isLightMode()
+                                                                        ? Colors
+                                                                            .black54
+                                                                        : Colors
+                                                                            .white70,
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
+                                                                const SizedBox(
+                                                                    height: 2),
+                                                                Text(
+                                                                  formatChapterTitle(
+                                                                      value),
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    fontSize: Sizes
+                                                                        .dimen_18
+                                                                        .sp,
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
+                                                              ],
+                                                            );
+                                                          },
+                                                          valueListenable:
+                                                              chapterName,
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
@@ -1067,6 +1196,9 @@ class _MangaReaderState extends State<MangaReader> {
                                                                 fetchMore:
                                                                     fetchMore,
                                                               );
+                                                              _resetProgressOnChapterChange(
+                                                                  mangaReader
+                                                                      .data);
                                                             }
                                                           },
                                                           child: Padding(
@@ -1106,5 +1238,31 @@ class _MangaReaderState extends State<MangaReader> {
             }),
       ),
     );
+  }
+
+  bool _restoreAttempted = false;
+  void _tryRestoreProgressOnce() {
+    if (_restoreAttempted) return;
+    _restoreAttempted = true;
+    Future(() async {
+      try {
+        final db = getItInstance<DatabaseHelper>();
+        final p = await db.getReadProgress(_currentChapterUrl);
+        if (!mounted) return;
+        if (p != null && p.totalPages == _totalPages) {
+          final target = p.lastPageIndex.clamp(0, _totalPages - 1);
+          if (_pageController.hasClients) {
+            _pageController.jumpToPage(target);
+            _lastReportedPage = target;
+          }
+        }
+      } catch (_) {}
+    });
+  }
+
+  void _resetProgressOnChapterChange(GetMangaReaderData data) {
+    _lastReportedPage = 0;
+    _totalPages = data.images.length;
+    _persistProgress(force: true);
   }
 }
