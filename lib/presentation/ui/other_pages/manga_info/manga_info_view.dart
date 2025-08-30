@@ -169,8 +169,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
         final parsed = Uri.tryParse(url);
         if (parsed != null && parsed.hasScheme) {
           // origin = scheme://host[:port]
-          final origin = '${parsed.scheme}://${parsed.host}' +
-              (parsed.hasPort ? ':${parsed.port}' : '');
+          final origin = '${parsed.scheme}://${parsed.host}${parsed.hasPort ? ':${parsed.port}' : ''}';
           return origin;
         }
       }

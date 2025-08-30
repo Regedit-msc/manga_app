@@ -10,9 +10,5 @@ class MangaInfoWithDatum {
 
   @override
   String toString() =>
-      'MangaInfoWithDatum(infoSuccess: ' +
-      (mangaInfo?.success.toString() ?? 'null') +
-      ', datum: ' +
-      datum.title.toString() +
-      ')';
+      'MangaInfoWithDatum(infoSuccess: ${mangaInfo?.success.toString() ?? 'null'}, datum: ${datum.title})';
 }
