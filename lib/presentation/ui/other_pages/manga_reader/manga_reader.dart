@@ -46,6 +46,65 @@ class _MangaReaderState extends State<MangaReader> {
   late TransformationController controller;
   bool showAppBar = false;
 
+  // Helper method to safely extract chapter number from string
+  int? extractChapterNumber(String chapterString) {
+    try {
+      List<String> parts = chapterString.replaceAll("-", " ").split(" ");
+      int chapterIndex =
+          parts.indexWhere((element) => element.toLowerCase() == "chapter");
+
+      if (chapterIndex == -1 || chapterIndex + 1 >= parts.length) {
+        // If "chapter" keyword not found or no number after it, try to extract first number
+        RegExp numberRegex = RegExp(r'\d+');
+        Match? match = numberRegex.firstMatch(chapterString);
+        if (match != null) {
+          return int.parse(match.group(0)!);
+        }
+        return null;
+      }
+
+      String chapterNumberStr = parts[chapterIndex + 1];
+      // Remove any non-numeric characters except digits
+      chapterNumberStr = chapterNumberStr.replaceAll(RegExp(r'[^\d]'), '');
+
+      if (chapterNumberStr.isEmpty) return null;
+
+      return int.parse(chapterNumberStr);
+    } catch (e) {
+      print("Error extracting chapter number from: $chapterString - $e");
+      return null;
+    }
+  }
+
+  // Helper method to safely format chapter title for display
+  String formatChapterTitle(String chapterString) {
+    try {
+      List<String> parts = chapterString.replaceAll("-", " ").split(" ");
+      int chapterIndex =
+          parts.indexWhere((element) => element.toLowerCase() == "chapter");
+
+      if (chapterIndex == -1 || chapterIndex + 1 >= parts.length) {
+        // If "chapter" keyword not found, return formatted string
+        return chapterString.replaceAll("-", " ");
+      }
+
+      String chapterNumber = parts[chapterIndex + 1];
+      String chapterTitle =
+          chapterIndex + 2 < parts.length ? parts[chapterIndex + 2] : "";
+
+      // Capitalize first letter of chapter number
+      if (chapterNumber.isNotEmpty) {
+        chapterNumber =
+            chapterNumber[0].toUpperCase() + chapterNumber.substring(1);
+      }
+
+      return "$chapterNumber ${chapterTitle}".trim();
+    } catch (e) {
+      // Return safe fallback
+      return chapterString.replaceAll("-", " ");
+    }
+  }
+
   Future preLoadImages(List<String> listOfUrls) async {
     await Future.wait(listOfUrls.map((image) => cacheImage(context, image)));
     if (mounted) isLoading.value = false;
@@ -150,22 +209,26 @@ class _MangaReaderState extends State<MangaReader> {
 
   Widget checkLast(List<ReaderChapterItem>? chapterList, String chapter,
       GetMangaReader mangaReader) {
-    int currentChapter = int.parse(mangaReader.data.chapter
-        .replaceAll("-", " ")
-        .split(" ")[mangaReader.data.chapter
-            .replaceAll("-", " ")
-            .split(" ")
-            .indexWhere((element) => element == "chapter") +
-        1]);
+    int? currentChapter = extractChapterNumber(mangaReader.data.chapter);
+    if (currentChapter == null) {
+      // Return empty widget if can't parse current chapter
+      return const SizedBox.shrink();
+    }
 
     int nextChapter = currentChapter + 1;
-    int theLastChapter = int.parse(mangaReader.data.chapterList![0].chapterTitle
-        .replaceAll("-", " ")
-        .split(" ")[mangaReader.data.chapterList![0].chapterTitle
-            .replaceAll("-", " ")
-            .split(" ")
-            .indexWhere((element) => element == "chapter") +
-        1]);
+
+    // Check if chapterList exists and has items
+    if (mangaReader.data.chapterList == null ||
+        mangaReader.data.chapterList!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    int? theLastChapter =
+        extractChapterNumber(mangaReader.data.chapterList![0].chapterTitle);
+    if (theLastChapter == null) {
+      // Return empty widget if can't parse last chapter
+      return const SizedBox.shrink();
+    }
     if (currentChapter < theLastChapter) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(10.0),
@@ -327,35 +390,21 @@ class _MangaReaderState extends State<MangaReader> {
                                           ? const SizedBox.shrink()
                                           : GestureDetector(
                                               onTap: () async {
-                                                int theInitialChapter =
-                                                    int.parse(widget.chapterList
-                                                        .chapterTitle
-                                                        .replaceAll("-", " ")
-                                                        .split(" ")[widget
-                                                            .chapterList
-                                                            .chapterTitle
-                                                            .replaceAll(
-                                                                "-", " ")
-                                                            .split(" ")
-                                                            .indexWhere(
-                                                                (element) =>
-                                                                    element ==
-                                                                    "chapter") +
-                                                        1]);
-                                                int theCurrentChapter =
-                                                    int.parse(mangaReader
-                                                        .data.chapter
-                                                        .replaceAll("-", " ")
-                                                        .split(" ")[mangaReader
-                                                            .data.chapter
-                                                            .replaceAll(
-                                                                "-", " ")
-                                                            .split(" ")
-                                                            .indexWhere(
-                                                                (element) =>
-                                                                    element ==
-                                                                    "chapter") +
-                                                        1]);
+                                                int? theInitialChapter =
+                                                    extractChapterNumber(widget
+                                                        .chapterList
+                                                        .chapterTitle);
+                                                int? theCurrentChapter =
+                                                    extractChapterNumber(
+                                                        mangaReader
+                                                            .data.chapter);
+
+                                                if (theInitialChapter == null ||
+                                                    theCurrentChapter == null) {
+                                                  // Can't parse chapter numbers, skip navigation
+                                                  return;
+                                                }
+
                                                 int theNextChapter =
                                                     theCurrentChapter + 1;
                                                 String theNextChapterUrl = widget
@@ -373,24 +422,18 @@ class _MangaReaderState extends State<MangaReader> {
                                                                 .toString(),
                                                             theNextChapter
                                                                 .toString());
-                                                int theLastChapter = int.parse(
-                                                    mangaReader
-                                                        .data
-                                                        .chapterList![0]
-                                                        .chapterTitle
-                                                        .replaceAll("-", " ")
-                                                        .split(" ")[mangaReader
-                                                            .data
-                                                            .chapterList![0]
-                                                            .chapterTitle
-                                                            .replaceAll(
-                                                                "-", " ")
-                                                            .split(" ")
-                                                            .indexWhere(
-                                                                (element) =>
-                                                                    element ==
-                                                                    "chapter") +
-                                                        1]);
+                                                int? theLastChapter =
+                                                    extractChapterNumber(
+                                                        mangaReader
+                                                                .data
+                                                                .chapterList?[0]
+                                                                .chapterTitle ??
+                                                            '');
+
+                                                if (theLastChapter == null) {
+                                                  // Can't parse last chapter number
+                                                  return;
+                                                }
 
                                                 if (theCurrentChapter <
                                                     theLastChapter) {
@@ -447,38 +490,26 @@ class _MangaReaderState extends State<MangaReader> {
                                                       children: [
                                                         ScaleAnim(
                                                             onTap: () async {
-                                                              int theInitialChapter = int.parse(widget
-                                                                  .chapterList
-                                                                  .chapterTitle
-                                                                  .replaceAll(
-                                                                      "-", " ")
-                                                                  .split(" ")[widget
+                                                              int?
+                                                                  theInitialChapter =
+                                                                  extractChapterNumber(widget
                                                                       .chapterList
-                                                                      .chapterTitle
-                                                                      .replaceAll(
-                                                                          "-", " ")
-                                                                      .split(
-                                                                          " ")
-                                                                      .indexWhere((element) =>
-                                                                          element ==
-                                                                          "chapter") +
-                                                                  1]);
-                                                              int theCurrentChapter = int.parse(mangaReader
-                                                                  .data.chapter
-                                                                  .replaceAll(
-                                                                      "-", " ")
-                                                                  .split(" ")[mangaReader
-                                                                      .data
-                                                                      .chapter
-                                                                      .replaceAll(
-                                                                          "-",
-                                                                          " ")
-                                                                      .split(
-                                                                          " ")
-                                                                      .indexWhere((element) =>
-                                                                          element ==
-                                                                          "chapter") +
-                                                                  1]);
+                                                                      .chapterTitle);
+                                                              int?
+                                                                  theCurrentChapter =
+                                                                  extractChapterNumber(
+                                                                      mangaReader
+                                                                          .data
+                                                                          .chapter);
+
+                                                              if (theInitialChapter ==
+                                                                      null ||
+                                                                  theCurrentChapter ==
+                                                                      null) {
+                                                                // Can't parse chapter numbers, skip navigation
+                                                                return;
+                                                              }
+
                                                               int thePreviousChapter =
                                                                   theCurrentChapter -
                                                                       1;
@@ -498,24 +529,21 @@ class _MangaReaderState extends State<MangaReader> {
                                                                           .toString(),
                                                                       thePreviousChapter
                                                                           .toString());
-                                                              int theFirstChapter = int.parse(mangaReader
-                                                                  .data
-                                                                  .chapterList![mangaReader
+                                                              int?
+                                                                  theFirstChapter =
+                                                                  extractChapterNumber(mangaReader
                                                                           .data
-                                                                          .chapterList!
-                                                                          .length -
-                                                                      1]
-                                                                  .chapterTitle
-                                                                  .replaceAll(
-                                                                      "-", " ")
-                                                                  .split(" ")[mangaReader
-                                                                      .data
-                                                                      .chapterList![mangaReader.data.chapterList!.length - 1]
-                                                                      .chapterTitle
-                                                                      .replaceAll("-", " ")
-                                                                      .split(" ")
-                                                                      .indexWhere((element) => element == "chapter") +
-                                                                  1]);
+                                                                          .chapterList?[mangaReader.data.chapterList!.length -
+                                                                              1]
+                                                                          .chapterTitle ??
+                                                                      '');
+
+                                                              if (theFirstChapter ==
+                                                                  null) {
+                                                                // Can't parse first chapter number
+                                                                return;
+                                                              }
+
                                                               if (theCurrentChapter >
                                                                   theFirstChapter) {
                                                                 await doTheFunStuff(
@@ -537,37 +565,26 @@ class _MangaReaderState extends State<MangaReader> {
                                                         ),
                                                         ScaleAnim(
                                                           onTap: () async {
-                                                            int theInitialChapter = int.parse(widget
-                                                                .chapterList
-                                                                .chapterTitle
-                                                                .replaceAll(
-                                                                    "-", " ")
-                                                                .split(" ")[widget
+                                                            int?
+                                                                theInitialChapter =
+                                                                extractChapterNumber(widget
                                                                     .chapterList
-                                                                    .chapterTitle
-                                                                    .replaceAll(
-                                                                        "-",
-                                                                        " ")
-                                                                    .split(" ")
-                                                                    .indexWhere((element) =>
-                                                                        element ==
-                                                                        "chapter") +
-                                                                1]);
-                                                            int theCurrentChapter = int.parse(mangaReader
-                                                                .data.chapter
-                                                                .replaceAll(
-                                                                    "-", " ")
-                                                                .split(" ")[mangaReader
-                                                                    .data
-                                                                    .chapter
-                                                                    .replaceAll(
-                                                                        "-",
-                                                                        " ")
-                                                                    .split(" ")
-                                                                    .indexWhere((element) =>
-                                                                        element ==
-                                                                        "chapter") +
-                                                                1]);
+                                                                    .chapterTitle);
+                                                            int?
+                                                                theCurrentChapter =
+                                                                extractChapterNumber(
+                                                                    mangaReader
+                                                                        .data
+                                                                        .chapter);
+
+                                                            if (theInitialChapter ==
+                                                                    null ||
+                                                                theCurrentChapter ==
+                                                                    null) {
+                                                              // Can't parse chapter numbers, skip navigation
+                                                              return;
+                                                            }
+
                                                             int theNextChapter =
                                                                 theCurrentChapter +
                                                                     1;
@@ -587,24 +604,20 @@ class _MangaReaderState extends State<MangaReader> {
                                                                         .toString(),
                                                                     theNextChapter
                                                                         .toString());
-                                                            int theLastChapter = int.parse(mangaReader
-                                                                .data
-                                                                .chapterList![0]
-                                                                .chapterTitle
-                                                                .replaceAll(
-                                                                    "-", " ")
-                                                                .split(" ")[mangaReader
-                                                                    .data
-                                                                    .chapterList![
-                                                                        0]
-                                                                    .chapterTitle
-                                                                    .replaceAll(
-                                                                        "-", " ")
-                                                                    .split(" ")
-                                                                    .indexWhere((element) =>
-                                                                        element ==
-                                                                        "chapter") +
-                                                                1]);
+                                                            int?
+                                                                theLastChapter =
+                                                                extractChapterNumber(
+                                                                    mangaReader
+                                                                            .data
+                                                                            .chapterList?[0]
+                                                                            .chapterTitle ??
+                                                                        '');
+
+                                                            if (theLastChapter ==
+                                                                null) {
+                                                              // Can't parse last chapter number
+                                                              return;
+                                                            }
 
                                                             if (theCurrentChapter <
                                                                 theLastChapter) {
@@ -678,24 +691,8 @@ class _MangaReaderState extends State<MangaReader> {
                                                                   String value,
                                                                   _) {
                                                                 return Text(
-                                                                  value
-                                                                          .replaceAll(
-                                                                              "-",
-                                                                              " ")
-                                                                          .split(" ")[value.split("-").indexWhere((element) => element == "chapter") +
-                                                                              1]
-                                                                          .replaceFirst(
-                                                                              "c",
-                                                                              "C") +
-                                                                      " " +
-                                                                      value
-                                                                          .replaceAll(
-                                                                              "-",
-                                                                              " ")
-                                                                          .split(" ")[value.split("-").indexWhere((element) =>
-                                                                              element ==
-                                                                              "chapter") +
-                                                                          2],
+                                                                  formatChapterTitle(
+                                                                      value),
                                                                   style:
                                                                       TextStyle(
                                                                     fontWeight:
