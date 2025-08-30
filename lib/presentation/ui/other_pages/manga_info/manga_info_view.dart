@@ -596,7 +596,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                 _InfoStat(
                                     icon: Icons.menu_book_rounded,
                                     label: 'Chapters',
-                                    value: mi.data.chapterNo),
+                                    value:
+                                        mi.data.chapterList.length.toString()),
                                 const SizedBox(width: 12),
                                 _InfoStat(
                                     icon: Icons.visibility_rounded,
