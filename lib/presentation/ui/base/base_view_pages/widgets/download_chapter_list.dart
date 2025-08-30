@@ -5,7 +5,6 @@ import 'package:flutter_downloader/flutter_downloader.dart' as fd;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/common/constants/size_constants.dart';
-import 'package:webcomic/data/common/extensions/list_extension.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
@@ -43,18 +42,25 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
         await fd.FlutterDownloader.loadTasksWithRawQuery(
             query:
                 'SELECT * FROM  task WHERE saved_dir LIKE "%${widget.downloadedManga.mangaName}%" AND status=3');
-    if (getTasks != null) {
-      if (getTasks.isNotEmpty) {
-        List<dynamic> chapterList =
-            getTasks.fold<List<dynamic>>(<dynamic>[], (previousValue, element) {
-          return [...previousValue, element].unique((e) => e.savedDir);
-        });
-        if (chapterList.isNotEmpty) {
-          DebugLogger.logInfo(
-              'downloaded chapters loaded: ${chapterList.length}',
-              category: 'Downloader');
-          chapters.value = chapterList;
+    if (getTasks != null && getTasks.isNotEmpty) {
+      // Group by savedDir and pick the newest task per chapter folder
+      final Map<String, fd.DownloadTask> newestPerDir = {};
+      for (final t in getTasks) {
+        final existing = newestPerDir[t.savedDir];
+        if (existing == null ||
+            _safeCompareEpoch(t.timeCreated, existing.timeCreated) > 0) {
+          newestPerDir[t.savedDir] = t;
         }
+      }
+
+      // Sort chapters by newest first
+      final chapterList = newestPerDir.values.toList()
+        ..sort((a, b) => _safeCompareEpoch(b.timeCreated, a.timeCreated));
+
+      if (chapterList.isNotEmpty) {
+        DebugLogger.logInfo('downloaded chapters loaded: ${chapterList.length}',
+            category: 'Downloader');
+        chapters.value = chapterList;
       }
     }
     ;
@@ -143,9 +149,8 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
                                 padding: EdgeInsets.only(right: Sizes.dimen_2),
                                 child: Text(
                                   timeago
-                                      .format(
-                                          DateTime.fromMicrosecondsSinceEpoch(
-                                              value[index].timeCreated))
+                                      .format(_dateTimeFromEpoch(
+                                          value[index].timeCreated))
                                       .replaceAll("ago", ""),
                                   style:
                                       const TextStyle(color: AppColor.violet),
@@ -168,12 +173,36 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
 
 String _chapterTitleFromSavedDir(String savedDir) {
   try {
-    // Use last path segment and extract trailing number if present
+    // Use last path segment and extract the last numeric group if present
     final tail =
         savedDir.split('/').isNotEmpty ? savedDir.split('/').last : savedDir;
-    final match = RegExp(r'(\d+)').firstMatch(tail);
-    final numStr = match?.group(1);
-    if (numStr != null) return 'Chapter $numStr';
+    final matches = RegExp(r'(\d+)').allMatches(tail).toList();
+    if (matches.isNotEmpty) {
+      final numStr = matches.last.group(1);
+      if (numStr != null && numStr.isNotEmpty) return 'Chapter $numStr';
+    }
   } catch (_) {}
   return 'Chapter';
+}
+
+// Safely convert an epoch (seconds/millis/micros) to DateTime
+DateTime _dateTimeFromEpoch(int epoch) {
+  // Heuristic thresholds for units
+  if (epoch > 100000000000000) {
+    // > 1e14 -> microseconds
+    return DateTime.fromMicrosecondsSinceEpoch(epoch);
+  } else if (epoch > 100000000000) {
+    // > 1e11 -> milliseconds
+    return DateTime.fromMillisecondsSinceEpoch(epoch);
+  } else {
+    // assume seconds
+    return DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
+  }
+}
+
+// Compare two epoch values regardless of unit by normalizing via DateTime
+int _safeCompareEpoch(int a, int b) {
+  final da = _dateTimeFromEpoch(a);
+  final db = _dateTimeFromEpoch(b);
+  return da.compareTo(db);
 }
