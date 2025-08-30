@@ -44,7 +44,7 @@ Future init() async {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  // final GoogleSignIn _googleSignIn = GoogleSignIn();
   final http.Client _client = http.Client();
   SharedPreferences sharedPref = await SharedPreferences.getInstance();
   getItInstance.registerSingleton<SharedPreferences>(sharedPref);
@@ -60,7 +60,7 @@ Future init() async {
       cache: GraphQLCache(store: HiveStore())));
   getItInstance.registerLazySingleton<FirebaseAuth>(() => _auth);
   getItInstance.registerLazySingleton<ImagePicker>(() => _picker);
-  getItInstance.registerLazySingleton<GoogleSignIn>(() => _googleSignIn);
+  // getItInstance.registerLazySingleton<GoogleSignIn>(() => _googleSignIn);
   getItInstance.registerLazySingleton<FirebaseStorage>(() => _storage);
   getItInstance.registerLazySingleton<FirebaseFirestore>(() => _firestore);
   getItInstance.registerLazySingleton<SharedServiceImpl>(

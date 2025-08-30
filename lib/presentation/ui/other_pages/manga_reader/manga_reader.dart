@@ -50,9 +50,9 @@ class _MangaReaderState extends State<MangaReader> {
   Future preLoadImages(List<String> listOfUrls) async {
     await Future.wait(
         listOfUrls.map((image) => cacheImage(context, image)).toList());
-   if(mounted){
-     isLoading.value = false;
-   }
+    if (mounted) {
+      isLoading.value = false;
+    }
   }
 
   Future cacheImage(BuildContext context, String image) =>
@@ -87,14 +87,13 @@ class _MangaReaderState extends State<MangaReader> {
     _scrollController.dispose();
     print("Dispose");
 
-
     super.dispose();
   }
 
-  void doCleanUp(){
-   Future.delayed(Duration(milliseconds: 500), (){
-     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-   });
+  void doCleanUp() {
+    Future.delayed(Duration(milliseconds: 500), () {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    });
   }
 
   Brightness getBrightNess() {
@@ -129,21 +128,18 @@ class _MangaReaderState extends State<MangaReader> {
     }
   }
 
-  void scrollListener(){
-    if(mounted){
+  void scrollListener() {
+    if (mounted) {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-          setState(() {
-            showAppBar = true;
-          });
-
-
+        setState(() {
+          showAppBar = true;
+        });
       } else {
-        if(showAppBar){
+        if (showAppBar) {
           setState(() {
             showAppBar = false;
           });
-
         }
       }
     }
@@ -191,7 +187,6 @@ class _MangaReaderState extends State<MangaReader> {
         .where((element) => element.chapterUrl != newChapter.chapterUrl)
         .toList();
 
-
     context
         .read<RecentsCubit>()
         .setResults([...withoutCurrentRead, recentlyRead]);
@@ -215,17 +210,12 @@ class _MangaReaderState extends State<MangaReader> {
         1]);
 
     int nextChapter = currentChapter + 1;
-    int theLastChapter = int.parse(mangaReader
-        .data
-        .chapterList![
-    0]
+    int theLastChapter = int.parse(mangaReader.data.chapterList![0]
         .replaceAll("-", " ")
-        .split(" ")[mangaReader
-        .data
-        .chapterList![0]
-        .replaceAll("-", " ")
-        .split(" ")
-        .indexWhere((element) => element == "chapter") +
+        .split(" ")[mangaReader.data.chapterList![0]
+            .replaceAll("-", " ")
+            .split(" ")
+            .indexWhere((element) => element == "chapter") +
         1]);
     if (currentChapter < theLastChapter) {
       return ClipRRect(
@@ -239,12 +229,12 @@ class _MangaReaderState extends State<MangaReader> {
                 height: Sizes.dimen_50.h,
                 child: mangaReader != null
                     ? CachedNetworkImage(
-                  imageUrl: mangaReader.data.images![1],
-                  fit: BoxFit.cover,
-                  placeholder: (ctx, string) {
-                    return Loading();
-                  },
-                )
+                        imageUrl: mangaReader.data.images![1],
+                        fit: BoxFit.cover,
+                        placeholder: (ctx, string) {
+                          return Loading();
+                        },
+                      )
                     : Container(),
               ),
               Container(
@@ -253,9 +243,8 @@ class _MangaReaderState extends State<MangaReader> {
                   "Next chapter $nextChapter",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: context.isLightMode()
-                          ? Colors.white
-                          : Colors.black),
+                      color:
+                          context.isLightMode() ? Colors.white : Colors.black),
                 ),
               ),
             ],
@@ -273,21 +262,22 @@ class _MangaReaderState extends State<MangaReader> {
   Widget build(BuildContext context) {
     double barHeight = MediaQuery.of(context).padding.top;
     return AnnotatedRegion(
-      value: SystemUiOverlayStyle.light
-          .copyWith(
-          statusBarIconBrightness: showAppBar?  getBrightNess(): Brightness.dark,
-          statusBarColor: showAppBar? getOverlayColor() :Colors.transparent),
+      value: SystemUiOverlayStyle.light.copyWith(
+          statusBarIconBrightness:
+              showAppBar ? getBrightNess() : Brightness.dark,
+          statusBarColor: showAppBar ? getOverlayColor() : Colors.transparent),
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
           toolbarHeight: 0.0,
-          systemOverlayStyle: SystemUiOverlayStyle.light
-              .copyWith(
-              statusBarIconBrightness: showAppBar?  getBrightNess(): Brightness.dark,
-              statusBarColor: showAppBar? getOverlayColor() :Colors.transparent),
-        ) ,
+          systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+              statusBarIconBrightness:
+                  showAppBar ? getBrightNess() : Brightness.dark,
+              statusBarColor:
+                  showAppBar ? getOverlayColor() : Colors.transparent),
+        ),
         body: Query(
             options: QueryOptions(
               document: parseString(MANGA_READER),
@@ -304,11 +294,16 @@ class _MangaReaderState extends State<MangaReader> {
               if (result.isLoading) {
                 return const Loading();
               }
-              dynamic mangaToRead = result.data!["getMangaReader"];
+              dynamic mangaToRead = result.data?["getMangaReader"];
 
               if (mangaToRead != null) {
-                GetMangaReader mangaReader = GetMangaReader.fromMap(mangaToRead);
-                if(context.read<SettingsCubit>().state.settings.preloadImages){
+                GetMangaReader mangaReader =
+                    GetMangaReader.fromMap(mangaToRead);
+                if (context
+                    .read<SettingsCubit>()
+                    .state
+                    .settings
+                    .preloadImages) {
                   print("Preload");
                   preLoadImages(mangaReader.data.images);
                 } else {
@@ -337,37 +332,46 @@ class _MangaReaderState extends State<MangaReader> {
                                                 });
                                               }
                                             },
-                                            onDoubleTap: (){
+                                            onDoubleTap: () {
                                               final double scale = 2;
-                                              final  position = tapDownDetails!.localPosition;
-                                              final x = -position.dx * (scale -1);
-                                              final y = -position.dy * (scale -1);
+                                              final position =
+                                                  tapDownDetails!.localPosition;
+                                              final x =
+                                                  -position.dx * (scale - 1);
+                                              final y =
+                                                  -position.dy * (scale - 1);
 
                                               final zoomed = Matrix4.identity()
                                                 ..translate(x, y)
                                                 ..scale(scale);
-                                              final value = controller.value.isIdentity()?zoomed :Matrix4.identity();
-                                             controller.value = value;
+                                              final value =
+                                                  controller.value.isIdentity()
+                                                      ? zoomed
+                                                      : Matrix4.identity();
+                                              controller.value = value;
                                             },
-                                            onDoubleTapDown: (details) => tapDownDetails = details,
+                                            onDoubleTapDown: (details) =>
+                                                tapDownDetails = details,
                                             child: InteractiveViewer(
-                                              transformationController: controller,
+                                              transformationController:
+                                                  controller,
                                               clipBehavior: Clip.none,
                                               // scaleEnabled: true,
                                               panEnabled: true,
                                               child: FittedBox(
                                                 child: CachedNetworkImage(
-                                                  fadeInDuration: const Duration(
-                                                      microseconds: 100),
+                                                  fadeInDuration:
+                                                      const Duration(
+                                                          microseconds: 100),
                                                   imageUrl: mangaReader
                                                       .data.images[index],
                                                   fit: BoxFit.cover,
                                                   placeholder: (ctx, string) {
                                                     return Container(
-                                                        height:
-                                                            ScreenUtil.screenHeight,
-                                                        width:
-                                                            ScreenUtil.screenWidth,
+                                                        height: ScreenUtil
+                                                            .screenHeight,
+                                                        width: ScreenUtil
+                                                            .screenWidth,
                                                         child:
                                                             NoAnimationLoading());
                                                   },
@@ -430,30 +434,32 @@ class _MangaReaderState extends State<MangaReader> {
                                                                   .toString(),
                                                               theNextChapter
                                                                   .toString());
-                                                  int theLastChapter = int.parse(mangaReader
-                                                      .data
-                                                      .chapterList![
-                                                  0]
-                                                      .replaceAll("-", " ")
-                                                      .split(" ")[mangaReader
-                                                      .data
-                                                      .chapterList![0]
-                                                      .replaceAll("-", " ")
-                                                      .split(" ")
-                                                      .indexWhere((element) => element == "chapter") +
-                                                      1]);
+                                                  int theLastChapter =
+                                                      int.parse(mangaReader
+                                                          .data.chapterList![0]
+                                                          .replaceAll("-", " ")
+                                                          .split(" ")[mangaReader
+                                                              .data
+                                                              .chapterList![0]
+                                                              .replaceAll(
+                                                                  "-", " ")
+                                                              .split(" ")
+                                                              .indexWhere(
+                                                                  (element) =>
+                                                                      element ==
+                                                                      "chapter") +
+                                                          1]);
 
-
-                                                    ///  if the current chapter is lesser than the last chapter
-                                                    if (theCurrentChapter <
-                                                        theLastChapter) {
-                                                      await doTheFunStuff(
-                                                          theNextChapterTitle:
-                                                              theNextChapterTitle,
-                                                          theNextChapterUrl:
-                                                              theNextChapterUrl,
-                                                          fetchMore: fetchMore);
-                                                    }
+                                                  ///  if the current chapter is lesser than the last chapter
+                                                  if (theCurrentChapter <
+                                                      theLastChapter) {
+                                                    await doTheFunStuff(
+                                                        theNextChapterTitle:
+                                                            theNextChapterTitle,
+                                                        theNextChapterUrl:
+                                                            theNextChapterUrl,
+                                                        fetchMore: fetchMore);
+                                                  }
                                                 },
                                                 child: Container(
                                                   child: ValueListenableBuilder(
@@ -465,7 +471,7 @@ class _MangaReaderState extends State<MangaReader> {
                                                             ? Padding(
                                                                 padding:
                                                                     const EdgeInsets
-                                                                            .all(
+                                                                        .all(
                                                                         8.0),
                                                                 child: checkLast(
                                                                     mangaReader
@@ -482,278 +488,351 @@ class _MangaReaderState extends State<MangaReader> {
                                       ],
                                     ),
                                   ),
-                                 Positioned(
-                                     bottom: 0,
-                                     child:  showAppBar
-                                         ? Container(
-                                           color:context.isLightMode()? Colors.white: AppColor.vulcan,
-                                           width: ScreenUtil.screenWidth,
-                                           height: kToolbarHeight,
-                                           child: Row(
-                                             children: [
-                                               Expanded(
-                                                   child: Row(children: [])),
-                                               Expanded(
-                                                 child: Row(
-                                                   mainAxisAlignment:
-                                                   MainAxisAlignment.center,
-                                                   crossAxisAlignment:
-                                                   CrossAxisAlignment.center,
-                                                   children: [
-                                                     ScaleAnim(
-                                                         onTap: () async{
-                                                           int theInitialChapter =
-                                                           int.parse(widget
-                                                               .chapterList
-                                                               .chapterTitle
-                                                               .replaceAll("-", " ")
-                                                               .split(" ")[widget
-                                                               .chapterList
-                                                               .chapterTitle
-                                                               .replaceAll(
-                                                               "-", " ")
-                                                               .split(" ")
-                                                               .indexWhere(
-                                                                   (element) =>
-                                                               element ==
-                                                                   "chapter") +
-                                                               1]);
-                                                           int theCurrentChapter =
-                                                           int.parse(mangaReader
-                                                               .data.chapter
-                                                               .replaceAll("-", " ")
-                                                               .split(" ")[mangaReader
-                                                               .data.chapter
-                                                               .replaceAll(
-                                                               "-", " ")
-                                                               .split(" ")
-                                                               .indexWhere(
-                                                                   (element) =>
-                                                               element ==
-                                                                   "chapter") +
-                                                               1]);
-                                                           int thePreviousChapter =
-                                                               theCurrentChapter - 1;
-                                                           String thePreviousChapterUrl =
-                                                           widget
-                                                               .chapterList.chapterUrl
-                                                               .replaceAll(
-                                                               theInitialChapter
-                                                                   .toString(),
-                                                               thePreviousChapter
-                                                                   .toString());
-                                                           String thePreviousChapterTitle =
-                                                           widget.chapterList
-                                                               .chapterTitle
-                                                               .replaceAll(
-                                                               theInitialChapter
-                                                                   .toString(),
-                                                               thePreviousChapter
-                                                                   .toString());
-                                                           int theFirstChapter = int.parse(mangaReader
-                                                               .data
-                                                               .chapterList![
-                                                           mangaReader.data.chapterList!.length -
-                                                               1]
-                                                               .replaceAll("-", " ")
-                                                               .split(" ")[mangaReader
-                                                               .data
-                                                               .chapterList![mangaReader
-                                                               .data
-                                                               .chapterList!
-                                                               .length -
-                                                               1]
-                                                               .replaceAll("-", " ")
-                                                               .split(" ")
-                                                               .indexWhere((element) => element == "chapter") +
-                                                               1]);
-                                                           if(theCurrentChapter > theFirstChapter){
-                                                             await doTheFunStuff(theNextChapterUrl: thePreviousChapterUrl, theNextChapterTitle: thePreviousChapterTitle, fetchMore: fetchMore);
-                                                           }
-                                                         },
+                                  Positioned(
+                                      bottom: 0,
+                                      child: showAppBar
+                                          ? Container(
+                                              color: context.isLightMode()
+                                                  ? Colors.white
+                                                  : AppColor.vulcan,
+                                              width: ScreenUtil.screenWidth,
+                                              height: kToolbarHeight,
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                      child: Row(children: [])),
+                                                  Expanded(
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        ScaleAnim(
+                                                            onTap: () async {
+                                                              int theInitialChapter = int.parse(widget
+                                                                  .chapterList
+                                                                  .chapterTitle
+                                                                  .replaceAll(
+                                                                      "-", " ")
+                                                                  .split(" ")[widget
+                                                                      .chapterList
+                                                                      .chapterTitle
+                                                                      .replaceAll(
+                                                                          "-", " ")
+                                                                      .split(
+                                                                          " ")
+                                                                      .indexWhere((element) =>
+                                                                          element ==
+                                                                          "chapter") +
+                                                                  1]);
+                                                              int theCurrentChapter = int.parse(mangaReader
+                                                                  .data.chapter
+                                                                  .replaceAll(
+                                                                      "-", " ")
+                                                                  .split(" ")[mangaReader
+                                                                      .data
+                                                                      .chapter
+                                                                      .replaceAll(
+                                                                          "-",
+                                                                          " ")
+                                                                      .split(
+                                                                          " ")
+                                                                      .indexWhere((element) =>
+                                                                          element ==
+                                                                          "chapter") +
+                                                                  1]);
+                                                              int thePreviousChapter =
+                                                                  theCurrentChapter -
+                                                                      1;
+                                                              String thePreviousChapterUrl = widget
+                                                                  .chapterList
+                                                                  .chapterUrl
+                                                                  .replaceAll(
+                                                                      theInitialChapter
+                                                                          .toString(),
+                                                                      thePreviousChapter
+                                                                          .toString());
+                                                              String thePreviousChapterTitle = widget
+                                                                  .chapterList
+                                                                  .chapterTitle
+                                                                  .replaceAll(
+                                                                      theInitialChapter
+                                                                          .toString(),
+                                                                      thePreviousChapter
+                                                                          .toString());
+                                                              int theFirstChapter = int.parse(mangaReader
+                                                                  .data
+                                                                  .chapterList![mangaReader
+                                                                          .data
+                                                                          .chapterList!
+                                                                          .length -
+                                                                      1]
+                                                                  .replaceAll(
+                                                                      "-", " ")
+                                                                  .split(" ")[mangaReader
+                                                                      .data
+                                                                      .chapterList![
+                                                                          mangaReader.data.chapterList!.length - 1]
+                                                                      .replaceAll("-", " ")
+                                                                      .split(" ")
+                                                                      .indexWhere((element) => element == "chapter") +
+                                                                  1]);
+                                                              if (theCurrentChapter >
+                                                                  theFirstChapter) {
+                                                                await doTheFunStuff(
+                                                                    theNextChapterUrl:
+                                                                        thePreviousChapterUrl,
+                                                                    theNextChapterTitle:
+                                                                        thePreviousChapterTitle,
+                                                                    fetchMore:
+                                                                        fetchMore);
+                                                              }
+                                                            },
+                                                            child: Icon(
+                                                                Icons
+                                                                    .arrow_left,
+                                                                size: Sizes
+                                                                    .dimen_50)),
+                                                        SizedBox(
+                                                          width: Sizes.dimen_20,
+                                                        ),
+                                                        ScaleAnim(
+                                                          onTap: () async {
+                                                            int theInitialChapter = int.parse(widget
+                                                                .chapterList
+                                                                .chapterTitle
+                                                                .replaceAll(
+                                                                    "-", " ")
+                                                                .split(" ")[widget
+                                                                    .chapterList
+                                                                    .chapterTitle
+                                                                    .replaceAll(
+                                                                        "-",
+                                                                        " ")
+                                                                    .split(" ")
+                                                                    .indexWhere((element) =>
+                                                                        element ==
+                                                                        "chapter") +
+                                                                1]);
+                                                            int theCurrentChapter = int.parse(mangaReader
+                                                                .data.chapter
+                                                                .replaceAll(
+                                                                    "-", " ")
+                                                                .split(" ")[mangaReader
+                                                                    .data
+                                                                    .chapter
+                                                                    .replaceAll(
+                                                                        "-",
+                                                                        " ")
+                                                                    .split(" ")
+                                                                    .indexWhere((element) =>
+                                                                        element ==
+                                                                        "chapter") +
+                                                                1]);
+                                                            int theNextChapter =
+                                                                theCurrentChapter +
+                                                                    1;
+                                                            String theNextChapterUrl = widget
+                                                                .chapterList
+                                                                .chapterUrl
+                                                                .replaceAll(
+                                                                    theInitialChapter
+                                                                        .toString(),
+                                                                    theNextChapter
+                                                                        .toString());
+                                                            String theNextChapterTitle = widget
+                                                                .chapterList
+                                                                .chapterTitle
+                                                                .replaceAll(
+                                                                    theInitialChapter
+                                                                        .toString(),
+                                                                    theNextChapter
+                                                                        .toString());
+                                                            int theLastChapter = int.parse(mangaReader
+                                                                .data
+                                                                .chapterList![0]
+                                                                .replaceAll(
+                                                                    "-", " ")
+                                                                .split(" ")[mangaReader
+                                                                    .data
+                                                                    .chapterList![
+                                                                        0]
+                                                                    .replaceAll(
+                                                                        "-",
+                                                                        " ")
+                                                                    .split(" ")
+                                                                    .indexWhere((element) =>
+                                                                        element ==
+                                                                        "chapter") +
+                                                                1]);
 
-                                                         child: Icon(Icons.arrow_left,
-
-                                                             size: Sizes.dimen_50
-                                                         )),
-                                                     SizedBox(
-                                                       width: Sizes.dimen_20,
-                                                     ),
-                                                     ScaleAnim(
-                                                       onTap: () async {
-                                                         int theInitialChapter =
-                                                         int.parse(widget
-                                                             .chapterList
-                                                             .chapterTitle
-                                                             .replaceAll("-", " ")
-                                                             .split(" ")[widget
-                                                             .chapterList
-                                                             .chapterTitle
-                                                             .replaceAll(
-                                                             "-", " ")
-                                                             .split(" ")
-                                                             .indexWhere(
-                                                                 (element) =>
-                                                             element ==
-                                                                 "chapter") +
-                                                             1]);
-                                                         int theCurrentChapter =
-                                                         int.parse(mangaReader
-                                                             .data.chapter
-                                                             .replaceAll("-", " ")
-                                                             .split(" ")[mangaReader
-                                                             .data.chapter
-                                                             .replaceAll(
-                                                             "-", " ")
-                                                             .split(" ")
-                                                             .indexWhere(
-                                                                 (element) =>
-                                                             element ==
-                                                                 "chapter") +
-                                                             1]);
-                                                         int theNextChapter =
-                                                             theCurrentChapter + 1;
-                                                         String theNextChapterUrl =
-                                                         widget
-                                                             .chapterList.chapterUrl
-                                                             .replaceAll(
-                                                             theInitialChapter
-                                                                 .toString(),
-                                                             theNextChapter
-                                                                 .toString());
-                                                         String theNextChapterTitle =
-                                                         widget.chapterList
-                                                             .chapterTitle
-                                                             .replaceAll(
-                                                             theInitialChapter
-                                                                 .toString(),
-                                                             theNextChapter
-                                                                 .toString());
-                                                         int theLastChapter = int.parse(mangaReader
-                                                             .data
-                                                             .chapterList![
-                                                         0]
-                                                             .replaceAll("-", " ")
-                                                             .split(" ")[mangaReader
-                                                             .data
-                                                             .chapterList![0]
-                                                             .replaceAll("-", " ")
-                                                             .split(" ")
-                                                             .indexWhere((element) => element == "chapter") +
-                                                             1]);
-                                                         ///  if the current chapter is lesser than the last chapter
-                                                         if (theCurrentChapter <
-                                                             theLastChapter) {
-                                                           await doTheFunStuff(
-                                                               theNextChapterTitle:
-                                                               theNextChapterTitle,
-                                                               theNextChapterUrl:
-                                                               theNextChapterUrl,
-                                                               fetchMore: fetchMore);
-                                                         }
-                                                       },
-                                                       child: Icon(Icons
-                                                           .arrow_right,
-                                                           size: Sizes.dimen_50
-                                                       ),
-                                                     ),
-                                                   ],
-                                                 ),
-                                               )
-                                             ],
-                                           ),
-                                         )
-                                         : Container()),
+                                                            ///  if the current chapter is lesser than the last chapter
+                                                            if (theCurrentChapter <
+                                                                theLastChapter) {
+                                                              await doTheFunStuff(
+                                                                  theNextChapterTitle:
+                                                                      theNextChapterTitle,
+                                                                  theNextChapterUrl:
+                                                                      theNextChapterUrl,
+                                                                  fetchMore:
+                                                                      fetchMore);
+                                                            }
+                                                          },
+                                                          child: Icon(
+                                                              Icons.arrow_right,
+                                                              size: Sizes
+                                                                  .dimen_50),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            )
+                                          : Container()),
                                   Positioned(
                                       top: 0,
-                                      child:  showAppBar
+                                      child: showAppBar
                                           ? Container(
-                                              color:context.isLightMode()? Colors.white: AppColor.vulcan,
+                                              color: context.isLightMode()
+                                                  ? Colors.white
+                                                  : AppColor.vulcan,
                                               width: ScreenUtil.screenWidth,
-                                              height: kToolbarHeight  + barHeight,
+                                              height:
+                                                  kToolbarHeight + barHeight,
                                               child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 3.0),
                                                 child: Padding(
-                                                  padding:  EdgeInsets.only(top: barHeight),
+                                                  padding: EdgeInsets.only(
+                                                      top: barHeight),
                                                   child: Row(
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
                                                     children: [
-                                                   Expanded(
-                                                     child: Row(
-                                                       children: [
-                                                       Padding(
-                                                         padding:  EdgeInsets.only(left: Sizes.dimen_10, right: Sizes.dimen_8),
-                                                         child: ScaleAnim(
-                                                           onTap:(){
-                                                             Navigator.pop(context);
-                                                           },
-                                                           child: Icon(Icons.arrow_back_outlined,
-                                                           size: Sizes.dimen_22,
-
-                                                           ),
-                                                         ),
-                                                       ),
-                                                       ValueListenableBuilder(
-                                                         builder: (context, String value, _) {
-                                                           return Text(value
-                                                               .replaceAll("-", " ")
-                                                               .split(" ")[value.split("-").indexWhere(
-                                                                   (element) => element == "chapter") +
-                                                               1]
-                                                               .replaceFirst("c", "C") +
-                                                               " " +
-                                                               value.replaceAll("-", " ").split(" ")[value
-                                                                   .split("-")
-                                                                   .indexWhere(
-                                                                       (element) => element == "chapter") +
-                                                                   2],
-
-                                                           style: TextStyle(
-                                                             fontWeight: FontWeight.bold,
-                                                             fontSize: Sizes.dimen_20.sp,
-                                                           ),
-
-                                                           );
-                                                         },
-                                                         valueListenable: chapterName,
-                                                       ),
-                                                     ],),
-                                                   ),
-                                                    Expanded(
-                                                      flex: 1,
-                                                      child: GestureDetector(
-                                                        onTap: () {
-                                                          // Navigator.of(context).pushReplacementNamed(
-                                                          //     Routes.mangaInfo,
-                                                          //     arguments: newestMMdl.Datum(
-                                                          //         title: widget.chapterList.mangaTitle,
-                                                          //         mangaUrl: widget.chapterList.mangaUrl,
-                                                          //         imageUrl: widget.chapterList.mangaImage));
-                                                          Navigator.of(context).pushNamedAndRemoveUntil(  Routes.mangaInfo, ModalRoute.withName(  Routes.homeRoute), arguments: newestMMdl.Datum(
-                                                              title: widget.chapterList.mangaTitle,
-                                                              mangaUrl: widget.chapterList.mangaUrl,
-                                                              imageUrl: widget.chapterList.mangaImage));
-                                                        },
+                                                      Expanded(
                                                         child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.end,
                                                           children: [
                                                             Padding(
-                                                              padding: const EdgeInsets.all(8.0),
-                                                              child: Icon(Icons.menu,
-                                                                  size: Sizes.dimen_24,
-                                                                  color: context.isLightMode()
-                                                                      ? AppColor.vulcan
-                                                                      : Colors.white),
+                                                              padding: EdgeInsets.only(
+                                                                  left: Sizes
+                                                                      .dimen_10,
+                                                                  right: Sizes
+                                                                      .dimen_8),
+                                                              child: ScaleAnim(
+                                                                onTap: () {
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                },
+                                                                child: Icon(
+                                                                  Icons
+                                                                      .arrow_back_outlined,
+                                                                  size: Sizes
+                                                                      .dimen_22,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            ValueListenableBuilder(
+                                                              builder: (context,
+                                                                  String value,
+                                                                  _) {
+                                                                return Text(
+                                                                  value
+                                                                          .replaceAll(
+                                                                              "-",
+                                                                              " ")
+                                                                          .split(" ")[value.split("-").indexWhere((element) => element == "chapter") +
+                                                                              1]
+                                                                          .replaceFirst(
+                                                                              "c",
+                                                                              "C") +
+                                                                      " " +
+                                                                      value
+                                                                          .replaceAll(
+                                                                              "-",
+                                                                              " ")
+                                                                          .split(" ")[value.split("-").indexWhere((element) =>
+                                                                              element ==
+                                                                              "chapter") +
+                                                                          2],
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    fontSize: Sizes
+                                                                        .dimen_20
+                                                                        .sp,
+                                                                  ),
+                                                                );
+                                                              },
+                                                              valueListenable:
+                                                                  chapterName,
                                                             ),
                                                           ],
                                                         ),
                                                       ),
-                                                    )
-
-                                                  ],),
+                                                      Expanded(
+                                                        flex: 1,
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            // Navigator.of(context).pushReplacementNamed(
+                                                            //     Routes.mangaInfo,
+                                                            //     arguments: newestMMdl.Datum(
+                                                            //         title: widget.chapterList.mangaTitle,
+                                                            //         mangaUrl: widget.chapterList.mangaUrl,
+                                                            //         imageUrl: widget.chapterList.mangaImage));
+                                                            Navigator.of(context).pushNamedAndRemoveUntil(
+                                                                Routes
+                                                                    .mangaInfo,
+                                                                ModalRoute.withName(
+                                                                    Routes
+                                                                        .homeRoute),
+                                                                arguments: newestMMdl.Datum(
+                                                                    title: widget
+                                                                        .chapterList
+                                                                        .mangaTitle,
+                                                                    mangaUrl: widget
+                                                                        .chapterList
+                                                                        .mangaUrl,
+                                                                    imageUrl: widget
+                                                                        .chapterList
+                                                                        .mangaImage));
+                                                          },
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .end,
+                                                            children: [
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        8.0),
+                                                                child: Icon(
+                                                                    Icons.menu,
+                                                                    size: Sizes
+                                                                        .dimen_24,
+                                                                    color: context.isLightMode()
+                                                                        ? AppColor
+                                                                            .vulcan
+                                                                        : Colors
+                                                                            .white),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
-                                          )
+                                            )
                                           : Container()),
                                 ],
                               );

@@ -28,7 +28,8 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
     return FetchMoreOptions(
       variables: {
         "genreUrl":
-            "/browse/?genre=${widget.category}&filter=Random&results=${initialGenrePage}"
+            "/browse-comics/?genre_included=${widget.category}&filter=Random&results=${initialGenrePage}",
+        "source": 'https://www.mgeko.cc'
       },
       updateQuery: (previousResultData, fetchMoreResultData) {
         fetchMoreResultData!["getMangaByGenre"]['data'] = [
@@ -54,7 +55,8 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
               pollInterval: null,
               variables: {
                 "genreUrl":
-                    "/browse/?genre=${widget.category}&filter=Random&results=1"
+                    "/browse-comics/?genre_included=${widget.category}&filter=Random&results=1",
+                "source": 'https://www.mgeko.cc'
               }),
           builder: (QueryResult result, {refetch, fetchMore}) {
             // if (result.hasException) {
@@ -65,7 +67,7 @@ class _CategoryViewMainState extends State<CategoryViewMain> {
               return NoAnimationLoading();
             }
 
-            final mangaInfo = result.data!["getMangaByGenre"];
+            final mangaInfo = result.data?["getMangaByGenre"];
             if (mangaInfo != null) {
               GetMangaByGenre newestManga = GetMangaByGenre.fromMap(mangaInfo);
               return LayoutBuilder(

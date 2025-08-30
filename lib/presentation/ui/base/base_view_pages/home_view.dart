@@ -78,7 +78,7 @@ class _HomeViewState extends State<HomeView>
             return NoAnimationLoading();
           }
 
-          final mangaInfo = result.data!["getNewestManga"];
+          final mangaInfo = result.data?["getNewestManga"];
           if (mangaInfo != null) {
             newestMMdl.GetNewestManga newestManga =
                 newestMMdl.GetNewestManga.fromMap(mangaInfo);
@@ -90,7 +90,6 @@ class _HomeViewState extends State<HomeView>
                 await refetch!();
               },
               child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -99,65 +98,68 @@ class _HomeViewState extends State<HomeView>
                       height: Sizes.dimen_250,
                       child: Stack(
                         children: [
-                          BlocBuilder<SettingsCubit, SettingsState>(
-                              builder: (context, settingsBloc) {
-                            return CarouselSlider.builder(
-                              options: CarouselOptions(
-                                  height: Sizes.dimen_250,
-                                  viewportFraction: 1.0,
-                                  enlargeCenterPage: true,
-                                  autoPlayCurve: Curves.ease,
-                                  autoPlay: true,
-                                  autoPlayInterval: Duration(
-                                      seconds: settingsBloc
-                                          .settings.newMangaSliderDuration),
-                                  autoPlayAnimationDuration:
-                                      Duration(milliseconds: 200),
-                                  onPageChanged: (i, reason) {
-                                    context
-                                        .read<MangaSlideShowCubit>()
-                                        .setIndex(i + 1);
-                                  }),
-                              itemBuilder: (_, index, __) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).pushNamed(
-                                        Routes.mangaInfo,
-                                        arguments: newestMMdl.Datum(
-                                            title:
-                                                newestManga.data![index].title,
-                                            mangaUrl: newestManga
-                                                .data![index].mangaUrl,
-                                            imageUrl: newestManga
-                                                .data![index].imageUrl));
-                                  },
-                                  child: CachedNetworkImage(
-                                    // cacheManager:
-                                    //     getItInstance<CacheServiceImpl>()
-                                    //         .getDefaultCacheOptions(),
-                                    key: UniqueKey(),
-                                    imageUrl:
-                                        newestManga.data![index].imageUrl ?? '',
-                                    imageBuilder: (context, imageProvider) =>
-                                        Container(
-                                      decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: imageProvider,
-                                          fit: BoxFit.cover,
+                          Positioned.fill(
+                            child: BlocBuilder<SettingsCubit, SettingsState>(
+                                builder: (context, settingsBloc) {
+                              return CarouselSlider.builder(
+                                options: CarouselOptions(
+                                    height: Sizes.dimen_250,
+                                    viewportFraction: 1.0,
+                                    enlargeCenterPage: true,
+                                    autoPlayCurve: Curves.ease,
+                                    autoPlay: true,
+                                    autoPlayInterval: Duration(
+                                        seconds: settingsBloc
+                                            .settings.newMangaSliderDuration),
+                                    autoPlayAnimationDuration:
+                                        Duration(milliseconds: 200),
+                                    onPageChanged: (i, reason) {
+                                      context
+                                          .read<MangaSlideShowCubit>()
+                                          .setIndex(i + 1);
+                                    }),
+                                itemBuilder: (_, index, __) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context).pushNamed(
+                                          Routes.mangaInfo,
+                                          arguments: newestMMdl.Datum(
+                                              title:
+                                                  newestManga.data![index].title,
+                                              mangaUrl: newestManga
+                                                  .data![index].mangaUrl,
+                                              mangaSource: newestManga
+                                                  .data![index].mangaSource,
+                                              imageUrl: newestManga
+                                                  .data![index].imageUrl));
+                                    },
+                                    child: CachedNetworkImage(
+                                      // cacheManager:
+                                      //     getItInstance<CacheServiceImpl>()
+                                      //         .getDefaultCacheOptions(),
+                                      key: UniqueKey(),
+                                      imageUrl:
+                                          newestManga.data![index].imageUrl ?? '',
+                                      imageBuilder: (context, imageProvider) =>
+                                          Container(
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                              image: imageProvider,
+                                              fit: BoxFit.cover),
                                         ),
                                       ),
+                                      placeholder: (ctx, string) {
+                                        return NoAnimationLoading();
+                                      },
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
                                     ),
-                                    placeholder: (ctx, string) {
-                                      return NoAnimationLoading();
-                                    },
-                                    errorWidget: (context, url, error) =>
-                                        Icon(Icons.error),
-                                  ),
-                                );
-                              },
-                              itemCount: newestManga.data!.length,
-                            );
-                          }),
+                                  );
+                                },
+                                itemCount: newestManga.data!.length,
+                              );
+                            }),
+                          ),
                           const Align(
                               alignment: Alignment.bottomRight,
                               child: Padding(
@@ -208,7 +210,9 @@ class _HomeViewState extends State<HomeView>
                           SizedBox(
                             height: Sizes.dimen_2.h,
                           ),
-                          MangaByGenreTabular(genre: "All"),
+                          MangaByGenreTabular(genre: "Action"),
+                          MangaByGenreTabular(genre: "Horror"),
+                          MangaByGenreTabular(genre: "Webtoons"),
                           SingleChildScrollView(
                             physics: BouncingScrollPhysics(),
                             scrollDirection: Axis.horizontal,
@@ -232,7 +236,7 @@ class _HomeViewState extends State<HomeView>
                                   children: [
                                     MangaByGenreCard(genre: "Sports"),
                                     MangaByGenreCard(genre: "Isekai"),
-                                    MangaByGenreCard(genre: "Romance"),
+                                    MangaByGenreCard(genre: "Love"),
                                   ],
                                 ),
                                 Column(
@@ -245,12 +249,12 @@ class _HomeViewState extends State<HomeView>
                               ],
                             ),
                           ),
-                          MangaByGenreTabular(genre: "Shounen"),
-                          MangaByGenreHome(genre: "Fantasy"),
-                          MangaByGenreHome(genre: "Cooking"),
-                          MangaByGenreTabular(genre: "Manhwa"),
-                          MangaByGenreHome(genre: "Medical"),
-                          MangaByGenreHome(genre: "One Shot"),
+                          // MangaByGenreTabular(genre: "Shounen"),
+                          // MangaByGenreHome(genre: "Fantasy"),
+                          // MangaByGenreHome(genre: "Cooking"),
+                          // MangaByGenreTabular(genre: "Manhwa"),
+                          // MangaByGenreHome(genre: "Medical"),
+                          // MangaByGenreHome(genre: "One Shot"),
                         ],
                       ),
                     )

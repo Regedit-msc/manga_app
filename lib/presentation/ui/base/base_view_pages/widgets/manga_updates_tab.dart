@@ -67,7 +67,7 @@ class _MangaUpdatesTabViewState extends State<MangaUpdatesTabView> {
               return NoAnimationLoading();
             }
 
-            final mangaInfo = result.data!["getMangaPage"];
+            final mangaInfo = result.data?["getMangaPage"];
             if (mangaInfo != null) {
               GetMangaPage newestManga = GetMangaPage.fromMap(mangaInfo);
               return LayoutBuilder(

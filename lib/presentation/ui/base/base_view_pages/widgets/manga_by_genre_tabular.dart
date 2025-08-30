@@ -44,17 +44,21 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
         options: QueryOptions(
             document: parseString(MANGA_BY_GENRE),
             pollInterval: null,
-            variables: {"genreUrl": "/browse/?genre=${widget.genre}"}),
+            variables: {
+              "genreUrl": "/browse-comics/?genre_included=${widget.genre}",
+              "source": 'https://www.mgeko.cc'
+            }),
         builder: (QueryResult result, {refetch, fetchMore}) {
           // if (result.hasException) {
           //   return Text(result.exception.toString());
           // }
 
           if (result.isLoading) {
-            return NoAnimationLoading();
+            // return NoAnimationLoading();
+            return const SizedBox();
           }
 
-          final mangaInfo = result.data!["getMangaByGenre"];
+          final mangaInfo = result.data?["getMangaByGenre"];
           if (mangaInfo != null) {
             GetMangaByGenre newestManga = GetMangaByGenre.fromMap(mangaInfo);
             return Column(
@@ -172,7 +176,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                        return NoAnimationLoading();
+                                                            // return NoAnimationLoading();
+                                                            return const SizedBox();
                                                       },
                                                     ),
                                                   ),
@@ -331,7 +336,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                        return NoAnimationLoading();
+                                                            // return NoAnimationLoading();
+                                                            return const SizedBox();
                                                       },
                                                     ),
                                                   ),
@@ -493,7 +499,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                        return NoAnimationLoading();
+                                                            // return NoAnimationLoading();
+                                                            return const SizedBox();
                                                       },
                                                     ),
                                                   ),
@@ -655,7 +662,8 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                                                           .mangaImage,
                                                       placeholder:
                                                           (ctx, string) {
-                                                        return NoAnimationLoading();
+                                                            // return NoAnimationLoading();
+                                                            return const SizedBox();
                                                       },
                                                     ),
                                                   ),

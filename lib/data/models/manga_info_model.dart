@@ -79,7 +79,9 @@ class GetMangaInfoData {
       required this.summary,
       required this.chapterList,
       required this.genres,
-      required this.recommendations});
+      required this.recommendations,
+      required this.mangaSource
+      });
 
   String mangaImage;
   String author;
@@ -91,6 +93,7 @@ class GetMangaInfoData {
   List<ChapterList> chapterList;
   List<Recommendation> recommendations;
   List<Genre> genres;
+  String mangaSource;
 
   factory GetMangaInfoData.fromMap(Map<String, dynamic> json) =>
       GetMangaInfoData(
@@ -106,6 +109,7 @@ class GetMangaInfoData {
                   json["chapterList"].map((x) => ChapterList.fromMap(x)))
               : [],
           genres: List<Genre>.from(json["genres"].map((x) => Genre.fromMap(x))),
+          mangaSource: json["mangaSource"] ?? '',
           recommendations: json["recommendations"].length > 0
               ? List<Recommendation>.from(
                   json["recommendations"].map((x) => Recommendation.fromMap(x)))
@@ -122,7 +126,8 @@ class GetMangaInfoData {
         "chapterList": List<dynamic>.from(chapterList.map((x) => x.toMap())),
         "genres": List<dynamic>.from(genres.map((x) => x.toMap())),
         "recommendations":
-            List<dynamic>.from(recommendations.map((x) => x.toMap()))
+            List<dynamic>.from(recommendations.map((x) => x.toMap())),
+        "mangaSource": mangaSource
       };
 }
 

@@ -7,14 +7,15 @@ query NewestManga {
       title
       mangaUrl
       imageUrl
+      mangaSource
     }
   }
 }
 ''';
 
 const String GET_MANGA_INFO = '''
-query MangaInfo(\$mangaUrl: String!) {
-  getMangaInfo(mangaUrl: \$mangaUrl) {
+query MangaInfo(\$source: String!, \$mangaUrl: String!,) {
+  getMangaInfo(source:\$source, mangaUrl:\$mangaUrl) {
     message
     success
     data {
@@ -39,6 +40,7 @@ query MangaInfo(\$mangaUrl: String!) {
         genreUrl
         genre
       }
+      mangaSource
     }
   }
 }
@@ -54,6 +56,7 @@ query MangaReader(\$chapterUrl: String!) {
       chapter
       images
       chapterList
+      mangaSource
     }
   }
 }
@@ -68,6 +71,7 @@ query MangaSearch(\$term: String!) {
       mangaUrl
       title
       imageUrl
+      mangaSource
     }
   }
 }
@@ -83,6 +87,7 @@ query MostViewed {
       imageUrl
       title
       status
+      mangaSource
     }
   }
 }
@@ -98,6 +103,7 @@ query MostClicked {
       imageUrl
       title
       score
+      mangaSource
     }
   }
 }
@@ -105,8 +111,8 @@ query MostClicked {
 ''';
 
 const MANGA_BY_GENRE = '''
-query MangaBuGenre(\$genreUrl: String!) {
-  getMangaByGenre(genreUrl: \$genreUrl) {
+query MangaByGenre(\$source: String!,\$genreUrl: String!) {
+  getMangaByGenre(source: \$source,genreUrl: \$genreUrl) {
     message
     success
     data {
@@ -116,6 +122,7 @@ query MangaBuGenre(\$genreUrl: String!) {
       author
       summary
       stats
+      mangaSource
     }
   }
 }
@@ -150,6 +157,7 @@ query MangaUpdate(\$page: Int!) {
       imageUrl
       title
       status
+      mangaSource
     }
   }
 }

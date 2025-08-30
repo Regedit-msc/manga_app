@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:palette_generator/palette_generator.dart';
+import 'package:webcomic/data/common/generator/custom_palette_generator.dart';
 import 'package:webcomic/data/common/constants/categories.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/data/models/manga_info_model.dart';

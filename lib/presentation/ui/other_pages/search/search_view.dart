@@ -38,7 +38,7 @@ class _SearchState extends State<Search> {
       QueryResult result = await client.query(QueryOptions(
           document: parseString(MANGA_SEARCH), variables: {"term": query}));
 
-      final resultData = result.data!["mangaSearch"];
+      final resultData = result.data?["mangaSearch"];
       MangaSearch mangaSearchRes = MangaSearch.fromMap(resultData);
       context.read<MangaResultsCubit>().setResults(mangaSearchRes.data);
       isSearching.value = false;
@@ -158,6 +158,10 @@ class _SearchState extends State<Search> {
                                                               .mangaSearchResults[
                                                                   index]
                                                               .mangaUrl,
+                                                          mangaSource: mangaResults
+                                                              .mangaSearchResults[
+                                                                  index]
+                                                              .mangaSource,
                                                           imageUrl: mangaResults
                                                               .mangaSearchResults[
                                                                   index]
@@ -190,11 +194,16 @@ class _SearchState extends State<Search> {
                                                             child:
                                                                 NoAnimationLoading());
                                                       },
-                                                      imageUrl: mangaResults
-                                                              .mangaSearchResults[
-                                                                  index]
-                                                              .imageUrl ??
-                                                          ''),
+                                                      imageUrl: (mangaResults
+                                                                  .mangaSearchResults[
+                                                                      index]
+                                                                  .mangaSource ??
+                                                              '') +
+                                                          (mangaResults
+                                                                  .mangaSearchResults[
+                                                                      index]
+                                                                  .imageUrl ??
+                                                              '')),
                                                 )),
                                           ),
                                         );

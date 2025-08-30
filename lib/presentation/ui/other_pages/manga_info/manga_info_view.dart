@@ -10,7 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:gql/language.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:palette_generator/palette_generator.dart';
+import 'package:webcomic/data/common/generator/custom_palette_generator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webcomic/data/common/constants/collection_constants.dart';
 import 'package:webcomic/data/common/constants/privacy.dart';
@@ -177,15 +177,15 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
             document: parseString(GET_MANGA_INFO),
             variables: {
               'mangaUrl': widget.mangaDetails.mangaUrl ?? '',
+              "source": widget.mangaDetails.mangaSource ?? ''
             },
             pollInterval: null,
           ),
           builder: (QueryResult result, {refetch, fetchMore}) {
             GetMangaInfo? mangaInfo;
-
             if (result.isNotLoading && !result.hasException) {
               final resultData = result.data!["getMangaInfo"];
-              print(" result data $resultData");
+
               mangaInfo = GetMangaInfo.fromMap(resultData);
             }
 
@@ -428,37 +428,41 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                   ElevatedButton(
                                                     style: ElevatedButton
                                                         .styleFrom(
-                                                      foregroundColor: context
-                                                              .isLightMode()
-                                                          ? Colors.white
-                                                          : Colors
-                                                              .black, backgroundColor: context
+                                                      foregroundColor:
+                                                          context.isLightMode()
+                                                              ? Colors.white
+                                                              : Colors.black,
+                                                      backgroundColor: context
                                                               .isLightMode()
                                                           ? AppColor.vulcan
                                                           : Colors
                                                               .white, // foreground
                                                     ),
                                                     onPressed: () async {
-                                                      GoogleSignInAccount?
-                                                          googleSignInAccount =
-                                                          await getItInstance<
-                                                                  GoogleSignIn>()
-                                                              .signIn();
-                                                      GoogleSignInAuthentication
-                                                          googleSignInAuthentication =
-                                                          await googleSignInAccount!
-                                                              .authentication;
-                                                      AuthCredential
-                                                          credential =
-                                                          GoogleAuthProvider
-                                                              .credential(
-                                                        accessToken:
-                                                            googleSignInAuthentication
-                                                                .accessToken,
-                                                        idToken:
-                                                            googleSignInAuthentication
-                                                                .idToken,
-                                                      );
+                                                      // TODO: Fix GoogleSignIn implementation
+                                                      // GoogleSignInAccount?
+                                                      //     googleSignInAccount =
+                                                      //     await getItInstance<
+                                                      //             GoogleSignIn>()
+                                                      //         .signIn();
+                                                      // GoogleSignInAuthentication
+                                                      //     googleSignInAuthentication =
+                                                      //     await googleSignInAccount!
+                                                      //         .authentication;
+                                                      // AuthCredential
+                                                      //     credential =
+                                                      //     GoogleAuthProvider
+                                                      //         .credential(
+                                                      //   accessToken:
+                                                      //       googleSignInAuthentication
+                                                      //           .accessToken,
+                                                      //   idToken:
+                                                      //       googleSignInAuthentication
+                                                      //           .idToken,
+                                                      // );
+                                                      print(
+                                                          "Google Sign-In temporarily disabled");
+                                                      /*
                                                       UserCredential
                                                           authResult =
                                                           await getItInstance<
@@ -500,11 +504,11 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                               .fromMap(
                                                                   userData));
                                                       firestore
-                                                              .FirebaseFirestore
+                                                          .FirebaseFirestore
                                                           firesStoreInstance =
                                                           getItInstance<
                                                               firestore
-                                                                  .FirebaseFirestore>();
+                                                              .FirebaseFirestore>();
                                                       await firesStoreInstance
                                                           .collection(
                                                               CollectionConsts
@@ -520,6 +524,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                           .setFirestoreUserId(
                                                               authResult
                                                                   .user!.uid);
+                                                      */
                                                     },
                                                     child: Row(
                                                       mainAxisAlignment:
@@ -612,8 +617,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                               TapGestureRecognizer()
                                                                 ..onTap =
                                                                     () async {
-                                                                  Uri url =
-                                                                      Uri.parse(AppPolicies
+                                                                  Uri url = Uri.parse(
+                                                                      AppPolicies
                                                                           .PRIVACY_LINK);
                                                                   if (await canLaunchUrl(
                                                                       url)) {
@@ -797,7 +802,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                     height: Sizes.dimen_6.h,
                                   ),
                                   Text(
-                                    mangaInfo.data.summary.trim(),
+                                    mangaInfo.data.description.trim(),
                                     textAlign: TextAlign.justify,
                                     style: TextStyle(),
                                   ),

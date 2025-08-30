@@ -75,18 +75,21 @@ class Datum {
     required this.imageUrl,
     required this.title,
     required this.score,
+    required this.mangaSource,
   });
 
   final String mangaUrl;
   final String imageUrl;
   final String title;
   final String score;
+  final String mangaSource;
 
   factory Datum.fromMap(Map<String, dynamic> json) => Datum(
         mangaUrl: json["mangaUrl"],
         imageUrl: json["imageUrl"],
         title: json["title"],
         score: json["score"],
+        mangaSource: json["mangaSource"],
       );
 
   Map<String, dynamic> toMap() => {
@@ -94,5 +97,6 @@ class Datum {
         "imageUrl": imageUrl,
         "title": title,
         "score": score,
+        "mangaSource": mangaSource,
       };
 }

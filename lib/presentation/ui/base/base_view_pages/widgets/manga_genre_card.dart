@@ -28,16 +28,20 @@ class _MangaByGenreCardState extends State<MangaByGenreCard> {
         options: QueryOptions(
             document: parseString(MANGA_BY_GENRE),
             pollInterval: null,
-            variables: {"genreUrl": widget.genre }),
+            variables: {
+              "genreUrl": "/browse-comics/?genre_included=${widget.genre}",
+              "source": 'https://www.mgeko.cc'
+            }),
         builder: (QueryResult result, {refetch, fetchMore}) {
           // if (result.hasException) {
           //   return Text(result.exception.toString());
           // }
 
           if (result.isLoading) {
-            return NoAnimationLoading();
+            // return NoAnimationLoading();
+            return const SizedBox();
           }
-          final mangaInfo = result.data!["getMangaByGenre"];
+          final mangaInfo = result.data?["getMangaByGenre"];
           if (mangaInfo != null) {
             GetMangaByGenre newestManga = GetMangaByGenre.fromMap(mangaInfo);
             return Padding(

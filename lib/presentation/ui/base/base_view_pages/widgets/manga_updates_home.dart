@@ -39,10 +39,11 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
           // }
 
           if (result.isLoading) {
-            return NoAnimationLoading();
+            // return NoAnimationLoading();
+            return const SizedBox();
           }
 
-          final mangaInfo = result.data!["getMangaPage"];
+          final mangaInfo = result.data?["getMangaPage"];
           if (mangaInfo != null) {
             GetMangaPage newestManga = GetMangaPage.fromMap(mangaInfo);
             context.read<MangaUpdatesCubit>().setUpdates(newestManga.data);
@@ -147,7 +148,8 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                                               child: CachedNetworkImage(
                                                   fit: BoxFit.cover,
                                                   placeholder: (ctx, string) {
-                                                    return NoAnimationLoading();
+                                                    // return NoAnimationLoading();
+                                                    return const SizedBox();
                                                   },
                                                   imageUrl: newestManga
                                                       .data[index].imageUrl),

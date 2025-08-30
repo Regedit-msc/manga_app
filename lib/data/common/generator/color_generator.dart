@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imageLib;
-import 'package:palette_generator/palette_generator.dart';
+import 'package:webcomic/data/common/generator/custom_palette_generator.dart';
 
 const String keyPalette = 'palette';
 const String keyNoOfItems = 'noIfItems';

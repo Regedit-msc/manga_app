@@ -280,8 +280,8 @@ class _IndexState extends State<Index> {
                 theme: ThemeData(
                   scaffoldBackgroundColor: Colors.white,
                   brightness: Brightness.light,
-                  indicatorColor: AppColor.vulcan,
-                  tabBarTheme: TabBarTheme(
+                  tabBarTheme: TabBarThemeData(
+                      indicatorColor: AppColor.vulcan,
                       unselectedLabelColor: Colors.grey,
                       unselectedLabelStyle: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -308,14 +308,18 @@ class _IndexState extends State<Index> {
                 ),
                 darkTheme: ThemeData(
                     switchTheme: SwitchThemeData(
-                      thumbColor: MaterialStateProperty.all(AppColor.violet),
-                      trackColor: MaterialStateProperty.resolveWith(getColor),
+                      thumbColor: WidgetStateProperty.all(AppColor.violet),
+                      trackColor: WidgetStateProperty.resolveWith(getColor),
                     ),
                     brightness: Brightness.dark,
-                    indicatorColor: Colors.white,
                     scaffoldBackgroundColor: AppColor.vulcan,
                     visualDensity: VisualDensity.adaptivePlatformDensity,
                     textTheme: ThemeText.getTextTheme(),
+                    tabBarTheme: TabBarThemeData(
+                      indicatorColor: Colors.white,
+                      unselectedLabelColor: Colors.grey,
+                      labelColor: Colors.white,
+                    ),
                     appBarTheme: const AppBarTheme(
                       iconTheme: IconThemeData(color: Colors.white),
                       elevation: 0,

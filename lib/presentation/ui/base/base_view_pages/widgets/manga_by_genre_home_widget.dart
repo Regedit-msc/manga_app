@@ -40,7 +40,7 @@ class _MangaByGenreHomeState extends State<MangaByGenreHome> {
             return NoAnimationLoading();
           }
 
-          final mangaInfo = result.data!["getMangaByGenre"];
+          final mangaInfo = result.data?["getMangaByGenre"];
           if (mangaInfo != null) {
             GetMangaByGenre newestManga = GetMangaByGenre.fromMap(mangaInfo);
             return Column(

@@ -57,10 +57,11 @@ class _MostViewedMangaState extends State<MostViewedManga> {
           // }
 
           if (result.isLoading) {
-            return NoAnimationLoading();
+            // return NoAnimationLoading();
+            return const SizedBox();
           }
 
-          final mangaInfo = result.data!["getMostViewedManga"];
+          final mangaInfo = result.data?["getMostViewedManga"];
           if (mangaInfo != null) {
             GetMostViewedManga newestManga =
                 GetMostViewedManga.fromMap(mangaInfo);
@@ -116,7 +117,8 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                                             child: CachedNetworkImage(
                                                 fit: BoxFit.cover,
                                                 placeholder: (ctx, string) {
-                                                  return NoAnimationLoading();
+                                                  // return NoAnimationLoading();
+                                                  return const SizedBox();
                                                 },
                                                 imageUrl: newestManga
                                                     .data[index].imageUrl),

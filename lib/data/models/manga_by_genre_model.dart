@@ -73,6 +73,7 @@ class Datum {
     required this.author,
     required this.stats,
     required this.summary,
+    required this.mangaSource,
   });
 
   final String mangaUrl;
@@ -81,6 +82,7 @@ class Datum {
   final String author;
   final String stats;
   final String summary;
+  final String mangaSource;
 
   factory Datum.fromMap(Map<String, dynamic> json) => Datum(
         mangaUrl: json["mangaUrl"],
@@ -89,6 +91,7 @@ class Datum {
         author: json["author"],
         stats: json["stats"],
         summary: json["summary"],
+        mangaSource: json["mangaSource"],
       );
 
   Map<String, dynamic> toMap() => {
@@ -98,5 +101,6 @@ class Datum {
         "author": author,
         "stats": stats,
         "summary": summary,
+        "mangaSource": mangaSource,
       };
 }
