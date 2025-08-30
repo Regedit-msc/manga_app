@@ -55,7 +55,12 @@ query MangaReader(\$source: String!, \$chapterUrl: String!) {
     data {
       chapter
       images
-      chapterList
+      chapterList {
+        chapterTitle
+        chapterUrl
+        dateUploaded
+        mangaSource
+      }
       mangaSource
     }
   }

@@ -83,7 +83,7 @@ class GetMangaReaderData {
       this.mangaSource});
 
   String chapter;
-  List<String>? chapterList;
+  List<ReaderChapterItem>? chapterList;
   List<String> images;
   String? mangaSource;
 
@@ -92,14 +92,16 @@ class GetMangaReaderData {
           chapter: json["chapter"] ?? '',
           images: List<String>.from(json["images"].map((x) => x)),
           chapterList: json["chapterList"] != null
-              ? List<String>.from(json["chapterList"].map((x) => x))
+              ? List<ReaderChapterItem>.from(
+                  json["chapterList"].map((x) => ReaderChapterItem.fromMap(x)))
               : [],
           mangaSource: json["mangaSource"] ?? '');
 
   Map<String, dynamic> toMap() => {
         "chapter": chapter,
         "images": List<dynamic>.from(images.map((x) => x)),
-        "chapterList": List<dynamic>.from(chapterList!.map((x) => x)),
+        "chapterList":
+            List<dynamic>.from(chapterList?.map((x) => x.toMap()) ?? []),
         "mangaSource": mangaSource,
       };
 
@@ -114,4 +116,37 @@ class GetMangaReaderData {
       ', source: ' +
       (mangaSource ?? '') +
       ')';
+}
+
+class ReaderChapterItem {
+  ReaderChapterItem({
+    required this.chapterTitle,
+    required this.chapterUrl,
+    this.dateUploaded,
+    required this.mangaSource,
+  });
+
+  String chapterTitle;
+  String chapterUrl;
+  String? dateUploaded;
+  String mangaSource;
+
+  factory ReaderChapterItem.fromMap(Map<String, dynamic> json) =>
+      ReaderChapterItem(
+        chapterTitle: json["chapterTitle"] ?? '',
+        chapterUrl: json["chapterUrl"] ?? '',
+        dateUploaded: json["dateUploaded"],
+        mangaSource: json["mangaSource"] ?? '',
+      );
+
+  Map<String, dynamic> toMap() => {
+        "chapterTitle": chapterTitle,
+        "chapterUrl": chapterUrl,
+        "dateUploaded": dateUploaded,
+        "mangaSource": mangaSource,
+      };
+
+  @override
+  String toString() =>
+      'ReaderChapterItem(title: $chapterTitle, url: $chapterUrl, source: $mangaSource)';
 }

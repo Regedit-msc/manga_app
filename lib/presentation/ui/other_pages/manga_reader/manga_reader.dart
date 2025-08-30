@@ -148,8 +148,8 @@ class _MangaReaderState extends State<MangaReader> {
     await dbInstance.updateOrInsertRecentlyRead(recentlyRead);
   }
 
-  Widget checkLast(
-      List<String>? chapterList, String chapter, GetMangaReader mangaReader) {
+  Widget checkLast(List<ReaderChapterItem>? chapterList, String chapter,
+      GetMangaReader mangaReader) {
     int currentChapter = int.parse(mangaReader.data.chapter
         .replaceAll("-", " ")
         .split(" ")[mangaReader.data.chapter
@@ -159,9 +159,9 @@ class _MangaReaderState extends State<MangaReader> {
         1]);
 
     int nextChapter = currentChapter + 1;
-    int theLastChapter = int.parse(mangaReader.data.chapterList![0]
+    int theLastChapter = int.parse(mangaReader.data.chapterList![0].chapterTitle
         .replaceAll("-", " ")
-        .split(" ")[mangaReader.data.chapterList![0]
+        .split(" ")[mangaReader.data.chapterList![0].chapterTitle
             .replaceAll("-", " ")
             .split(" ")
             .indexWhere((element) => element == "chapter") +
@@ -375,11 +375,14 @@ class _MangaReaderState extends State<MangaReader> {
                                                                 .toString());
                                                 int theLastChapter = int.parse(
                                                     mangaReader
-                                                        .data.chapterList![0]
+                                                        .data
+                                                        .chapterList![0]
+                                                        .chapterTitle
                                                         .replaceAll("-", " ")
                                                         .split(" ")[mangaReader
                                                             .data
                                                             .chapterList![0]
+                                                            .chapterTitle
                                                             .replaceAll(
                                                                 "-", " ")
                                                             .split(" ")
@@ -502,12 +505,13 @@ class _MangaReaderState extends State<MangaReader> {
                                                                           .chapterList!
                                                                           .length -
                                                                       1]
+                                                                  .chapterTitle
                                                                   .replaceAll(
                                                                       "-", " ")
                                                                   .split(" ")[mangaReader
                                                                       .data
-                                                                      .chapterList![
-                                                                          mangaReader.data.chapterList!.length - 1]
+                                                                      .chapterList![mangaReader.data.chapterList!.length - 1]
+                                                                      .chapterTitle
                                                                       .replaceAll("-", " ")
                                                                       .split(" ")
                                                                       .indexWhere((element) => element == "chapter") +
@@ -586,15 +590,16 @@ class _MangaReaderState extends State<MangaReader> {
                                                             int theLastChapter = int.parse(mangaReader
                                                                 .data
                                                                 .chapterList![0]
+                                                                .chapterTitle
                                                                 .replaceAll(
                                                                     "-", " ")
                                                                 .split(" ")[mangaReader
                                                                     .data
                                                                     .chapterList![
                                                                         0]
+                                                                    .chapterTitle
                                                                     .replaceAll(
-                                                                        "-",
-                                                                        " ")
+                                                                        "-", " ")
                                                                     .split(" ")
                                                                     .indexWhere((element) =>
                                                                         element ==
