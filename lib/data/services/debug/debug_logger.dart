@@ -50,7 +50,7 @@ class DebugLogger {
       print('├── Error: $errorMessage');
     }
     if (data != null) {
-      print('├── Response Data Keys: ${data.keys.toList()}');
+      print('├── Response Data: {data');
       // Optionally log first level of data structure without exposing sensitive info
       print('├── Data Summary:');
       data.forEach((key, value) {
