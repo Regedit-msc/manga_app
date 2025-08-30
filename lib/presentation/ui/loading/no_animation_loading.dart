@@ -22,6 +22,5 @@ class _NoAnimationLoadingState extends State<NoAnimationLoading> {
         ),
       ),
     );
-    ;
   }
 }
