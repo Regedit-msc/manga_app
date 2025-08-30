@@ -19,7 +19,7 @@ typedef NetworkLoadingErrorWidgetBuilder = Widget Function(
 class NetworkImageExt extends StatefulWidget {
   final NetworkPlaceholderWidgetBuilder? placeholder;
   final NetworkImageWidgetBuilder imageBuilder;
-  String imageUrl;
+  final String imageUrl;
   final NetworkLoadingErrorWidgetBuilder? errorWidget;
   NetworkImageExt(
       {Key? key,
@@ -56,15 +56,16 @@ class _NetworkImageExtState extends State<NetworkImageExt> {
                   duration: Duration(milliseconds: 300),
                   tween: Tween<double>(begin: 0, end: 1.0),
                   builder: (context, _val, child) {
-                    return Opacity(
-                      opacity: _val as double,
-                      child: child,
-                    );
+                    return Opacity(opacity: _val, child: child);
                   },
                   child: widget.imageBuilder(
-                      context,
-                      data.imageProvider ??
-                          Image.network(widget.imageUrl).image),
+                    context,
+                    data.imageProvider ??
+                        ResizeImage(
+                          Image.network(widget.imageUrl).image,
+                          width: MediaQuery.of(context).size.width.ceil(),
+                        ),
+                  ),
                 )
               : Container();
         });

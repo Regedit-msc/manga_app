@@ -261,7 +261,7 @@ class _HomeViewState extends State<HomeView>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Ensure content starts below the transparent AppBar
-                        SizedBox(height: topInset + 8),
+                        SizedBox(height: topInset),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: const QuickSearchBar(),
@@ -365,10 +365,10 @@ class _HomeViewState extends State<HomeView>
                                             children: [
                                               CachedNetworkImage(
                                                 imageUrl: item.imageUrl ?? '',
-                                                memCacheWidth: 1600,
-                                                memCacheHeight: 900,
-                                                maxWidthDiskCache: 1920,
-                                                maxHeightDiskCache: 1080,
+                                                memCacheWidth: 1280,
+                                                memCacheHeight: 720,
+                                                maxWidthDiskCache: 1600,
+                                                maxHeightDiskCache: 900,
                                                 fit: BoxFit.cover,
                                                 placeholder: (ctx, _) =>
                                                     const SizedBox(),

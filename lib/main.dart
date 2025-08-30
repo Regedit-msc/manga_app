@@ -34,9 +34,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Increase image cache for smoother scrolling and instant displays after preloading
   try {
-    // Allow many images and ~200MB cache. Safe on modern devices; adjust if needed.
-    PaintingBinding.instance.imageCache.maximumSize = 2000;
-    PaintingBinding.instance.imageCache.maximumSizeBytes = 200 << 20; // 200 MB
+    // Keep cache modest to avoid OOM on low-memory/emulator devices.
+    // These values trade a bit of re-decoding for stability.
+    PaintingBinding.instance.imageCache.maximumSize = 800;
+    PaintingBinding.instance.imageCache.maximumSizeBytes = 100 << 20; // 100 MB
   } catch (_) {
     // no-op if binding not ready on some platforms
   }

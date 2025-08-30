@@ -623,6 +623,10 @@ class _MangaReaderState extends State<MangaReader> {
                                               imageUrl: mangaReader
                                                   .data.images[index],
                                               fit: BoxFit.fitWidth,
+                                              // Decode roughly to screen width to avoid giant bitmaps
+                                              memCacheWidth: 1080,
+                                              maxWidthDiskCache: 1440,
+                                              // Height will auto-scale with aspect ratio
                                               placeholder: (ctx, string) {
                                                 return Container(
                                                   height:
