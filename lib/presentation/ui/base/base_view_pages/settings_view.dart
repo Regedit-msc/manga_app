@@ -8,6 +8,7 @@ import 'package:webcomic/data/services/cache/cache_service.dart';
 import 'package:webcomic/data/services/settings/settings_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
+import 'package:webcomic/data/common/constants/routes_constants.dart';
 import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 
 class SettingsView extends StatefulWidget {
@@ -246,6 +247,20 @@ class _SettingsViewState extends State<SettingsView> {
                     style: theme.textTheme.titleMedium?.copyWith(
                         color: scheme.onSurface, fontWeight: FontWeight.w700),
                   ),
+                ),
+                ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6),
+                  onTap: () {
+                    Navigator.of(context).pushNamed(Routes.downloadQueue);
+                  },
+                  title: const Text('Download Manager'),
+                  subtitle: Text(
+                    'View and manage active downloads.',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
+                  trailing: Icon(Icons.download, color: scheme.primary),
                 ),
                 ListTile(
                   contentPadding:

@@ -16,6 +16,7 @@ import 'package:webcomic/presentation/ui/other_pages/collections/collection_sear
 import 'package:webcomic/presentation/ui/other_pages/collections/collection_subcollection_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/collections/create_collection.dart';
 import 'package:webcomic/presentation/ui/other_pages/download/download_page.dart';
+import 'package:webcomic/presentation/ui/pages/download_queue/download_queue_page.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_info/manga_info_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_info/summary/summary_view.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_reader/manga_reader.dart';
@@ -116,6 +117,11 @@ class CustomRouter {
             child: DownloadChapterListView(
               downloadedManga: setting.arguments as DownloadedManga,
             ),
+            type: PageTransitionType.fade,
+            settings: setting);
+      case Routes.downloadQueue:
+        return PageTransition(
+            child: const DownloadQueuePage(),
             type: PageTransitionType.fade,
             settings: setting);
       case Routes.offlineReader:

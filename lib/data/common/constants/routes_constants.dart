@@ -16,4 +16,5 @@ class Routes {
   static const String downloadedChaptersView = "/downloaded-chapters-view";
   static const String downloadTest = "/download-test";
   static const String offlineReader = "/offline-reader";
+  static const String downloadQueue = "/download-queue";
 }
