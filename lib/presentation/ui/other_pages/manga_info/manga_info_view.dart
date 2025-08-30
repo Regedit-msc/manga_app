@@ -42,6 +42,8 @@ import 'package:webcomic/presentation/ui/blocs/subcriptions/subscriptions_bloc.d
 import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/loading.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/presentation/ui/other_pages/manga_info/manga_info_shimmer.dart';
+import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
 
 class MangaInfo extends StatefulWidget {
   final Datum mangaDetails;
@@ -169,7 +171,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
         final parsed = Uri.tryParse(url);
         if (parsed != null && parsed.hasScheme) {
           // origin = scheme://host[:port]
-          final origin = '${parsed.scheme}://${parsed.host}${parsed.hasPort ? ':${parsed.port}' : ''}';
+          final origin =
+              '${parsed.scheme}://${parsed.host}${parsed.hasPort ? ':${parsed.port}' : ''}';
           return origin;
         }
       }
@@ -197,7 +200,7 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
             }
 
             if (result.isLoading) {
-              return NoAnimationLoading();
+              return const MangaInfoShimmer();
             }
 
             if (mangaInfo != null) {
@@ -790,46 +793,105 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                     },
                     body: TabBarView(
                       children: [
-                        Container(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.vertical,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        // ABOUT TAB
+                        SingleChildScrollView(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Genres chips
+                              if (mi.data.genres.isNotEmpty)
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: mi.data.genres
+                                      .map((g) => Chip(
+                                            label: Text(g.genre),
+                                            backgroundColor:
+                                                context.isLightMode()
+                                                    ? Colors.grey.shade200
+                                                    : Colors.white10,
+                                          ))
+                                      .toList(),
+                                ),
+                              SizedBox(height: Sizes.dimen_12.h),
+                              // Stats
+                              Row(
                                 children: [
-                                  SizedBox(
-                                    height: Sizes.dimen_2.h,
+                                  _InfoStat(
+                                      icon: Icons.menu_book_rounded,
+                                      label: 'Chapters',
+                                      value: mi.data.chapterNo),
+                                  const SizedBox(width: 12),
+                                  _InfoStat(
+                                      icon: Icons.visibility_rounded,
+                                      label: 'Views',
+                                      value: mi.data.views),
+                                  const SizedBox(width: 12),
+                                  _InfoStat(
+                                      icon: Icons.schedule_rounded,
+                                      label: 'Status',
+                                      value: mi.data.status),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // Actions
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                            context, Routes.summary,
+                                            arguments: mi);
+                                      },
+                                      icon: const Icon(
+                                          Icons.info_outline_rounded),
+                                      label: const Text('Summary'),
+                                    ),
                                   ),
-                                  Text("SUMMARY",
-                                      style: TextStyle(
-                                          fontSize: Sizes.dimen_18.sp,
-                                          fontWeight: FontWeight.w900)),
-                                  SizedBox(
-                                    height: Sizes.dimen_6.h,
-                                  ),
-                                  Text(
-                                    mangaInfo.data.description.trim(),
-                                    textAlign: TextAlign.justify,
-                                    style: TextStyle(),
-                                  ),
-                                  SizedBox(
-                                    height: Sizes.dimen_6.h,
-                                  ),
-                                  Text("AUTHOR",
-                                      style: TextStyle(
-                                          fontSize: Sizes.dimen_18.sp,
-                                          fontWeight: FontWeight.w900)),
-                                  SizedBox(
-                                    height: Sizes.dimen_6.h,
-                                  ),
-                                  Text(
-                                    mangaInfo.data.author,
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                            context, Routes.downloadView,
+                                            arguments:
+                                                MangaInformationForDownload(
+                                              mangaDetails: widget.mangaDetails,
+                                              chapterList: mi.data.chapterList,
+                                              colorPalette: _imageAndColor !=
+                                                      null
+                                                  ? _imageAndColor!.palette
+                                                  : PaletteGenerator.fromColors(
+                                                      []),
+                                            ));
+                                      },
+                                      icon: const Icon(Icons.download_rounded),
+                                      label: const Text('Download'),
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
+                              const SizedBox(height: 16),
+                              // Description
+                              Text('Summary',
+                                  style: TextStyle(
+                                      fontSize: Sizes.dimen_18.sp,
+                                      fontWeight: FontWeight.w900)),
+                              const SizedBox(height: 6),
+                              Text(
+                                mi.data.description.trim(),
+                                textAlign: TextAlign.justify,
+                              ),
+                              const SizedBox(height: 16),
+                              Text('Author',
+                                  style: TextStyle(
+                                      fontSize: Sizes.dimen_18.sp,
+                                      fontWeight: FontWeight.w900)),
+                              const SizedBox(height: 6),
+                              Text(mi.data.author),
+                            ],
                           ),
                         ),
                         BlocBuilder<SettingsCubit, SettingsState>(
@@ -849,7 +911,17 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                   }
 
                                   if (result.isLoading) {
-                                    return Loading();
+                                    return const ListTile(
+                                      title: SizedBox(
+                                          height: 16,
+                                          child: ShimmerBox(height: 16)),
+                                      subtitle: SizedBox(
+                                          height: 12,
+                                          child: ShimmerBox(
+                                              height: 12, width: 120)),
+                                      leading:
+                                          ShimmerBox(width: 70, height: 50),
+                                    );
                                   }
                                   return BlocBuilder<ChaptersReadCubit,
                                           ChaptersReadState>(
@@ -992,19 +1064,22 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                         ),
                                         leading: ClipRRect(
                                           borderRadius:
-                                              BorderRadius.circular(4.0),
-                                          child: Container(
-                                            // padding: EdgeInsets.all(8),
-                                            height: Sizes.dimen_100.h,
-                                            width: Sizes.dimen_110.w,
-                                            decoration: BoxDecoration(
-                                                image: DecorationImage(
-                                                    image:
-                                                        CachedNetworkImageProvider(
-                                                            widget.mangaDetails
-                                                                    .imageUrl ??
-                                                                ''),
-                                                    fit: BoxFit.cover)),
+                                              BorderRadius.circular(8.0),
+                                          child: AspectRatio(
+                                            aspectRatio: 3 / 4,
+                                            child: CachedNetworkImage(
+                                              imageUrl: widget
+                                                      .mangaDetails.imageUrl ??
+                                                  '',
+                                              fit: BoxFit.cover,
+                                              placeholder: (_, __) =>
+                                                  const ShimmerBox(
+                                                      height: 90, width: 70),
+                                              errorWidget: (_, __, ___) =>
+                                                  Container(
+                                                      color:
+                                                          Colors.grey.shade300),
+                                            ),
                                           ),
                                         ),
                                         title: Padding(
@@ -1125,6 +1200,49 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
             }
             return Loading();
           }),
+    );
+  }
+}
+
+class _InfoStat extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  const _InfoStat(
+      {required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isLight ? Colors.grey.shade200 : Colors.white10,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: Theme.of(context).textTheme.labelSmall),
+                  Text(value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
