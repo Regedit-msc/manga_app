@@ -1,7 +1,4 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -510,88 +507,166 @@ class _MangaReaderState extends State<MangaReader> {
                                       bottom: 0,
                                       left: 0,
                                       right: 0,
-                                      child: BackdropFilter(
-                                        filter: ImageFilter.blur(
-                                            sigmaX: 6, sigmaY: 6),
+                                      child: SafeArea(
+                                        top: false,
                                         child: Container(
-                                          color: (context.isLightMode()
-                                                  ? Colors.white
-                                                  : AppColor.vulcan)
-                                              .withOpacity(0.85),
-                                          width: ScreenUtil.screenWidth,
-                                          height: kToolbarHeight,
+                                          margin: const EdgeInsets.all(12),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14, vertical: 10),
+                                          decoration: BoxDecoration(
+                                            color: (context.isLightMode()
+                                                    ? Colors.white
+                                                    : AppColor.vulcan)
+                                                .withOpacity(0.95),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withOpacity(0.12),
+                                                blurRadius: 16,
+                                                offset: const Offset(0, -2),
+                                              ),
+                                            ],
+                                            border: Border.all(
+                                              color: context.isLightMode()
+                                                  ? Colors.black12
+                                                  : Colors.white10,
+                                            ),
+                                          ),
                                           child: Row(
                                             children: [
-                                              const Expanded(
-                                                  child: SizedBox.shrink()),
                                               Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    ScaleAnim(
-                                                        onTap: () async {
-                                                          final prev =
-                                                              _getPrevChapter(
-                                                                  mangaReader
-                                                                      .data);
-                                                          if (prev == null) {
-                                                            getItInstance<
-                                                                    ToastServiceImpl>()
-                                                                .showToast(
-                                                                    "You're at the first chapter.",
-                                                                    Toast
-                                                                        .LENGTH_SHORT);
-                                                            return;
-                                                          }
-                                                          await doTheFunStuff(
-                                                            theNextChapterUrl:
-                                                                prev.chapterUrl,
-                                                            theNextChapterTitle:
-                                                                prev.chapterTitle,
-                                                            fetchMore:
-                                                                fetchMore,
-                                                          );
-                                                        },
-                                                        child: Icon(
-                                                            Icons.arrow_left,
-                                                            size: Sizes
-                                                                .dimen_50)),
-                                                    SizedBox(
-                                                        width: Sizes.dimen_20),
-                                                    ScaleAnim(
-                                                        onTap: () async {
-                                                          final next =
-                                                              _getNextChapter(
-                                                                  mangaReader
-                                                                      .data);
-                                                          if (next == null) {
-                                                            getItInstance<
-                                                                    ToastServiceImpl>()
-                                                                .showToast(
-                                                                    "No newer chapter available.",
-                                                                    Toast
-                                                                        .LENGTH_SHORT);
-                                                            return;
-                                                          }
-                                                          await doTheFunStuff(
-                                                            theNextChapterTitle:
-                                                                next.chapterTitle,
-                                                            theNextChapterUrl:
-                                                                next.chapterUrl,
-                                                            fetchMore:
-                                                                fetchMore,
-                                                          );
-                                                        },
-                                                        child: Icon(
-                                                            Icons.arrow_right,
-                                                            size: Sizes
-                                                                .dimen_50)),
-                                                  ],
+                                                child: ScaleAnim(
+                                                  onTap: () async {
+                                                    final prev =
+                                                        _getPrevChapter(
+                                                            mangaReader.data);
+                                                    if (prev == null) {
+                                                      getItInstance<
+                                                              ToastServiceImpl>()
+                                                          .showToast(
+                                                              "You're at the first chapter.",
+                                                              Toast
+                                                                  .LENGTH_SHORT);
+                                                      return;
+                                                    }
+                                                    await doTheFunStuff(
+                                                      theNextChapterUrl:
+                                                          prev.chapterUrl,
+                                                      theNextChapterTitle:
+                                                          prev.chapterTitle,
+                                                      fetchMore: fetchMore,
+                                                    );
+                                                  },
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      final prev =
+                                                          _getPrevChapter(
+                                                              mangaReader.data);
+                                                      if (prev == null) {
+                                                        getItInstance<
+                                                                ToastServiceImpl>()
+                                                            .showToast(
+                                                                "You're at the first chapter.",
+                                                                Toast
+                                                                    .LENGTH_SHORT);
+                                                        return;
+                                                      }
+                                                      await doTheFunStuff(
+                                                        theNextChapterUrl:
+                                                            prev.chapterUrl,
+                                                        theNextChapterTitle:
+                                                            prev.chapterTitle,
+                                                        fetchMore: fetchMore,
+                                                      );
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          AppColor.royalBlue,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 12,
+                                                              horizontal: 8),
+                                                      shape:
+                                                          const StadiumBorder(),
+                                                      elevation: 0,
+                                                    ),
+                                                    icon: const Icon(
+                                                        Icons.arrow_left),
+                                                    label: const Text("Prev"),
+                                                  ),
                                                 ),
-                                              )
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: ScaleAnim(
+                                                  onTap: () async {
+                                                    final next =
+                                                        _getNextChapter(
+                                                            mangaReader.data);
+                                                    if (next == null) {
+                                                      getItInstance<
+                                                              ToastServiceImpl>()
+                                                          .showToast(
+                                                              "No newer chapter available.",
+                                                              Toast
+                                                                  .LENGTH_SHORT);
+                                                      return;
+                                                    }
+                                                    await doTheFunStuff(
+                                                      theNextChapterTitle:
+                                                          next.chapterTitle,
+                                                      theNextChapterUrl:
+                                                          next.chapterUrl,
+                                                      fetchMore: fetchMore,
+                                                    );
+                                                  },
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () async {
+                                                      final next =
+                                                          _getNextChapter(
+                                                              mangaReader.data);
+                                                      if (next == null) {
+                                                        getItInstance<
+                                                                ToastServiceImpl>()
+                                                            .showToast(
+                                                                "No newer chapter available.",
+                                                                Toast
+                                                                    .LENGTH_SHORT);
+                                                        return;
+                                                      }
+                                                      await doTheFunStuff(
+                                                        theNextChapterTitle:
+                                                            next.chapterTitle,
+                                                        theNextChapterUrl:
+                                                            next.chapterUrl,
+                                                        fetchMore: fetchMore,
+                                                      );
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          AppColor.royalBlue,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 12,
+                                                              horizontal: 8),
+                                                      shape:
+                                                          const StadiumBorder(),
+                                                      elevation: 0,
+                                                    ),
+                                                    icon: const Icon(
+                                                        Icons.arrow_right),
+                                                    label: const Text("Next"),
+                                                  ),
+                                                ),
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -602,214 +677,228 @@ class _MangaReaderState extends State<MangaReader> {
                                       top: 0,
                                       left: 0,
                                       right: 0,
-                                      child: BackdropFilter(
-                                        filter: ImageFilter.blur(
-                                            sigmaX: 6, sigmaY: 6),
-                                        child: Container(
+                                      child: Container(
+                                        width: ScreenUtil.screenWidth,
+                                        decoration: BoxDecoration(
                                           color: (context.isLightMode()
                                                   ? Colors.white
                                                   : AppColor.vulcan)
-                                              .withOpacity(0.9),
-                                          width: ScreenUtil.screenWidth,
-                                          height: kToolbarHeight + barHeight,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 3.0),
-                                            child: Padding(
-                                              padding: EdgeInsets.only(
-                                                  top: barHeight),
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Expanded(
+                                              .withOpacity(0.95),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.08),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 2),
+                                            )
+                                          ],
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: context.isLightMode()
+                                                  ? Colors.black12
+                                                  : Colors.white10,
+                                            ),
+                                          ),
+                                          borderRadius: const BorderRadius.only(
+                                            bottomLeft: Radius.circular(16),
+                                            bottomRight: Radius.circular(16),
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                            top: barHeight,
+                                            left: 3,
+                                            right: 3,
+                                          ),
+                                          child: SizedBox(
+                                            height: kToolbarHeight,
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: Sizes
+                                                                    .dimen_10,
+                                                                right: Sizes
+                                                                    .dimen_8),
+                                                        child: ScaleAnim(
+                                                          onTap: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: Icon(
+                                                            Icons
+                                                                .arrow_back_outlined,
+                                                            size:
+                                                                Sizes.dimen_22,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      ValueListenableBuilder(
+                                                        builder: (context,
+                                                            String value, _) {
+                                                          return Text(
+                                                            formatChapterTitle(
+                                                                value),
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: Sizes
+                                                                  .dimen_20.sp,
+                                                            ),
+                                                          );
+                                                        },
+                                                        valueListenable:
+                                                            chapterName,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.of(context).pushNamedAndRemoveUntil(
+                                                          Routes.mangaInfo,
+                                                          ModalRoute
+                                                              .withName(Routes
+                                                                  .homeRoute),
+                                                          arguments: newestMMdl.Datum(
+                                                              title: widget
+                                                                  .chapterList
+                                                                  .mangaTitle,
+                                                              mangaUrl: widget
+                                                                  .chapterList
+                                                                  .mangaUrl,
+                                                              imageUrl: widget
+                                                                  .chapterList
+                                                                  .mangaImage,
+                                                              mangaSource: widget
+                                                                  .chapterList
+                                                                  .mangaSource));
+                                                    },
                                                     child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.end,
                                                       children: [
                                                         Padding(
                                                           padding:
-                                                              EdgeInsets.only(
-                                                                  left: Sizes
-                                                                      .dimen_10,
-                                                                  right: Sizes
-                                                                      .dimen_8),
-                                                          child: ScaleAnim(
-                                                            onTap: () {
-                                                              Navigator.pop(
-                                                                  context);
-                                                            },
-                                                            child: Icon(
-                                                              Icons
-                                                                  .arrow_back_outlined,
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                          child: Icon(
+                                                              Icons.menu,
                                                               size: Sizes
-                                                                  .dimen_22,
-                                                            ),
-                                                          ),
+                                                                  .dimen_24,
+                                                              color: context
+                                                                      .isLightMode()
+                                                                  ? AppColor
+                                                                      .vulcan
+                                                                  : Colors
+                                                                      .white),
                                                         ),
-                                                        ValueListenableBuilder(
-                                                          builder: (context,
-                                                              String value, _) {
-                                                            return Text(
-                                                              formatChapterTitle(
-                                                                  value),
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: Sizes
-                                                                    .dimen_20
-                                                                    .sp,
-                                                              ),
+                                                        // Chapter picker for quick jump
+                                                        GestureDetector(
+                                                          onTap: () async {
+                                                            final list = mangaReader
+                                                                    .data
+                                                                    .chapterList ??
+                                                                [];
+                                                            if (list.isEmpty) {
+                                                              getItInstance<
+                                                                      ToastServiceImpl>()
+                                                                  .showToast(
+                                                                      "No chapters available.",
+                                                                      Toast
+                                                                          .LENGTH_SHORT);
+                                                              return;
+                                                            }
+                                                            final selected =
+                                                                await showModalBottomSheet<
+                                                                    ReaderChapterItem>(
+                                                              context: context,
+                                                              isScrollControlled:
+                                                                  true,
+                                                              backgroundColor:
+                                                                  Theme.of(
+                                                                          context)
+                                                                      .cardColor,
+                                                              builder: (ctx) {
+                                                                return SafeArea(
+                                                                  child:
+                                                                      SizedBox(
+                                                                    height: MediaQuery.of(ctx)
+                                                                            .size
+                                                                            .height *
+                                                                        0.7,
+                                                                    child: ListView
+                                                                        .separated(
+                                                                      itemBuilder:
+                                                                          (c, i) {
+                                                                        final item =
+                                                                            list[i];
+                                                                        return ListTile(
+                                                                          title:
+                                                                              Text(formatChapterTitle(item.chapterTitle)),
+                                                                          subtitle:
+                                                                              Text(item.dateUploaded ?? ''),
+                                                                          onTap: () =>
+                                                                              Navigator.of(ctx).pop(item),
+                                                                        );
+                                                                      },
+                                                                      separatorBuilder: (_,
+                                                                              __) =>
+                                                                          const Divider(
+                                                                              height: 1),
+                                                                      itemCount:
+                                                                          list.length,
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              },
                                                             );
+
+                                                            if (selected !=
+                                                                null) {
+                                                              await doTheFunStuff(
+                                                                theNextChapterTitle:
+                                                                    selected
+                                                                        .chapterTitle,
+                                                                theNextChapterUrl:
+                                                                    selected
+                                                                        .chapterUrl,
+                                                                fetchMore:
+                                                                    fetchMore,
+                                                              );
+                                                            }
                                                           },
-                                                          valueListenable:
-                                                              chapterName,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        Navigator.of(context).pushNamedAndRemoveUntil(
-                                                            Routes.mangaInfo,
-                                                            ModalRoute
-                                                                .withName(Routes
-                                                                    .homeRoute),
-                                                            arguments: newestMMdl.Datum(
-                                                                title: widget
-                                                                    .chapterList
-                                                                    .mangaTitle,
-                                                                mangaUrl: widget
-                                                                    .chapterList
-                                                                    .mangaUrl,
-                                                                imageUrl: widget
-                                                                    .chapterList
-                                                                    .mangaImage,
-                                                                mangaSource: widget
-                                                                    .chapterList
-                                                                    .mangaSource));
-                                                      },
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .end,
-                                                        children: [
-                                                          Padding(
+                                                          child: Padding(
                                                             padding:
                                                                 const EdgeInsets
                                                                     .all(8.0),
                                                             child: Icon(
-                                                                Icons.menu,
-                                                                size: Sizes
-                                                                    .dimen_24,
-                                                                color: context
-                                                                        .isLightMode()
-                                                                    ? AppColor
-                                                                        .vulcan
-                                                                    : Colors
-                                                                        .white),
-                                                          ),
-                                                          // Chapter picker for quick jump
-                                                          GestureDetector(
-                                                            onTap: () async {
-                                                              final list =
-                                                                  mangaReader
-                                                                          .data
-                                                                          .chapterList ??
-                                                                      [];
-                                                              if (list
-                                                                  .isEmpty) {
-                                                                getItInstance<
-                                                                        ToastServiceImpl>()
-                                                                    .showToast(
-                                                                        "No chapters available.",
-                                                                        Toast
-                                                                            .LENGTH_SHORT);
-                                                                return;
-                                                              }
-                                                              final selected =
-                                                                  await showModalBottomSheet<
-                                                                      ReaderChapterItem>(
-                                                                context:
-                                                                    context,
-                                                                isScrollControlled:
-                                                                    true,
-                                                                backgroundColor:
-                                                                    Theme.of(
-                                                                            context)
-                                                                        .cardColor,
-                                                                builder: (ctx) {
-                                                                  return SafeArea(
-                                                                    child:
-                                                                        SizedBox(
-                                                                      height: MediaQuery.of(ctx)
-                                                                              .size
-                                                                              .height *
-                                                                          0.7,
-                                                                      child: ListView
-                                                                          .separated(
-                                                                        itemBuilder:
-                                                                            (c, i) {
-                                                                          final item =
-                                                                              list[i];
-                                                                          return ListTile(
-                                                                            title:
-                                                                                Text(formatChapterTitle(item.chapterTitle)),
-                                                                            subtitle:
-                                                                                Text(item.dateUploaded ?? ''),
-                                                                            onTap: () =>
-                                                                                Navigator.of(ctx).pop(item),
-                                                                          );
-                                                                        },
-                                                                        separatorBuilder:
-                                                                            (_, __) =>
-                                                                                const Divider(height: 1),
-                                                                        itemCount:
-                                                                            list.length,
-                                                                      ),
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              );
-
-                                                              if (selected !=
-                                                                  null) {
-                                                                await doTheFunStuff(
-                                                                  theNextChapterTitle:
-                                                                      selected
-                                                                          .chapterTitle,
-                                                                  theNextChapterUrl:
-                                                                      selected
-                                                                          .chapterUrl,
-                                                                  fetchMore:
-                                                                      fetchMore,
-                                                                );
-                                                              }
-                                                            },
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(8.0),
-                                                              child: Icon(
-                                                                Icons.list_alt,
-                                                                size: Sizes
-                                                                    .dimen_24,
-                                                                color: context
-                                                                        .isLightMode()
-                                                                    ? AppColor
-                                                                        .vulcan
-                                                                    : Colors
-                                                                        .white,
-                                                              ),
+                                                              Icons.list_alt,
+                                                              size: Sizes
+                                                                  .dimen_24,
+                                                              color: context
+                                                                      .isLightMode()
+                                                                  ? AppColor
+                                                                      .vulcan
+                                                                  : Colors
+                                                                      .white,
                                                             ),
-                                                          )
-                                                        ],
-                                                      ),
+                                                          ),
+                                                        )
+                                                      ],
                                                     ),
-                                                  )
-                                                ],
-                                              ),
+                                                  ),
+                                                )
+                                              ],
                                             ),
                                           ),
                                         ),

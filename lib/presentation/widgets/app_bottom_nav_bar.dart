@@ -53,38 +53,75 @@ class AppBottomNavBar extends StatelessWidget {
     final Color selectedColor = isLight ? scheme.primary : scheme.primary;
     final Color unselectedColor = scheme.onSurfaceVariant;
 
-    return BottomNavigationBar(
-      elevation: 2.0,
-      type: BottomNavigationBarType.fixed,
-      currentIndex: index,
-      selectedItemColor: selectedColor,
-      unselectedItemColor: unselectedColor,
-      unselectedLabelStyle: TextStyle(fontSize: Sizes.dimen_11_5.sp),
-      selectedLabelStyle:
-          TextStyle(fontSize: Sizes.dimen_11_5.sp, color: selectedColor),
-      backgroundColor: theme.bottomNavigationBarTheme.backgroundColor ??
-          (isLight ? scheme.surface : AppColor.vulcan),
-      items: List.generate(itemCount, (i) {
-        final bool isActive = index == i;
-        final String asset = isActive ? _activeIcons[i] : _icons[i];
-        final Color iconColor = isActive ? selectedColor : unselectedColor;
-        return BottomNavigationBarItem(
-          tooltip: _labels[i],
-          icon: Padding(
-            padding: const EdgeInsets.only(bottom: 2.0),
-            child: callSvg(
-              asset,
-              color: iconColor,
-              width: Sizes.dimen_30,
-              height: Sizes.dimen_30,
+    final Color barColor = theme.bottomNavigationBarTheme.backgroundColor ??
+        (isLight ? scheme.surface : AppColor.vulcan);
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: barColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 18,
+                offset: const Offset(0, -2),
+              )
+            ],
+            border: Border.all(
+              color: isLight ? Colors.black12 : Colors.white10,
             ),
           ),
-          label: _labels[i],
-        );
-      }),
-      onTap: (i) {
-        context.read<BottomNavigationCubit>().setPage(i);
-      },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: BottomNavigationBar(
+              elevation: 0,
+              type: BottomNavigationBarType.fixed,
+              currentIndex: index,
+              selectedItemColor: selectedColor,
+              unselectedItemColor: unselectedColor,
+              selectedFontSize: Sizes.dimen_11_5.sp,
+              unselectedFontSize: Sizes.dimen_11_5.sp,
+              backgroundColor: Colors.transparent,
+              items: List.generate(itemCount, (i) {
+                final bool isActive = index == i;
+                final String asset = isActive ? _activeIcons[i] : _icons[i];
+                final Color iconColor =
+                    isActive ? selectedColor : unselectedColor;
+                return BottomNavigationBarItem(
+                  tooltip: _labels[i],
+                  icon: Padding(
+                    padding: const EdgeInsets.only(bottom: 2.0),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? selectedColor.withOpacity(0.12)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: callSvg(
+                        asset,
+                        color: iconColor,
+                        width: Sizes.dimen_24,
+                        height: Sizes.dimen_24,
+                      ),
+                    ),
+                  ),
+                  label: _labels[i],
+                );
+              }),
+              onTap: (i) {
+                context.read<BottomNavigationCubit>().setPage(i);
+              },
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
