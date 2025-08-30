@@ -147,21 +147,8 @@ class _BaseViewState extends State<BaseView>
       String id = data[0];
       DownloadTaskStatus status = data[1];
       int progress = data[2];
-      List<Map<String, dynamic>> currentlyBeingDownloaded =
-          context.read<DownloadingCubit>().state.downloads;
-      List<Map<String, dynamic>> withoutCurrent = currentlyBeingDownloaded
-          .where((element) => element["taskId"] != id)
-          .toList();
-      Map<String, dynamic> current = currentlyBeingDownloaded
-          .firstWhere((element) => element["taskId"] == id, orElse: () => {});
-      current["progress"] = progress;
-      current["taskId"] = id;
-      current["status"] = status;
       if (mounted) {
-        context
-            .read<DownloadingCubit>()
-            .setDownload([...withoutCurrent, current]);
-        // context.read<ToDownloadCubit>().removeDownloaded();
+        context.read<DownloadingCubit>().onTaskUpdate(id, status, progress);
       }
     });
   }

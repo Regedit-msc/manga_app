@@ -7,6 +7,10 @@ class OngoingDownloads {
   final String chapterUrl;
   final String? taskId;
   final int imagesLength;
+  // Absolute directory path where this chapter's images are saved
+  final String? chapterDirName;
+  // Optional cover image url for the manga, used when promoting to downloaded list
+  final String? imageUrl;
   int progress;
   DownloadTaskStatus status;
   OngoingDownloads(
@@ -15,6 +19,8 @@ class OngoingDownloads {
       required this.mangaName,
       required this.chapterUrl,
       required this.chapterName,
+      this.chapterDirName,
+      this.imageUrl,
       this.status = DownloadTaskStatus.enqueued,
       this.progress = 0,
       this.imagesLength = 0});
@@ -26,6 +32,8 @@ class OngoingDownloads {
         "status": status,
         "chapterName": chapterName,
         "progress": progress,
-        "imagesLength": imagesLength
+        "imagesLength": imagesLength,
+        "chapterDirName": chapterDirName,
+        "imageUrl": imageUrl,
       };
 }

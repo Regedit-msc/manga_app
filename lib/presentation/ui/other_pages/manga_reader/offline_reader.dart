@@ -13,20 +13,24 @@ class OfflineReader extends StatefulWidget {
 }
 
 class _OfflineReaderState extends State<OfflineReader> {
-  ValueNotifier<List<FileSystemEntity>> folders = ValueNotifier([]);
+  late Future<List<File>> _filesFuture;
   @override
   void initState() {
-    getDir();
+    _filesFuture = _getFiles();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
     super.initState();
   }
 
-  Future<void> getDir() async {
-    final myDir = new Directory(widget.props.chapterDir);
-    final images = myDir.listSync(recursive: true, followLinks: false);
-    print(images.toString());
-    folders.value = images;
+  Future<List<File>> _getFiles() async {
+    final myDir = Directory(widget.props.chapterDir);
+    if (!await myDir.exists()) return [];
+    final images = myDir
+        .listSync(recursive: true, followLinks: false)
+        .whereType<File>()
+        .toList();
+    images.sort((a, b) => a.path.compareTo(b.path));
+    return images;
   }
 
   @override
@@ -45,33 +49,22 @@ class _OfflineReaderState extends State<OfflineReader> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      body: ValueListenableBuilder(
-          valueListenable: folders,
-          builder: (context, value, child) {
-            if (value != null) {
-              final val = value as List<FileSystemEntity>;
-              if (val.isNotEmpty) {
-                final List<File> files = val.whereType<File>().toList();
-                print(int.parse(files[0]
-                    .path
-                    .split(widget.props.chapterDir)[1]
-                    .replaceAll("/", "")
-                    .replaceAll(".jpg", "")));
-                return SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                    children: [
-                      ...List.generate(val.length, (index) {
-                        print(widget.props.chapterDir + "/${index}.jpg");
-                        return Image.file(
-                            File(widget.props.chapterDir + "/${index}.jpg"));
-                      })
-                    ],
-                  ),
-                );
-              }
-            }
-            return Container();
+      body: FutureBuilder<List<File>>(
+          future: _filesFuture,
+          builder: (context, snapshot) {
+            final files = snapshot.data ?? [];
+            if (files.isEmpty) return const SizedBox.shrink();
+            return SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                children: [
+                  ...List.generate(files.length, (index) {
+                    final path = files[index].path;
+                    return Image.file(File(path));
+                  })
+                ],
+              ),
+            );
           }),
     );
   }
