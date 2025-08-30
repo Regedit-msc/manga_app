@@ -719,27 +719,50 @@ class _MangaReaderState extends State<MangaReader> {
                                         opacity: 0.92,
                                         duration:
                                             const Duration(milliseconds: 200),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: (context.isLightMode()
-                                                    ? Colors.black87
-                                                    : Colors.white70)
-                                                .withOpacity(0.65),
-                                            borderRadius:
-                                                BorderRadius.circular(24),
-                                          ),
-                                          child: Text(
-                                            '${(_lastReportedPage + 1).clamp(1, _totalPages)} / $_totalPages',
-                                            style: TextStyle(
-                                              fontSize: Sizes.dimen_12.sp,
-                                              color: context.isLightMode()
-                                                  ? Colors.white
-                                                  : AppColor.vulcan,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
+                                        child: AnimatedBuilder(
+                                          animation: _pageController,
+                                          builder: (context, _) {
+                                            final total = _totalPages;
+                                            double page = 0;
+                                            if (_pageController
+                                                .positions.isNotEmpty) {
+                                              page = _pageController.page ??
+                                                  _pageController.initialPage
+                                                      .toDouble();
+                                            }
+                                            final current = (page
+                                                        .clamp(
+                                                            0,
+                                                            (total - 1)
+                                                                .toDouble())
+                                                        .floor() +
+                                                    1)
+                                                .clamp(1, total);
+                                            return Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: (context.isLightMode()
+                                                        ? Colors.black87
+                                                        : Colors.white70)
+                                                    .withOpacity(0.65),
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                              ),
+                                              child: Text(
+                                                '$current / $total',
+                                                style: TextStyle(
+                                                  fontSize: Sizes.dimen_12.sp,
+                                                  color: context.isLightMode()
+                                                      ? Colors.white
+                                                      : AppColor.vulcan,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ),
                                     ),
