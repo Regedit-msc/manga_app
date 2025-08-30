@@ -53,7 +53,6 @@ class _RecentsViewState extends State<RecentsView>
     return Scaffold(
       appBar: AppBar(
         title: const Text("My comics"),
-        backgroundColor: context.isLightMode() ? Colors.white : AppColor.vulcan,
         bottom: TabBar(
           isScrollable: true,
           controller: recentsViewController,

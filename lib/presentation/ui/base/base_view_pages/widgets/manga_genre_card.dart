@@ -23,6 +23,7 @@ class MangaByGenreCard extends StatefulWidget {
 class _MangaByGenreCardState extends State<MangaByGenreCard> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       child: Query(
         options: QueryOptions(
@@ -55,7 +56,7 @@ class _MangaByGenreCardState extends State<MangaByGenreCard> {
                   width: Sizes.dimen_150.w,
                   height: Sizes.dimen_60,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(Sizes.dimen_4),
+                      borderRadius: BorderRadius.circular(12),
                       image: DecorationImage(
                           colorFilter: ColorFilter.mode(
                               Colors.black.withOpacity(0.5), BlendMode.darken),
@@ -65,10 +66,10 @@ class _MangaByGenreCardState extends State<MangaByGenreCard> {
                   child: Center(
                       child: Text(
                     widget.genre,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: Sizes.dimen_16.sp),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   )),
                 ),
               ),

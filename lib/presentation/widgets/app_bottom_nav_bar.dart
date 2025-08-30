@@ -43,14 +43,15 @@ class AppBottomNavBar extends StatelessWidget {
         context.select((ShowCollectionCubit c) => c.state);
     final ThemeState themeState = context.watch<ThemeCubit>().state;
 
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final bool isLight = themeState.themeMode != ThemeMode.dark &&
-        Theme.of(context).brightness == Brightness.light;
+        theme.brightness == Brightness.light;
 
     final int itemCount = showCollections ? _labels.length : 4;
 
-    final Color selectedColor = isLight ? AppColor.vulcan : Colors.white;
-    final Color unselectedColor =
-        AppColor.bottomNavUnselectedColor ?? Colors.grey;
+    final Color selectedColor = isLight ? scheme.primary : scheme.primary;
+    final Color unselectedColor = scheme.onSurfaceVariant;
 
     return BottomNavigationBar(
       elevation: 2.0,
@@ -61,7 +62,8 @@ class AppBottomNavBar extends StatelessWidget {
       unselectedLabelStyle: TextStyle(fontSize: Sizes.dimen_11_5.sp),
       selectedLabelStyle:
           TextStyle(fontSize: Sizes.dimen_11_5.sp, color: selectedColor),
-      backgroundColor: isLight ? Colors.white : Colors.black,
+      backgroundColor: theme.bottomNavigationBarTheme.backgroundColor ??
+          (isLight ? scheme.surface : AppColor.vulcan),
       items: List.generate(itemCount, (i) {
         final bool isActive = index == i;
         final String asset = isActive ? _activeIcons[i] : _icons[i];

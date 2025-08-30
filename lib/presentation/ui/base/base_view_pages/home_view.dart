@@ -21,6 +21,7 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewe
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/presentation/widgets/design/section_header.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -191,20 +192,7 @@ class _HomeViewState extends State<HomeView>
                           const MangaUpdatesHome(),
                           const MostViewedManga(),
                           const MostClickedManga(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "Genres",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: Sizes.dimen_18.sp),
-                                ),
-                              ),
-                            ],
-                          ),
+                          const SectionHeader(title: 'Genres'),
                           SizedBox(
                             height: Sizes.dimen_2.h,
                           ),

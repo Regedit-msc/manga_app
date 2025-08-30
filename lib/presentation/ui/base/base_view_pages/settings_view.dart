@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:webcomic/data/common/constants/size_constants.dart';
-import 'package:webcomic/data/common/extensions/size_extension.dart';
+// import 'package:webcomic/data/common/constants/size_constants.dart';
+// import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/models/settings_model.dart';
-import 'package:webcomic/data/services/api/gql_api.dart';
+// import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/cache/cache_service.dart';
 import 'package:webcomic/data/services/settings/settings_service.dart';
 import 'package:webcomic/di/get_it.dart';
@@ -20,11 +20,13 @@ class SettingsView extends StatefulWidget {
 class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: Text("App Settings"),
+          title: const Text("App Settings"),
         ),
         body: BlocBuilder<SettingsCubit, SettingsState>(
             builder: (context, settingsBloc) {
@@ -38,14 +40,13 @@ class _SettingsViewState extends State<SettingsView> {
                   padding: const EdgeInsets.only(left: 15.0),
                   child: Text(
                     "Comics",
-                    style: TextStyle(
-                        fontSize: Sizes.dimen_16.sp,
-                        fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                        color: scheme.onSurface, fontWeight: FontWeight.w700),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: SwitchListTile(
+                  child: SwitchListTile.adaptive(
                     value: settingsBloc.settings.preloadImages,
                     onChanged: (bool value) {
                       Settings oldSettings =
@@ -62,16 +63,17 @@ class _SettingsViewState extends State<SettingsView> {
                           themeMode: oldSettings.themeMode);
                       context.read<SettingsCubit>().setSettings(newSettings);
                     },
-                    title: Text('Preload images'),
+                    title: const Text('Preload images'),
                     subtitle: Text(
                       "This allows prefetching of images for a better reading experience.",
-                      style: TextStyle(color: Colors.grey),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
                     ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: SwitchListTile(
+                  child: SwitchListTile.adaptive(
                     value: settingsBloc.settings.drawChapterColorsFromImage,
                     onChanged: (bool value) {
                       Settings oldSettings =
@@ -87,10 +89,11 @@ class _SettingsViewState extends State<SettingsView> {
                           themeMode: oldSettings.themeMode);
                       context.read<SettingsCubit>().setSettings(newSettings);
                     },
-                    title: Text('Draw color from image'),
+                    title: const Text('Draw color from image'),
                     subtitle: Text(
                       "Use comic image colors for read chapters.",
-                      style: TextStyle(color: Colors.grey),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
                     ),
                   ),
                 ),
@@ -98,14 +101,13 @@ class _SettingsViewState extends State<SettingsView> {
                   padding: const EdgeInsets.only(left: 15.0),
                   child: Text(
                     "Notifications",
-                    style: TextStyle(
-                        fontSize: Sizes.dimen_16.sp,
-                        fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                        color: scheme.onSurface, fontWeight: FontWeight.w700),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: SwitchListTile(
+                  child: SwitchListTile.adaptive(
                     value: settingsBloc.settings.subscribedNotifications,
                     onChanged: (bool value) async {
                       Settings oldSettings =
@@ -127,10 +129,11 @@ class _SettingsViewState extends State<SettingsView> {
                         //     .removeToken();
                       }
                     },
-                    title: Text('Subscribed comic notifications'),
+                    title: const Text('Subscribed comic notifications'),
                     subtitle: Text(
                       "Get push notifications when a comic you are subscribed to is updated.",
-                      style: TextStyle(color: Colors.grey),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
                     ),
                   ),
                 ),
@@ -138,14 +141,13 @@ class _SettingsViewState extends State<SettingsView> {
                   padding: const EdgeInsets.only(left: 15.0),
                   child: Text(
                     "Security",
-                    style: TextStyle(
-                        fontSize: Sizes.dimen_16.sp,
-                        fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                        color: scheme.onSurface, fontWeight: FontWeight.w700),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: SwitchListTile(
+                  child: SwitchListTile.adaptive(
                     value: settingsBloc.settings.biometrics,
                     onChanged: (bool value) {
                       Settings oldSettings =
@@ -162,10 +164,11 @@ class _SettingsViewState extends State<SettingsView> {
                           themeMode: oldSettings.themeMode);
                       context.read<SettingsCubit>().setSettings(newSettings);
                     },
-                    title: Text('Biometrics'),
+                    title: const Text('Biometrics'),
                     subtitle: Text(
                       "Use your biometrics to unlock the app.",
-                      style: TextStyle(color: Colors.grey),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
                     ),
                   ),
                 ),
@@ -173,46 +176,33 @@ class _SettingsViewState extends State<SettingsView> {
                   padding: const EdgeInsets.only(left: 15.0),
                   child: Text(
                     "Themes and preferences",
-                    style: TextStyle(
-                        fontSize: Sizes.dimen_16.sp,
-                        fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                        color: scheme.onSurface, fontWeight: FontWeight.w700),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 20.0, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            " App Theme",
-                            style: TextStyle(fontSize: Sizes.dimen_16.sp),
-                          ),
-                          Text(
-                            "Change the app theme.",
-                            style: TextStyle(
-                                fontSize: Sizes.dimen_14.sp,
-                                color: Colors.grey),
-                          ),
-                        ],
+                      Text(
+                        "App Theme",
+                        style: theme.textTheme.titleMedium,
                       ),
-                      DropdownButton<String>(
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
                         value: settingsBloc.settings.themeMode,
-                        items: <String>[
-                          'system',
-                          'dark',
-                          'light',
-                        ].map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value.substring(0, 1).toUpperCase() +
-                                value.substring(1)),
-                          );
-                        }).toList(),
+                        decoration: const InputDecoration(
+                          labelText: 'Theme',
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                              value: 'system', child: Text('System')),
+                          DropdownMenuItem(value: 'dark', child: Text('Dark')),
+                          DropdownMenuItem(
+                              value: 'light', child: Text('Light')),
+                        ],
                         onChanged: (String? val) {
                           if (val != null) {
                             Settings oldSettings =
@@ -238,11 +228,12 @@ class _SettingsViewState extends State<SettingsView> {
                                 .updateTheme(newThemeMode);
                           }
                         },
-                        hint: Text(
-                          "Choose a theme",
-                          style: TextStyle(
-                              fontSize: Sizes.dimen_16.sp,
-                              fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Change the app theme.",
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -252,41 +243,27 @@ class _SettingsViewState extends State<SettingsView> {
                   padding: const EdgeInsets.only(left: 15.0),
                   child: Text(
                     "Storage",
-                    style: TextStyle(
-                        fontSize: Sizes.dimen_16.sp,
-                        fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                        color: scheme.onSurface, fontWeight: FontWeight.w700),
                   ),
                 ),
-                GestureDetector(
+                ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6),
                   onTap: () {
-                    print("Cleared");
                     getItInstance<CacheServiceImpl>().clearCache();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Cache cleared')),
+                    );
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0, vertical: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Cache",
-                              style: TextStyle(fontSize: Sizes.dimen_16.sp),
-                            ),
-                            Text(
-                              "Tap to clear image cache.",
-                              style: TextStyle(
-                                  fontSize: Sizes.dimen_14.sp,
-                                  color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                  title: const Text('Cache'),
+                  subtitle: Text(
+                    'Tap to clear image cache.',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
                   ),
+                  trailing: Icon(Icons.cleaning_services_rounded,
+                      color: scheme.primary),
                 ),
               ],
             ),

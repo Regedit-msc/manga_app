@@ -10,19 +10,19 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as ln;
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:webcomic/data/common/constants/routes_constants.dart';
-import 'package:webcomic/data/common/constants/size_constants.dart';
-import 'package:webcomic/data/common/extensions/size_extension.dart';
+// removed old size/theme helpers not needed with M3Theme
 import 'package:webcomic/data/common/screen_util/screen_util.dart';
-import 'package:webcomic/data/services/api/gql_api.dart';
+// import 'package:webcomic/data/services/api/gql_api.dart';
 import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/navigation/debug_navigation_observer.dart';
 import 'package:webcomic/data/services/notification/notification_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/router.dart';
-import 'package:webcomic/presentation/themes/colors.dart';
-import 'package:webcomic/presentation/themes/text.dart';
-import 'package:webcomic/presentation/ui/blocs/ads/ads_bloc.dart';
+// import 'package:webcomic/presentation/themes/colors.dart';
+// text theme is applied inside M3Theme
+import 'package:webcomic/presentation/themes/m3_theme.dart';
+// import 'package:webcomic/presentation/ui/blocs/ads/ads_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/collection_cards/collection_cards_bloc.dart';
@@ -98,15 +98,16 @@ class _IndexState extends State<Index> {
     _downloadedCubit = getItInstance<DownloadedCubit>();
     _downloadingCubit = getItInstance<DownloadingCubit>();
     // _adsCubit = getItInstance<AdsCubit>();
-    var initializationSettingsAndroid =
-        ln.AndroidInitializationSettings('@drawable/logo');
-    var initializationSettingsIOS = ln.DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
-    );
-    var initSetttings = ln.InitializationSettings(
-        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+    // Local notifications init settings (kept for future use)
+    // final androidSettings =
+    //     ln.AndroidInitializationSettings('@drawable/logo');
+    // final iosSettings = ln.DarwinInitializationSettings(
+    //   requestAlertPermission: false,
+    //   requestBadgePermission: false,
+    //   requestSoundPermission: false,
+    // );
+    // final initSettings = ln.InitializationSettings(
+    //     android: androidSettings, iOS: iosSettings);
     //
     // flutterLocalNotificationsPlugin.initialize(initSetttings,
     //     onDidReceiveNotificationResponse:
@@ -195,29 +196,7 @@ class _IndexState extends State<Index> {
     //   statusBarColor: Colors.transparent,
     // ));
 
-    Color? getColor(Set<MaterialState> states) {
-      const Set<MaterialState> interactiveStates = <MaterialState>{
-        MaterialState.pressed,
-        MaterialState.hovered,
-        MaterialState.focused,
-      };
-      if (states.any(interactiveStates.contains)) {
-        return AppColor.violet;
-      }
-      return Colors.grey[800];
-    }
-
-    Color? getColorLight(Set<MaterialState> states) {
-      const Set<MaterialState> interactiveStates = <MaterialState>{
-        MaterialState.pressed,
-        MaterialState.hovered,
-        MaterialState.focused,
-      };
-      if (states.any(interactiveStates.contains)) {
-        return AppColor.vulcan;
-      }
-      return Colors.grey[200];
-    }
+    // obsolete helpers removed: getColor, getColorLight
 
     return GraphQLProvider(
       client: getItInstance<ValueNotifier<GraphQLClient>>(),
@@ -281,54 +260,8 @@ class _IndexState extends State<Index> {
                 debugShowCheckedModeBanner: false,
                 title: 'Tcomic',
                 themeMode: themeBloc.themeMode,
-                theme: ThemeData(
-                  scaffoldBackgroundColor: Colors.white,
-                  brightness: Brightness.light,
-                  tabBarTheme: TabBarThemeData(
-                      indicatorColor: AppColor.vulcan,
-                      unselectedLabelColor: Colors.grey,
-                      unselectedLabelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: Sizes.dimen_14.sp),
-                      labelColor: AppColor.vulcan,
-                      labelStyle: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: Sizes.dimen_14.sp)),
-                  appBarTheme: AppBarTheme(
-                      iconTheme: IconThemeData(color: Colors.black),
-                      elevation: 0.0,
-                      backgroundColor: Colors.white,
-                      titleTextStyle: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: Sizes.dimen_22.sp)),
-                  visualDensity: VisualDensity.adaptivePlatformDensity,
-                  textTheme: ThemeText.getTextLightTheme(),
-                  switchTheme: SwitchThemeData(
-                    thumbColor: MaterialStateProperty.all(AppColor.vulcan),
-                    trackColor:
-                        MaterialStateProperty.resolveWith(getColorLight),
-                  ),
-                ),
-                darkTheme: ThemeData(
-                    switchTheme: SwitchThemeData(
-                      thumbColor: WidgetStateProperty.all(AppColor.violet),
-                      trackColor: WidgetStateProperty.resolveWith(getColor),
-                    ),
-                    brightness: Brightness.dark,
-                    scaffoldBackgroundColor: AppColor.vulcan,
-                    visualDensity: VisualDensity.adaptivePlatformDensity,
-                    textTheme: ThemeText.getTextTheme(),
-                    tabBarTheme: TabBarThemeData(
-                      indicatorColor: Colors.white,
-                      unselectedLabelColor: Colors.grey,
-                      labelColor: Colors.white,
-                    ),
-                    appBarTheme: const AppBarTheme(
-                      iconTheme: IconThemeData(color: Colors.white),
-                      elevation: 0,
-                      backgroundColor: AppColor.vulcan,
-                    )),
+                theme: M3Theme.light(),
+                darkTheme: M3Theme.dark(),
                 initialRoute: Routes.initRoute,
                 onGenerateRoute: (settings) =>
                     CustomRouter.generateRoutes(settings),
