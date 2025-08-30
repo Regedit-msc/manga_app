@@ -166,7 +166,8 @@ class GQLRawApiServiceImpl extends GQLRawApiService {
       return GetMangaReaderData(
           chapter: mangaReader.data.chapter,
           images: mangaReader.data.images,
-          chapterList: mangaReader.data.chapterList);
+          chapterList: mangaReader.data.chapterList,
+          mangaSource: mangaReader.data.mangaSource);
     }
   }
 }
