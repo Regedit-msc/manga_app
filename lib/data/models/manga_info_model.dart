@@ -158,7 +158,6 @@ class GetMangaInfoData {
 
 class ChapterList {
   String mangaTitle;
-
   String mangaImage;
 
   ChapterList(

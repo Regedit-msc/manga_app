@@ -32,9 +32,10 @@ query MangaInfo(\$source: String!, \$mangaUrl: String!,) {
         mangaImage
       }
       chapterList {
-        chapterUrl
         chapterTitle
+        chapterUrl
         dateUploaded
+        mangaSource
       }
       genres{
         genreUrl
