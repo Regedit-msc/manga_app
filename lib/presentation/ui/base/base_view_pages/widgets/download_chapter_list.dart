@@ -173,13 +173,36 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
 
 String _chapterTitleFromSavedDir(String savedDir) {
   try {
-    // Use last path segment and extract the last numeric group if present
+    // Use last path segment, prefer number after the final '-' (our dir naming pattern)
     final tail =
         savedDir.split('/').isNotEmpty ? savedDir.split('/').last : savedDir;
-    final matches = RegExp(r'(\d+)').allMatches(tail).toList();
-    if (matches.isNotEmpty) {
-      final numStr = matches.last.group(1);
-      if (numStr != null && numStr.isNotEmpty) return 'Chapter $numStr';
+
+    String? pickNumber(String s) {
+      // First, try suffix after last dash (e.g., Manga-12 or Manga-12.5)
+      final dashIdx = s.lastIndexOf('-');
+      if (dashIdx != -1 && dashIdx + 1 < s.length) {
+        final suffix = s.substring(dashIdx + 1);
+        final cleaned = suffix.replaceAll(RegExp(r'[^0-9\._]'), '');
+        final normalized = cleaned.replaceAll('_', '.');
+        if (RegExp(r'^\d+(?:\.\d+)?$').hasMatch(normalized)) {
+          return normalized;
+        }
+      }
+      // Fallback: search anywhere for first decimal/integer occurrence
+      final m = RegExp(r'(\d+(?:\.\d+)?)').firstMatch(s);
+      return m?.group(1);
+    }
+
+    final numStr = pickNumber(tail);
+    if (numStr != null && numStr.isNotEmpty) {
+      // Pretty print: trim trailing .0 if present
+      final asNum = double.tryParse(numStr);
+      if (asNum != null) {
+        final pretty =
+            asNum % 1 == 0 ? asNum.toInt().toString() : asNum.toString();
+        return 'Chapter $pretty';
+      }
+      return 'Chapter $numStr';
     }
   } catch (_) {}
   return 'Chapter';

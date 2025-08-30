@@ -124,17 +124,40 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
       // mangaName-chapterNo
       String mangaName,
       String mangaUrl) {
-    // Defensive parsing for chapter number to avoid crashes
-    try {
-      final parts = chapterName.replaceAll("-", " ").split(" ");
-      final idx = parts.indexWhere((e) => e.toLowerCase() == "chapter");
-      if (idx != -1 && idx + 1 < parts.length) {
-        final raw = parts[idx + 1].replaceAll(RegExp(r'[^0-9]'), '');
-        final chapterNo = int.tryParse(raw) ?? 0;
-        return "${mangaName.trim()}-$chapterNo";
-      }
-    } catch (_) {}
-    return mangaName.trim();
+    // Defensive parsing for chapter number (supports integers and decimals like 12.5)
+    // Produces directory name pattern: <MangaName>-<chapterNumber>
+    String cleanName = mangaName.trim();
+    String extractChapterNumber(String s) {
+      // Prefer number right after the word 'chapter'
+      try {
+        final parts = s.replaceAll('-', ' ').split(' ');
+        final idx = parts.indexWhere((e) => e.toLowerCase() == 'chapter');
+        if (idx != -1 && idx + 1 < parts.length) {
+          var next = parts[idx + 1];
+          next = next.replaceAll(RegExp(r'[^0-9\._]'), '');
+          next = next.replaceAll('_', '.');
+          // Validate decimal format
+          final dec = RegExp(r'^\d+(?:\.\d+)?$').firstMatch(next)?.group(0);
+          if (dec != null) return dec;
+        }
+      } catch (_) {}
+      // Fallback: first occurrence of a number (with optional decimal)
+      final m = RegExp(r'(\d+(?:\.\d+)?)').firstMatch(s);
+      return m?.group(1) ?? '';
+    }
+
+    final numStr = extractChapterNumber(chapterName);
+    if (numStr.isNotEmpty) {
+      // Normalize number to avoid trailing .0 in folder name
+      final d = double.tryParse(numStr);
+      final pretty = d == null
+          ? numStr
+          : (d % 1 == 0 ? d.toInt().toString() : d.toString());
+      return "$cleanName-$pretty";
+    }
+    // As a last resort, include a short hash of chapterUrl to avoid collisions
+    final shortHash = chapterUrl.hashCode.toUnsigned(32).toRadixString(16);
+    return "$cleanName-$shortHash";
   }
 
   // Limit how many images are enqueued at once to avoid overwhelming the queue
