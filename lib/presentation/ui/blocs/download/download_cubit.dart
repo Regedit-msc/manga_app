@@ -185,6 +185,8 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
 
   // Limit how many images are enqueued at once to avoid overwhelming the queue
   static const int _maxConcurrentEnqueuePerChapter = 3;
+  // Default maximum retries for each image download task
+  static const int _defaultMaxRetriesPerImage = 3;
 
   Future<void> requestDownload(
       {required imagesLength,
@@ -275,7 +277,9 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
             chapterUrl: chapterUrl,
             chapterName: chapterName,
             chapterDirName: _localPath,
-            imageUrl: mangaImageUrl)
+            imageUrl: mangaImageUrl,
+            maxRetries: _defaultMaxRetriesPerImage,
+            retryCount: 0)
         .toMap());
     return;
   }

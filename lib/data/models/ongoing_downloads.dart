@@ -11,6 +11,10 @@ class OngoingDownloads {
   final String? chapterDirName;
   // Optional cover image url for the manga, used when promoting to downloaded list
   final String? imageUrl;
+  // Number of times this individual image download has been retried
+  final int retryCount;
+  // Maximum number of retries allowed for this individual image download
+  final int maxRetries;
   int progress;
   DownloadTaskStatus status;
   OngoingDownloads(
@@ -21,6 +25,8 @@ class OngoingDownloads {
       required this.chapterName,
       this.chapterDirName,
       this.imageUrl,
+      this.retryCount = 0,
+      this.maxRetries = 3,
       this.status = DownloadTaskStatus.enqueued,
       this.progress = 0,
       this.imagesLength = 0});
@@ -35,5 +41,7 @@ class OngoingDownloads {
         "imagesLength": imagesLength,
         "chapterDirName": chapterDirName,
         "imageUrl": imageUrl,
+        "retryCount": retryCount,
+        "maxRetries": maxRetries,
       };
 }

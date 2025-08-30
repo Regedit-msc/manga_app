@@ -189,15 +189,74 @@ class DownloadingCubit extends Cubit<DownloadingState> {
     // Update aggregated chapter progress for floating UI
     _updateProgressFromDownloadList();
 
-    // If a single image fails/cancels, we cancel the whole chapter and cleanup its dir
+    // If an image fails/cancels, attempt a bounded retry before failing the chapter
     if (status == DownloadTaskStatus.failed ||
         status == DownloadTaskStatus.canceled) {
-      _handleChapterFailure(current);
+      _handleTaskFailureWithRetry(current);
       return;
     }
 
     if (status == DownloadTaskStatus.complete) {
       _tryPromoteChapterIfComplete(current);
+    }
+  }
+
+  // Try retrying a single failed task up to its maxRetries; if exceeded, fail the whole chapter
+  void _handleTaskFailureWithRetry(Map<String, dynamic> task) async {
+    try {
+      final oldTaskId = task['taskId'] as String?;
+      final retryCount = (task['retryCount'] as int?) ?? 0;
+      final maxRetries = (task['maxRetries'] as int?) ?? 3;
+      final chapterUrl = task['chapterUrl'] as String?;
+      if (chapterUrl == null) {
+        _handleChapterFailure(task);
+        return;
+      }
+
+      if (retryCount >= maxRetries) {
+        DebugLogger.logInfo(
+            'max retries reached for task $oldTaskId (chapter: $chapterUrl). Failing chapter.',
+            category: 'Downloader');
+        _handleChapterFailure(task);
+        return;
+      }
+
+      // Attempt retry
+      DebugLogger.logInfo(
+          'retrying task $oldTaskId (attempt ${retryCount + 1}/$maxRetries)',
+          category: 'Downloader');
+      String? newTaskId;
+      try {
+        newTaskId = await FlutterDownloader.retry(taskId: oldTaskId ?? '');
+      } catch (e) {
+        DebugLogger.logInfo('retry error: $e', category: 'Downloader');
+      }
+
+      if (newTaskId == null) {
+        DebugLogger.logInfo('retry returned null taskId, failing chapter',
+            category: 'Downloader');
+        _handleChapterFailure(task);
+        return;
+      }
+
+      // Update the task entry with new id and incremented retry count
+      final list = List<Map<String, dynamic>>.from(state.downloads);
+      final idx = list.indexWhere((e) => e['taskId'] == oldTaskId);
+      if (idx != -1) {
+        final updated = Map<String, dynamic>.from(list[idx]);
+        updated['taskId'] = newTaskId;
+        updated['status'] = DownloadTaskStatus.enqueued;
+        // Reset progress to let it start fresh
+        updated['progress'] = 0;
+        updated['retryCount'] = retryCount + 1;
+        list[idx] = updated;
+        setDownload(list);
+        // Also reflect status as downloading soon for progress service
+        _updateProgressFromDownloadList();
+      }
+    } catch (e) {
+      DebugLogger.logInfo('retry handler error: $e', category: 'Downloader');
+      _handleChapterFailure(task);
     }
   }
 
