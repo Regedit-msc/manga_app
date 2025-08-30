@@ -597,23 +597,24 @@ class _DownloadViewState extends State<DownloadView> {
                                                                 DownloadingState>(
                                                             builder: (context,
                                                                 downloading) {
-                                                          return BuildProgressIndicator(
-                                                              progress: totalProgress(
-                                                                  downloading,
-                                                                  toDownload
+                                                          return Flexible(
+                                                              child: BuildProgressIndicator(
+                                                                  progress: totalProgress(
+                                                                      downloading,
+                                                                      toDownload
+                                                                          .toDownloadMangaQueue[
+                                                                              getIndexOfManga()]
+                                                                          .chaptersToDownload[
+                                                                              index]
+                                                                          .chapterUrl),
+                                                                  downloading:
+                                                                      downloading,
+                                                                  chapterUrl: toDownload
                                                                       .toDownloadMangaQueue[
                                                                           getIndexOfManga()]
                                                                       .chaptersToDownload[
                                                                           index]
-                                                                      .chapterUrl),
-                                                              downloading:
-                                                                  downloading,
-                                                              chapterUrl: toDownload
-                                                                  .toDownloadMangaQueue[
-                                                                      getIndexOfManga()]
-                                                                  .chaptersToDownload[
-                                                                      index]
-                                                                  .chapterUrl);
+                                                                      .chapterUrl));
                                                         }),
                                                       ],
                                                     ),

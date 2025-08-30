@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import "package:path_provider/path_provider.dart";
 import 'package:webcomic/data/services/navigation/navigation_service.dart';
 import 'package:webcomic/data/services/prefs/prefs_service.dart';
+import 'package:webcomic/data/services/debug/debug_logger.dart';
 
 class DownloadedManga {
   final String mangaUrl;
@@ -46,6 +47,9 @@ class DownloadedCubit extends Cubit<DownloadedState> {
       List<dynamic> details = jsonDecode(downloads);
       List<DownloadedManga> downloadedManga =
           details.map((e) => DownloadedManga.fromMap(e)).toList();
+      DebugLogger.logInfo(
+          'refresh downloaded list: count=${downloadedManga.length}',
+          category: 'Downloader');
       emit(DownloadedState(downloadedManga: downloadedManga));
     }
   }

@@ -179,13 +179,46 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
       await Future.delayed(const Duration(milliseconds: 100));
     }
 
-    String? taskid = await FlutterDownloader.enqueue(
-      url: url,
-      fileName: imageName + ".jpg",
-      savedDir: _localPath,
-      showNotification: false,
-      openFileFromNotification: false,
-    );
+    String? taskid;
+    try {
+      // Final existence check just before enqueue to avoid race with cleaners
+      if (!await savedDir.exists()) {
+        DebugLogger.logInfo(
+            'savedDir missing just before enqueue, recreating: $_localPath',
+            category: 'Downloader');
+        await savedDir.create(recursive: true);
+      }
+      DebugLogger.logInfo(
+          'enqueue -> fileName=${imageName}.jpg dir=$_localPath',
+          category: 'Downloader');
+      taskid = await FlutterDownloader.enqueue(
+        url: url,
+        fileName: imageName + ".jpg",
+        savedDir: _localPath,
+        showNotification: false,
+        openFileFromNotification: false,
+      );
+    } catch (e) {
+      // Common in racy cleanup: savedDir assertion; try once more
+      try {
+        if (!await savedDir.exists()) {
+          await savedDir.create(recursive: true);
+        }
+        DebugLogger.logInfo('enqueue retry after error: $e',
+            category: 'Downloader');
+        taskid = await FlutterDownloader.enqueue(
+          url: url,
+          fileName: imageName + ".jpg",
+          savedDir: _localPath,
+          showNotification: false,
+          openFileFromNotification: false,
+        );
+      } catch (e2) {
+        DebugLogger.logInfo('enqueue failed permanently: $e2',
+            category: 'Downloader');
+        return;
+      }
+    }
     downloadingCubit.addDownload(OngoingDownloads(
             taskId: taskid,
             mangaUrl: mangaUrl,
@@ -209,8 +242,25 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
       String mangaImageUrl) async {
     // Ensure images are enqueued in order; if any enqueue fails, we'll handle cleanup in the background handler.
     final chapterDirName =
-        '${generateDirName(chapterName, chapterUrl, mangaName, mangaUrl)}';
+        generateDirName(chapterName, chapterUrl, mangaName, mangaUrl);
     for (int i = 0; i < images.length; i++) {
+      // If this chapter has been marked failed/canceled, abort further enqueues
+      final ctx = navigationServiceImpl.navigationKey.currentContext;
+      if (ctx != null) {
+        final downloadingCubit = ctx.read<DownloadingCubit>();
+        final chapterTasks = downloadingCubit.state.downloads
+            .where((e) => e['chapterUrl'] == chapterUrl)
+            .toList();
+        final hasTerminalFailure = chapterTasks.any((e) =>
+            e['status'] == DownloadTaskStatus.failed ||
+            e['status'] == DownloadTaskStatus.canceled);
+        if (hasTerminalFailure) {
+          DebugLogger.logInfo(
+              'abort enqueuing remaining images due to failure/cancel: $chapterUrl',
+              category: 'Downloader');
+          break;
+        }
+      }
       DebugLogger.logInfo(
           'enqueue image $i/${images.length - 1} for $chapterUrl',
           category: 'Downloader');
