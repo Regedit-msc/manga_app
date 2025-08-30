@@ -9,6 +9,7 @@ import 'package:webcomic/data/common/extensions/list_extension.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/data/services/debug/debug_logger.dart';
 import 'package:webcomic/presentation/ui/other_pages/manga_reader/offline_reader.dart';
 
 class DownloadChapterListView extends StatefulWidget {
@@ -44,12 +45,14 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
                 'SELECT * FROM  task WHERE saved_dir LIKE "%${widget.downloadedManga.mangaName}%" AND status=3');
     if (getTasks != null) {
       if (getTasks.isNotEmpty) {
-        List<dynamic> chapterList = getTasks.fold([], (previousValue, element) {
-          var newP = previousValue as List<dynamic>;
-          return [...newP, element].unique((e) => e.savedDir);
+        List<dynamic> chapterList =
+            getTasks.fold<List<dynamic>>(<dynamic>[], (previousValue, element) {
+          return [...previousValue, element].unique((e) => e.savedDir);
         });
         if (chapterList.isNotEmpty) {
-          print("Not empty");
+          DebugLogger.logInfo(
+              'downloaded chapters loaded: ${chapterList.length}',
+              category: 'Downloader');
           chapters.value = chapterList;
         }
       }
@@ -121,12 +124,8 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "Chapter " +
-                                              value[index]
-                                                  .savedDir
-                                                  .toString()
-                                                  .split(appDir)[1]
-                                                  .split("-")[1],
+                                          _chapterTitleFromSavedDir(
+                                              value[index].savedDir),
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold),
@@ -165,4 +164,16 @@ class _DownloadChapterListViewState extends State<DownloadChapterListView> {
           }),
     );
   }
+}
+
+String _chapterTitleFromSavedDir(String savedDir) {
+  try {
+    // Use last path segment and extract trailing number if present
+    final tail =
+        savedDir.split('/').isNotEmpty ? savedDir.split('/').last : savedDir;
+    final match = RegExp(r'(\d+)').firstMatch(tail);
+    final numStr = match?.group(1);
+    if (numStr != null) return 'Chapter $numStr';
+  } catch (_) {}
+  return 'Chapter';
 }

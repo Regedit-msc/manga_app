@@ -139,7 +139,9 @@ class _DownloadViewState extends State<DownloadView> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
         valueListenable: downloadDetails,
-        builder: (context, MangaInformationForDownload? value, child) {
+        builder: (context, MangaInformationForDownload? current, child) {
+          if (current == null) return const SizedBox.shrink();
+          final value = current;
           return Scaffold(
             appBar: AppBar(
               leading: BlocBuilder<ToDownloadCubit, ToDownloadState>(
@@ -156,7 +158,7 @@ class _DownloadViewState extends State<DownloadView> {
                           context
                               .read<ToDownloadCubit>()
                               .toggleRangeSelectorForManga(
-                                  mangaUrl: value!.mangaDetails.mangaUrl ?? "",
+                                  mangaUrl: value.mangaDetails.mangaUrl ?? "",
                                   mangaName: value.mangaDetails.title ?? "");
                         },
                         child: Icon(Icons.close));
@@ -180,7 +182,7 @@ class _DownloadViewState extends State<DownloadView> {
                                     .toDownloadMangaQueue[getIndexOfManga()]
                                     .chaptersToDownload
                                     .length !=
-                                value!.chapterList.length) {
+                                value.chapterList.length) {
                               context
                                   .read<ToDownloadCubit>()
                                   .addAllChaptersToMangaListInQueue(
@@ -204,7 +206,7 @@ class _DownloadViewState extends State<DownloadView> {
                                         .toDownloadMangaQueue[getIndexOfManga()]
                                         .chaptersToDownload
                                         .length ==
-                                    value!.chapterList.length
+                                    value.chapterList.length
                                 ? Icons.cancel
                                 : Icons.add),
                           ))
@@ -217,7 +219,7 @@ class _DownloadViewState extends State<DownloadView> {
                       ? GestureDetector(
                           onTap: () {
                             List<ChapterList> newChapterList =
-                                value!.chapterList.reversed.toList();
+                                value.chapterList.reversed.toList();
                             downloadDetails.value = MangaInformationForDownload(
                                 chapterList: newChapterList,
                                 mangaDetails: widget.chapterList.mangaDetails,
@@ -235,7 +237,7 @@ class _DownloadViewState extends State<DownloadView> {
                       context
                           .read<ToDownloadCubit>()
                           .toggleRangeSelectorForManga(
-                              mangaUrl: value!.mangaDetails.mangaUrl ?? '',
+                              mangaUrl: value.mangaDetails.mangaUrl ?? '',
                               mangaName: value.mangaDetails.title ?? '');
                     },
                     child: Padding(
@@ -256,471 +258,433 @@ class _DownloadViewState extends State<DownloadView> {
             ),
             body: ValueListenableBuilder(
                 valueListenable: downloadDetails,
-                builder: (context, MangaInformationForDownload? value, child) {
-                  return value != null
-                      ? Column(
-                          children: [
-                            Expanded(
-                              child:
-                                  BlocBuilder<ToDownloadCubit, ToDownloadState>(
-                                      builder: (context, toDownload) {
-                                return SingleChildScrollView(
-                                  scrollDirection: Axis.vertical,
-                                  child: !toDownload
-                                          .toDownloadMangaQueue[
-                                              getIndexOfManga()]
-                                          .isDownloading
-                                      ? Column(
-                                          children: [
-                                            ...List.generate(
-                                                value.chapterList.length,
-                                                (index) {
-                                              return Container(
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.grey
-                                                            .withOpacity(0.3),
-                                                        width: 0.1)),
-                                                child: CheckboxListTile(
-                                                  title: Text(value
-                                                          .chapterList[index]
-                                                          .chapterTitle
-                                                          .replaceAll("-", " ")
-                                                          .split(" ")[
-                                                              value.chapterList[index].chapterTitle.split("-").indexWhere((element) => element == "chapter") +
-                                                                  1]
-                                                          .replaceFirst(
-                                                              "c", "C") +
-                                                      " " +
-                                                      value.chapterList[index]
-                                                          .chapterTitle
-                                                          .replaceAll("-", " ")
-                                                          .split(" ")[value
-                                                              .chapterList[index]
-                                                              .chapterTitle
-                                                              .split("-")
-                                                              .indexWhere((element) => element == "chapter") +
-                                                          2]),
-                                                  subtitle: Text(
-                                                    value.chapterList[index]
-                                                        .dateUploaded,
-                                                    style: TextStyle(
-                                                        color: Colors.grey),
-                                                  ),
-                                                  secondary: Container(
-                                                    width: 100,
-                                                    height: 100,
-                                                    child: CachedNetworkImage(
-                                                      imageUrl: value
-                                                              .mangaDetails
-                                                              .imageUrl ??
-                                                          '',
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                  value: toDownload
-                                                              .toDownloadMangaQueue[
-                                                                  getIndexOfManga()]
-                                                              .chaptersToDownload
-                                                              .indexWhere((element) =>
-                                                                  element
-                                                                      .chapterUrl ==
-                                                                  value
-                                                                      .chapterList[
-                                                                          index]
-                                                                      .chapterUrl) ==
-                                                          -1
-                                                      ? false
-                                                      : true,
-                                                  tileColor: toDownload
-                                                              .toDownloadMangaQueue[
-                                                                  getIndexOfManga()]
-                                                              .rangeIndexes
-                                                              .indexWhere(
-                                                                  (element) =>
-                                                                      element ==
-                                                                      index) ==
-                                                          -1
-                                                      ? null
-                                                      : value!.colorPalette !=
-                                                              null
-                                                          ? context
-                                                                  .isLightMode()
-                                                              ? value!
-                                                                          .colorPalette!
-                                                                          .lightMutedColor!
-                                                                          .color !=
-                                                                      null
-                                                                  ? value
-                                                                      .colorPalette!
-                                                                      .lightMutedColor!
-                                                                      .color
-                                                                  : AppColor
-                                                                      .violet
-                                                              : value
-                                                                          .colorPalette!
-                                                                          .darkMutedColor !=
-                                                                      null
-                                                                  ? value
-                                                                      .colorPalette!
-                                                                      .darkMutedColor!
-                                                                      .color
-                                                                  : AppColor
-                                                                      .violet
-                                                          : AppColor.violet,
-                                                  activeColor: value!
-                                                              .colorPalette !=
-                                                          null
-                                                      ? context.isLightMode()
-                                                          ? value!
-                                                                      .colorPalette!
-                                                                      .lightMutedColor!
-                                                                      .color !=
-                                                                  null
-                                                              ? value!
-                                                                  .colorPalette!
-                                                                  .lightMutedColor!
-                                                                  .color
-                                                              : null
-                                                          : value!.colorPalette!
-                                                                      .darkMutedColor !=
-                                                                  null
-                                                              ? value!
-                                                                  .colorPalette!
-                                                                  .darkMutedColor!
-                                                                  .color
-                                                              : null
-                                                      : null,
-                                                  onChanged: (v) {
-                                                    final chapter =
-                                                        ToDownloadChapter(
-                                                            value.mangaDetails
-                                                                    .imageUrl ??
-                                                                '',
-                                                            value
-                                                                .chapterList[
-                                                                    index]
-                                                                .chapterTitle,
-                                                            value
-                                                                .chapterList[
-                                                                    index]
-                                                                .chapterUrl,
-                                                            value.mangaDetails
-                                                                    .title ??
-                                                                '',
-                                                            value.mangaDetails
-                                                                    .mangaUrl ??
-                                                                '',
-                                                            value
-                                                                .chapterList[
-                                                                    index]
-                                                                .mangaSource);
-                                                    if (!toDownload
-                                                        .toDownloadMangaQueue[
-                                                            getIndexOfManga()]
-                                                        .isRangeSelectorEnabled) {
-                                                      if (toDownload
-                                                              .toDownloadMangaQueue[
-                                                                  getIndexOfManga()]
-                                                              .chaptersToDownload
-                                                              .indexWhere((element) =>
-                                                                  element
-                                                                      .chapterUrl ==
-                                                                  value
-                                                                      .chapterList[
-                                                                          index]
-                                                                      .chapterUrl) ==
-                                                          -1) {
-                                                        context.read<ToDownloadCubit>().addChapterToMangaListInQueue(
-                                                            chapter: chapter,
-                                                            mangaName: value
-                                                                    .mangaDetails
-                                                                    .title ??
-                                                                "",
-                                                            mangaUrl: value
-                                                                    .mangaDetails
-                                                                    .mangaUrl ??
-                                                                "");
-                                                      } else {
-                                                        context.read<ToDownloadCubit>().removeChapterFromMangaListInQueue(
-                                                            chapter: chapter,
-                                                            mangaName: value
-                                                                    .mangaDetails
-                                                                    .title ??
-                                                                "",
-                                                            mangaUrl: value
-                                                                    .mangaDetails
-                                                                    .mangaUrl ??
-                                                                "");
-                                                      }
-                                                    } else {
-                                                      if (toDownload
-                                                              .toDownloadMangaQueue[
-                                                                  getIndexOfManga()]
-                                                              .rangeIndexes
-                                                              .length <
-                                                          1) {
-                                                        context
-                                                            .read<
-                                                                ToDownloadCubit>()
-                                                            .addRangeIndexForManga(
-                                                                index: index,
-                                                                mangaUrl: value
-                                                                        .mangaDetails
-                                                                        .mangaUrl ??
-                                                                    "",
-                                                                mangaName: value
-                                                                        .mangaDetails
-                                                                        .title ??
-                                                                    "");
-                                                      } else {
-                                                        context
-                                                            .read<
-                                                                ToDownloadCubit>()
-                                                            .addRangeIndexForManga(
-                                                                index: index,
-                                                                mangaUrl: value
-                                                                        .mangaDetails
-                                                                        .mangaUrl ??
-                                                                    "",
-                                                                mangaName: value
-                                                                        .mangaDetails
-                                                                        .title ??
-                                                                    "");
-                                                        context.read<ToDownloadCubit>().rangeSelectorForManga(
-                                                            chapterList: value
-                                                                .chapterList,
-                                                            mangaName: value
-                                                                    .mangaDetails
-                                                                    .title ??
-                                                                '',
-                                                            mangaUrl: value
-                                                                    .mangaDetails
-                                                                    .mangaUrl ??
-                                                                '',
-                                                            imageUrl: value
-                                                                    .mangaDetails
-                                                                    .imageUrl ??
-                                                                '');
-                                                      }
-                                                    }
-                                                  },
-                                                ),
-                                              );
-                                            })
-                                          ],
-                                        )
-                                      : Column(
-                                          children: [
-                                            ...List.generate(
-                                                toDownload
-                                                    .toDownloadMangaQueue[
-                                                        getIndexOfManga()]
-                                                    .chaptersToDownload
-                                                    .length, (index) {
-                                              return Container(
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.grey
-                                                            .withOpacity(0.3),
-                                                        width: 0.1)),
-                                                child: ListTile(
-                                                  title: Text(toDownload
-                                                          .toDownloadMangaQueue[
-                                                              getIndexOfManga()]
-                                                          .chaptersToDownload[
-                                                              index]
-                                                          .chapterName
-                                                          .replaceAll("-", " ")
-                                                          .split(" ")[
-                                                              toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterName.split("-").indexWhere((element) => element == "chapter") +
-                                                                  1]
-                                                          .replaceFirst(
-                                                              "c", "C") +
-                                                      " " +
-                                                      toDownload
-                                                          .toDownloadMangaQueue[getIndexOfManga()]
-                                                          .chaptersToDownload[index]
-                                                          .chapterName
-                                                          .replaceAll("-", " ")
-                                                          .split(" ")[toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterName.split("-").indexWhere((element) => element == "chapter") + 2]),
-                                                  leading: Container(
-                                                    width: 100,
-                                                    height: 100,
-                                                    child: CachedNetworkImage(
-                                                      imageUrl: value
-                                                              .mangaDetails
-                                                              .imageUrl ??
-                                                          '',
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                  trailing: Container(
-                                                    width: Sizes.dimen_50,
-                                                    height: Sizes.dimen_50,
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        BlocBuilder<
-                                                                DownloadingCubit,
-                                                                DownloadingState>(
-                                                            builder: (context,
-                                                                downloading) {
-                                                          return PauseOrResume(
-                                                              progress: totalProgress(
-                                                                  downloading,
-                                                                  toDownload
-                                                                      .toDownloadMangaQueue[
-                                                                          getIndexOfManga()]
-                                                                      .chaptersToDownload[
-                                                                          index]
-                                                                      .chapterUrl),
-                                                              downloading:
-                                                                  downloading,
-                                                              chapterUrl: toDownload
-                                                                  .toDownloadMangaQueue[
-                                                                      getIndexOfManga()]
-                                                                  .chaptersToDownload[
-                                                                      index]
-                                                                  .chapterUrl);
-                                                        }),
-                                                        SizedBox(
-                                                          width: Sizes.dimen_4,
-                                                        ),
-                                                        BlocBuilder<
-                                                                DownloadingCubit,
-                                                                DownloadingState>(
-                                                            builder: (context,
-                                                                downloading) {
-                                                          return Flexible(
-                                                              child: BuildProgressIndicator(
-                                                                  progress: totalProgress(
-                                                                      downloading,
-                                                                      toDownload
-                                                                          .toDownloadMangaQueue[
-                                                                              getIndexOfManga()]
-                                                                          .chaptersToDownload[
-                                                                              index]
-                                                                          .chapterUrl),
-                                                                  downloading:
-                                                                      downloading,
-                                                                  chapterUrl: toDownload
-                                                                      .toDownloadMangaQueue[
-                                                                          getIndexOfManga()]
-                                                                      .chaptersToDownload[
-                                                                          index]
-                                                                      .chapterUrl));
-                                                        }),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            })
-                                          ],
-                                        ),
-                                );
-                              }),
-                            ),
-                            BlocBuilder<ToDownloadCubit, ToDownloadState>(
-                                builder: (context, toDownload) {
-                              return Container(
-                                height: Sizes.dimen_100,
-                                child: Center(
-                                  child: ScaleAnim(
-                                    onTap: () {
-                                      if (toDownload
-                                          .toDownloadMangaQueue[
-                                              getIndexOfManga()]
-                                          .chaptersToDownload
-                                          .isEmpty) {
-                                        getItInstance<ToastServiceImpl>()
-                                            .showToast("No chapters selected.",
-                                                Toast.LENGTH_SHORT);
-                                      } else if (toDownload
-                                          .toDownloadMangaQueue[
-                                              getIndexOfManga()]
-                                          .isDownloading) {
-                                        getItInstance<ToastServiceImpl>().showToast(
-                                            "Some chapters are still downloading.",
-                                            Toast.LENGTH_SHORT);
-                                      } else {
-                                        context
-                                            .read<ToDownloadCubit>()
-                                            .startDownload(
-                                                mangaName: widget.chapterList
-                                                        .mangaDetails.title ??
-                                                    '',
-                                                imageUrl: widget
-                                                        .chapterList
-                                                        .mangaDetails
+                builder: (context, MangaInformationForDownload? v, child) {
+                  if (v == null) return const SizedBox.shrink();
+                  final value = v;
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: BlocBuilder<ToDownloadCubit, ToDownloadState>(
+                            builder: (context, toDownload) {
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: !toDownload
+                                    .toDownloadMangaQueue[getIndexOfManga()]
+                                    .isDownloading
+                                ? Column(
+                                    children: [
+                                      ...List.generate(value.chapterList.length,
+                                          (index) {
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.3),
+                                                  width: 0.1)),
+                                          child: CheckboxListTile(
+                                            title: Text(value.chapterList[index]
+                                                    .chapterTitle
+                                                    .replaceAll("-", " ")
+                                                    .split(" ")[value
+                                                            .chapterList[index]
+                                                            .chapterTitle
+                                                            .split("-")
+                                                            .indexWhere(
+                                                                (element) =>
+                                                                    element ==
+                                                                    "chapter") +
+                                                        1]
+                                                    .replaceFirst("c", "C") +
+                                                " " +
+                                                value.chapterList[index]
+                                                    .chapterTitle
+                                                    .replaceAll("-", " ")
+                                                    .split(" ")[value.chapterList[index].chapterTitle.split("-").indexWhere((element) => element == "chapter") + 2]),
+                                            subtitle: Text(
+                                              value.chapterList[index]
+                                                  .dateUploaded,
+                                              style:
+                                                  TextStyle(color: Colors.grey),
+                                            ),
+                                            secondary: Container(
+                                              width: 100,
+                                              height: 100,
+                                              child: CachedNetworkImage(
+                                                imageUrl: value.mangaDetails
                                                         .imageUrl ??
                                                     '',
-                                                mangaUrl: widget
-                                                        .chapterList
-                                                        .mangaDetails
-                                                        .mangaUrl ??
-                                                    '');
-                                      }
-                                    },
-                                    child: Container(
-                                      width: Sizes.dimen_300.w,
-                                      height: Sizes.dimen_50,
-                                      decoration: BoxDecoration(
-                                          color: context.isLightMode()
-                                              ? AppColor.vulcan
-                                              : Colors.white,
-                                          borderRadius: BorderRadius.circular(
-                                              Sizes.dimen_6)),
-                                      child: Center(
-                                        child: Text(
-                                          toDownload
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            value: toDownload
+                                                        .toDownloadMangaQueue[
+                                                            getIndexOfManga()]
+                                                        .chaptersToDownload
+                                                        .indexWhere((element) =>
+                                                            element
+                                                                .chapterUrl ==
+                                                            value
+                                                                .chapterList[
+                                                                    index]
+                                                                .chapterUrl) ==
+                                                    -1
+                                                ? false
+                                                : true,
+                                            tileColor: toDownload
+                                                        .toDownloadMangaQueue[
+                                                            getIndexOfManga()]
+                                                        .rangeIndexes
+                                                        .indexWhere((element) =>
+                                                            element == index) ==
+                                                    -1
+                                                ? null
+                                                : value.colorPalette != null
+                                                    ? context.isLightMode()
+                                                        ? (value.colorPalette!
+                                                                    .lightMutedColor !=
+                                                                null
+                                                            ? value
+                                                                .colorPalette!
+                                                                .lightMutedColor!
+                                                                .color
+                                                            : AppColor.violet)
+                                                        : (value.colorPalette!
+                                                                    .darkMutedColor !=
+                                                                null
+                                                            ? value
+                                                                .colorPalette!
+                                                                .darkMutedColor!
+                                                                .color
+                                                            : AppColor.violet)
+                                                    : AppColor.violet,
+                                            activeColor: value.colorPalette !=
+                                                    null
+                                                ? context.isLightMode()
+                                                    ? (value.colorPalette!
+                                                                .lightMutedColor !=
+                                                            null
+                                                        ? value
+                                                            .colorPalette!
+                                                            .lightMutedColor!
+                                                            .color
+                                                        : null)
+                                                    : (value.colorPalette!
+                                                                .darkMutedColor !=
+                                                            null
+                                                        ? value
+                                                            .colorPalette!
+                                                            .darkMutedColor!
+                                                            .color
+                                                        : null)
+                                                : null,
+                                            onChanged: (v) {
+                                              final chapter = ToDownloadChapter(
+                                                  value.mangaDetails.imageUrl ??
+                                                      '',
+                                                  value.chapterList[index]
+                                                      .chapterTitle,
+                                                  value.chapterList[index]
+                                                      .chapterUrl,
+                                                  value.mangaDetails.title ??
+                                                      '',
+                                                  value.mangaDetails.mangaUrl ??
+                                                      '',
+                                                  value.chapterList[index]
+                                                      .mangaSource);
+                                              if (!toDownload
                                                   .toDownloadMangaQueue[
                                                       getIndexOfManga()]
-                                                  .chaptersToDownload
-                                                  .isEmpty
-                                              ? "NO CHAPTER"
-                                              : toDownload
-                                                      .toDownloadMangaQueue[
-                                                          getIndexOfManga()]
-                                                      .isDownloading
-                                                  ? "DOWNLOADING (${toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload.length})"
-                                                  : "DOWNLOAD (${toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload.length})",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: context.isLightMode()
-                                                  ? value!
-                                                              .colorPalette!
-                                                              .lightMutedColor!
-                                                              .color !=
-                                                          null
-                                                      ? value!
-                                                          .colorPalette!
-                                                          .lightMutedColor!
-                                                          .color
-                                                      : AppColor.violet
-                                                  : value!.colorPalette!
-                                                              .darkMutedColor !=
-                                                          null
-                                                      ? value!.colorPalette!
-                                                          .darkMutedColor!.color
-                                                      : AppColor.violet,
-                                              fontSize: Sizes.dimen_18.sp),
-                                        ),
-                                      ),
-                                    ),
+                                                  .isRangeSelectorEnabled) {
+                                                if (toDownload
+                                                        .toDownloadMangaQueue[
+                                                            getIndexOfManga()]
+                                                        .chaptersToDownload
+                                                        .indexWhere((element) =>
+                                                            element
+                                                                .chapterUrl ==
+                                                            value
+                                                                .chapterList[
+                                                                    index]
+                                                                .chapterUrl) ==
+                                                    -1) {
+                                                  context
+                                                      .read<ToDownloadCubit>()
+                                                      .addChapterToMangaListInQueue(
+                                                          chapter: chapter,
+                                                          mangaName: value
+                                                                  .mangaDetails
+                                                                  .title ??
+                                                              "",
+                                                          mangaUrl: value
+                                                                  .mangaDetails
+                                                                  .mangaUrl ??
+                                                              "");
+                                                } else {
+                                                  context
+                                                      .read<ToDownloadCubit>()
+                                                      .removeChapterFromMangaListInQueue(
+                                                          chapter: chapter,
+                                                          mangaName: value
+                                                                  .mangaDetails
+                                                                  .title ??
+                                                              "",
+                                                          mangaUrl: value
+                                                                  .mangaDetails
+                                                                  .mangaUrl ??
+                                                              "");
+                                                }
+                                              } else {
+                                                if (toDownload
+                                                        .toDownloadMangaQueue[
+                                                            getIndexOfManga()]
+                                                        .rangeIndexes
+                                                        .length <
+                                                    1) {
+                                                  context
+                                                      .read<ToDownloadCubit>()
+                                                      .addRangeIndexForManga(
+                                                          index: index,
+                                                          mangaUrl: value
+                                                                  .mangaDetails
+                                                                  .mangaUrl ??
+                                                              "",
+                                                          mangaName: value
+                                                                  .mangaDetails
+                                                                  .title ??
+                                                              "");
+                                                } else {
+                                                  context
+                                                      .read<ToDownloadCubit>()
+                                                      .addRangeIndexForManga(
+                                                          index: index,
+                                                          mangaUrl: value
+                                                                  .mangaDetails
+                                                                  .mangaUrl ??
+                                                              "",
+                                                          mangaName: value
+                                                                  .mangaDetails
+                                                                  .title ??
+                                                              "");
+                                                  context
+                                                      .read<ToDownloadCubit>()
+                                                      .rangeSelectorForManga(
+                                                          chapterList:
+                                                              value.chapterList,
+                                                          mangaName: value
+                                                                  .mangaDetails
+                                                                  .title ??
+                                                              '',
+                                                          mangaUrl: value
+                                                                  .mangaDetails
+                                                                  .mangaUrl ??
+                                                              '',
+                                                          imageUrl: value
+                                                                  .mangaDetails
+                                                                  .imageUrl ??
+                                                              '');
+                                                }
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      })
+                                    ],
+                                  )
+                                : Column(
+                                    children: [
+                                      ...List.generate(
+                                          toDownload
+                                              .toDownloadMangaQueue[
+                                                  getIndexOfManga()]
+                                              .chaptersToDownload
+                                              .length, (index) {
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.3),
+                                                  width: 0.1)),
+                                          child: ListTile(
+                                            title: Text(toDownload
+                                                    .toDownloadMangaQueue[
+                                                        getIndexOfManga()]
+                                                    .chaptersToDownload[index]
+                                                    .chapterName
+                                                    .replaceAll("-", " ")
+                                                    .split(" ")[
+                                                        toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterName.split("-").indexWhere((element) => element == "chapter") +
+                                                            1]
+                                                    .replaceFirst("c", "C") +
+                                                " " +
+                                                toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload[index].chapterName
+                                                    .replaceAll("-", " ")
+                                                    .split(" ")[toDownload
+                                                        .toDownloadMangaQueue[getIndexOfManga()]
+                                                        .chaptersToDownload[index]
+                                                        .chapterName
+                                                        .split("-")
+                                                        .indexWhere((element) => element == "chapter") +
+                                                    2]),
+                                            leading: Container(
+                                              width: 100,
+                                              height: 100,
+                                              child: CachedNetworkImage(
+                                                imageUrl: value.mangaDetails
+                                                        .imageUrl ??
+                                                    '',
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            trailing: Container(
+                                              width: Sizes.dimen_50,
+                                              height: Sizes.dimen_50,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  BlocBuilder<DownloadingCubit,
+                                                          DownloadingState>(
+                                                      builder: (context,
+                                                          downloading) {
+                                                    return PauseOrResume(
+                                                        progress: totalProgress(
+                                                            downloading,
+                                                            toDownload
+                                                                .toDownloadMangaQueue[
+                                                                    getIndexOfManga()]
+                                                                .chaptersToDownload[
+                                                                    index]
+                                                                .chapterUrl),
+                                                        downloading:
+                                                            downloading,
+                                                        chapterUrl: toDownload
+                                                            .toDownloadMangaQueue[
+                                                                getIndexOfManga()]
+                                                            .chaptersToDownload[
+                                                                index]
+                                                            .chapterUrl);
+                                                  }),
+                                                  SizedBox(
+                                                    width: Sizes.dimen_4,
+                                                  ),
+                                                  BlocBuilder<DownloadingCubit,
+                                                          DownloadingState>(
+                                                      builder: (context,
+                                                          downloading) {
+                                                    return Flexible(
+                                                        child: BuildProgressIndicator(
+                                                            progress: totalProgress(
+                                                                downloading,
+                                                                toDownload
+                                                                    .toDownloadMangaQueue[
+                                                                        getIndexOfManga()]
+                                                                    .chaptersToDownload[
+                                                                        index]
+                                                                    .chapterUrl),
+                                                            downloading:
+                                                                downloading,
+                                                            chapterUrl: toDownload
+                                                                .toDownloadMangaQueue[
+                                                                    getIndexOfManga()]
+                                                                .chaptersToDownload[
+                                                                    index]
+                                                                .chapterUrl));
+                                                  }),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      })
+                                    ],
+                                  ),
+                          );
+                        }),
+                      ),
+                      BlocBuilder<ToDownloadCubit, ToDownloadState>(
+                          builder: (context, toDownload) {
+                        return Container(
+                          height: Sizes.dimen_100,
+                          child: Center(
+                            child: ScaleAnim(
+                              onTap: () {
+                                if (toDownload
+                                    .toDownloadMangaQueue[getIndexOfManga()]
+                                    .chaptersToDownload
+                                    .isEmpty) {
+                                  getItInstance<ToastServiceImpl>().showToast(
+                                      "No chapters selected.",
+                                      Toast.LENGTH_SHORT);
+                                } else if (toDownload
+                                    .toDownloadMangaQueue[getIndexOfManga()]
+                                    .isDownloading) {
+                                  getItInstance<ToastServiceImpl>().showToast(
+                                      "Some chapters are still downloading.",
+                                      Toast.LENGTH_SHORT);
+                                } else {
+                                  context.read<ToDownloadCubit>().startDownload(
+                                      mangaName: widget
+                                              .chapterList.mangaDetails.title ??
+                                          '',
+                                      imageUrl: widget.chapterList.mangaDetails
+                                              .imageUrl ??
+                                          '',
+                                      mangaUrl: widget.chapterList.mangaDetails
+                                              .mangaUrl ??
+                                          '');
+                                }
+                              },
+                              child: Container(
+                                width: Sizes.dimen_300.w,
+                                height: Sizes.dimen_50,
+                                decoration: BoxDecoration(
+                                    color: context.isLightMode()
+                                        ? AppColor.vulcan
+                                        : Colors.white,
+                                    borderRadius:
+                                        BorderRadius.circular(Sizes.dimen_6)),
+                                child: Center(
+                                  child: Text(
+                                    toDownload
+                                            .toDownloadMangaQueue[
+                                                getIndexOfManga()]
+                                            .chaptersToDownload
+                                            .isEmpty
+                                        ? "NO CHAPTER"
+                                        : toDownload
+                                                .toDownloadMangaQueue[
+                                                    getIndexOfManga()]
+                                                .isDownloading
+                                            ? "DOWNLOADING (${toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload.length})"
+                                            : "DOWNLOAD (${toDownload.toDownloadMangaQueue[getIndexOfManga()].chaptersToDownload.length})",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            context.isLightMode()
+                                                ? (value.colorPalette
+                                                            ?.lightMutedColor !=
+                                                        null
+                                                    ? value.colorPalette!
+                                                        .lightMutedColor!.color
+                                                    : AppColor.violet)
+                                                : (value.colorPalette
+                                                            ?.darkMutedColor !=
+                                                        null
+                                                    ? value.colorPalette!
+                                                        .darkMutedColor!.color
+                                                    : AppColor.violet),
+                                        fontSize: Sizes.dimen_18.sp),
                                   ),
                                 ),
-                              );
-                            })
-                          ],
-                        )
-                      : Container();
+                              ),
+                            ),
+                          ),
+                        );
+                      })
+                    ],
+                  );
                 }),
           );
         });
