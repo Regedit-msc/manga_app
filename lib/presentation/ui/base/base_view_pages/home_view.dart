@@ -436,7 +436,7 @@ class _HomeViewState extends State<HomeView>
                             ]),
                             const SizedBox(height: 8),
                             const MangaUpdatesHome(),
-                            const MostViewedManga(),
+                            // const MostViewedManga(),
                             const MostClickedManga(),
                             const SectionHeader(title: 'Genres'),
                             SizedBox(
