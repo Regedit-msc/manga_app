@@ -29,9 +29,12 @@ class _DownloadViewState extends State<DownloadView> {
   ValueNotifier<MangaInformationForDownload?> downloadDetails =
       ValueNotifier(null);
   bool isReversed = false;
+  // Track downloaded chapter directories for this manga to hide them from selection
+  Set<String> _downloadedDirNames = {};
   @override
   void initState() {
     downloadDetails.value = widget.chapterList;
+    _loadDownloadedDirs();
     super.initState();
   }
 
@@ -100,6 +103,44 @@ class _DownloadViewState extends State<DownloadView> {
         .read<ToDownloadCubit>()
         .removeAllChaptersFromMangaListInQueue(
             mangaUrl: widget.chapterList.mangaDetails.mangaUrl ?? "");
+  }
+
+  // Load fully-downloaded chapter folder names for this manga (status=3)
+  Future<void> _loadDownloadedDirs() async {
+    try {
+      final mangaName = widget.chapterList.mangaDetails.title ?? '';
+      if (mangaName.isEmpty) return;
+      final tasks = await FlutterDownloader.loadTasksWithRawQuery(
+          query:
+              'SELECT * FROM  task WHERE saved_dir LIKE "%$mangaName%" AND status=3');
+      final names = <String>{};
+      if (tasks != null) {
+        for (final t in tasks) {
+          final seg = t.savedDir.split('/').last;
+          if (seg.isNotEmpty) names.add(seg);
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _downloadedDirNames = names;
+      });
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  bool _isChapterDownloaded(
+      {required String chapterName, required String chapterUrl}) {
+    try {
+      final mangaName = widget.chapterList.mangaDetails.title ?? '';
+      final mangaUrl = widget.chapterList.mangaDetails.mangaUrl ?? '';
+      final dirName = context
+          .read<ToDownloadCubit>()
+          .generateDirName(chapterName, chapterUrl, mangaName, mangaUrl);
+      return _downloadedDirNames.contains(dirName);
+    } catch (_) {
+      return false;
+    }
   }
 
   List<int> totalProgress(DownloadingState downloading, String chapterUrl) {
@@ -178,15 +219,22 @@ class _DownloadViewState extends State<DownloadView> {
                             if (toDownload
                                 .toDownloadMangaQueue[getIndexOfManga()]
                                 .isDownloading) return;
+                            // Build filtered list (hide already-downloaded chapters)
+                            final filtered = value.chapterList
+                                .where((c) => !_isChapterDownloaded(
+                                      chapterName: c.chapterTitle,
+                                      chapterUrl: c.chapterUrl,
+                                    ))
+                                .toList();
                             if (toDownload
                                     .toDownloadMangaQueue[getIndexOfManga()]
                                     .chaptersToDownload
                                     .length !=
-                                value.chapterList.length) {
+                                filtered.length) {
                               context
                                   .read<ToDownloadCubit>()
                                   .addAllChaptersToMangaListInQueue(
-                                      chapters: value.chapterList,
+                                      chapters: filtered,
                                       mangaName: value.mangaDetails.title ?? "",
                                       mangaUrl:
                                           value.mangaDetails.mangaUrl ?? '',
@@ -206,7 +254,12 @@ class _DownloadViewState extends State<DownloadView> {
                                         .toDownloadMangaQueue[getIndexOfManga()]
                                         .chaptersToDownload
                                         .length ==
-                                    value.chapterList.length
+                                    value.chapterList
+                                        .where((c) => !_isChapterDownloaded(
+                                              chapterName: c.chapterTitle,
+                                              chapterUrl: c.chapterUrl,
+                                            ))
+                                        .length
                                 ? Icons.cancel
                                 : Icons.add),
                           ))
@@ -224,6 +277,7 @@ class _DownloadViewState extends State<DownloadView> {
                                 chapterList: newChapterList,
                                 mangaDetails: widget.chapterList.mangaDetails,
                                 colorPalette: widget.chapterList.colorPalette);
+                            if (!mounted) return;
                             isReversed = !isReversed;
                           },
                           child: Padding(
@@ -266,6 +320,18 @@ class _DownloadViewState extends State<DownloadView> {
                       Expanded(
                         child: BlocBuilder<ToDownloadCubit, ToDownloadState>(
                             builder: (context, toDownload) {
+                          // When not using range selector, hide already-downloaded chapters
+                          final isRangeMode = toDownload
+                              .toDownloadMangaQueue[getIndexOfManga()]
+                              .isRangeSelectorEnabled;
+                          final filteredList = isRangeMode
+                              ? value.chapterList
+                              : value.chapterList
+                                  .where((c) => !_isChapterDownloaded(
+                                        chapterName: c.chapterTitle,
+                                        chapterUrl: c.chapterUrl,
+                                      ))
+                                  .toList();
                           return SingleChildScrollView(
                             scrollDirection: Axis.vertical,
                             child: !toDownload
@@ -273,7 +339,7 @@ class _DownloadViewState extends State<DownloadView> {
                                     .isDownloading
                                 ? Column(
                                     children: [
-                                      ...List.generate(value.chapterList.length,
+                                      ...List.generate(filteredList.length,
                                           (index) {
                                         return Container(
                                           decoration: BoxDecoration(
@@ -282,27 +348,29 @@ class _DownloadViewState extends State<DownloadView> {
                                                       .withOpacity(0.3),
                                                   width: 0.1)),
                                           child: CheckboxListTile(
-                                            title: Text(value.chapterList[index]
+                                            title: Text(filteredList[index]
                                                     .chapterTitle
                                                     .replaceAll("-", " ")
-                                                    .split(" ")[value
-                                                            .chapterList[index]
+                                                    .split(" ")[filteredList[index]
                                                             .chapterTitle
                                                             .split("-")
-                                                            .indexWhere(
-                                                                (element) =>
-                                                                    element ==
-                                                                    "chapter") +
+                                                            .indexWhere((element) =>
+                                                                element ==
+                                                                "chapter") +
                                                         1]
                                                     .replaceFirst("c", "C") +
                                                 " " +
-                                                value.chapterList[index]
+                                                filteredList[index]
                                                     .chapterTitle
                                                     .replaceAll("-", " ")
-                                                    .split(" ")[value.chapterList[index].chapterTitle.split("-").indexWhere((element) => element == "chapter") + 2]),
+                                                    .split(" ")[filteredList[index]
+                                                        .chapterTitle
+                                                        .split("-")
+                                                        .indexWhere(
+                                                            (element) => element == "chapter") +
+                                                    2]),
                                             subtitle: Text(
-                                              value.chapterList[index]
-                                                  .dateUploaded,
+                                              filteredList[index].dateUploaded,
                                               style:
                                                   TextStyle(color: Colors.grey),
                                             ),
@@ -323,9 +391,7 @@ class _DownloadViewState extends State<DownloadView> {
                                                         .indexWhere((element) =>
                                                             element
                                                                 .chapterUrl ==
-                                                            value
-                                                                .chapterList[
-                                                                    index]
+                                                            filteredList[index]
                                                                 .chapterUrl) ==
                                                     -1
                                                 ? false
@@ -381,15 +447,15 @@ class _DownloadViewState extends State<DownloadView> {
                                               final chapter = ToDownloadChapter(
                                                   value.mangaDetails.imageUrl ??
                                                       '',
-                                                  value.chapterList[index]
+                                                  filteredList[index]
                                                       .chapterTitle,
-                                                  value.chapterList[index]
+                                                  filteredList[index]
                                                       .chapterUrl,
                                                   value.mangaDetails.title ??
                                                       '',
                                                   value.mangaDetails.mangaUrl ??
                                                       '',
-                                                  value.chapterList[index]
+                                                  filteredList[index]
                                                       .mangaSource);
                                               if (!toDownload
                                                   .toDownloadMangaQueue[
@@ -402,9 +468,7 @@ class _DownloadViewState extends State<DownloadView> {
                                                         .indexWhere((element) =>
                                                             element
                                                                 .chapterUrl ==
-                                                            value
-                                                                .chapterList[
-                                                                    index]
+                                                            filteredList[index]
                                                                 .chapterUrl) ==
                                                     -1) {
                                                   context
@@ -634,6 +698,8 @@ class _DownloadViewState extends State<DownloadView> {
                                       mangaUrl: widget.chapterList.mangaDetails
                                               .mangaUrl ??
                                           '');
+                                  // Refresh downloaded dirs cache
+                                  _loadDownloadedDirs();
                                 }
                               },
                               child: Container(

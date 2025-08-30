@@ -8,6 +8,9 @@ import 'package:webcomic/data/services/prefs/prefs_service.dart';
 import 'package:webcomic/data/services/debug/debug_logger.dart';
 import 'package:webcomic/presentation/ui/blocs/download/downloaded_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
+import 'package:webcomic/data/services/toast/toast_service.dart';
+import 'package:webcomic/di/get_it.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class DownloadingState {
   List<Map<String, dynamic>> downloads;
@@ -17,6 +20,7 @@ class DownloadingState {
 class DownloadingCubit extends Cubit<DownloadingState> {
   SharedServiceImpl sharedServiceImpl;
   NavigationServiceImpl navigationServiceImpl;
+  // Access Toast through DI via Navigation context when needed
   DownloadingCubit(
       {required this.sharedServiceImpl, required this.navigationServiceImpl})
       : super(DownloadingState());
@@ -270,14 +274,17 @@ class DownloadingCubit extends Cubit<DownloadingState> {
         await sharedServiceImpl
             .addDownloadedMangaDetails(jsonEncode([entry.toMap()]));
       }
-      // Clean up the queue entry and refresh UI
+      // Refresh queues and downloaded list in UI and notify via toast
       try {
         final ctx = navigationServiceImpl.navigationKey.currentContext;
         if (ctx != null) {
-          ctx
-              .read<ToDownloadCubit>()
-              .removeAllChaptersFromMangaListInQueue(mangaUrl: mangaUrl);
+          ctx.read<ToDownloadCubit>().markDownloadComplete(mangaUrl: mangaUrl);
           ctx.read<DownloadedCubit>().refresh();
+          try {
+            final toast = getItInstance<ToastServiceImpl>();
+            toast.showToast(
+                'Download complete for $mangaName', Toast.LENGTH_SHORT);
+          } catch (_) {}
         }
       } catch (_) {}
       DebugLogger.logInfo('manga completed: $mangaName',

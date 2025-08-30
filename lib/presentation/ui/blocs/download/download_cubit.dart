@@ -59,6 +59,29 @@ class ToDownloadCubit extends Cubit<ToDownloadState> {
     ));
   }
 
+  // Mark download session as complete for a manga without clearing selection
+  void markDownloadComplete({required String mangaUrl}) {
+    final queueForThisManga = state.toDownloadMangaQueue.firstWhere(
+        (e) => e.mangaUrl == mangaUrl,
+        orElse: () => ToDownloadQueue(mangaUrl: mangaUrl, mangaName: ''));
+    final withoutCurrent = state.toDownloadMangaQueue
+        .where((e) => e.mangaUrl != mangaUrl)
+        .toList();
+    final updated = ToDownloadQueue(
+      mangaName: queueForThisManga.mangaName,
+      mangaUrl: queueForThisManga.mangaUrl,
+      isDownloading: false,
+      isRangeSelectorEnabled: false,
+      rangeIndexes: const [],
+      chaptersToDownload:
+          [...queueForThisManga.chaptersToDownload].unique((e) => e.chapterUrl),
+    );
+    emit(ToDownloadState(
+      toDownloadMangaQueue:
+          [...withoutCurrent, updated].unique((e) => e.mangaUrl),
+    ));
+  }
+
   void addRangeIndexForManga(
       {required int index,
       required String mangaUrl,
