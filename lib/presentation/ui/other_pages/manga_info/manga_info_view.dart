@@ -209,992 +209,730 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                 onRefresh: () async {
                   await refetch!();
                 },
-                child: DefaultTabController(
-                  initialIndex: 1,
-                  length: 3,
-                  child: NestedScrollView(
-                    headerSliverBuilder: (context, innerBoxIsScrolled) {
-                      return [
-                        SliverAppBar(
-                          expandedHeight: ScreenUtil.screenHeight / 3,
-                          automaticallyImplyLeading: false,
-                          leading: GestureDetector(
-                            onTap: () {
-                              // Future.delayed(Duration(milliseconds: 100), (){
-                              //   if (context.isLightMode()) {
-                              //     print("Ran reset");
-                              //     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-                              //       statusBarIconBrightness: Brightness.dark,
-                              //       statusBarColor: Colors.white,
-                              //     ));
-                              //   }
-                              // });
-                              Navigator.pop(context);
-                            },
-                            child: Icon(
-                              Icons.arrow_back,
-                              color: Colors.white,
-                            ),
-                          ),
-                          title: Row(
-                            children: [
-                              Flexible(
-                                  child: Text(
-                                innerBoxIsScrolled
-                                    ? widget.mangaDetails.title!
-                                    : "",
-                                style: ThemeText.whiteBodyText2?.copyWith(
-                                    fontSize: Sizes.dimen_20.sp,
-                                    fontWeight: FontWeight.w900),
-                              )),
-                            ],
-                          ),
-                          systemOverlayStyle: SystemUiOverlayStyle.light
-                              .copyWith(
-                                  statusBarIconBrightness: getBrightNess(),
-                                  statusBarColor: getOverlayColor()),
-                          bottom: TabBar(
-                            indicatorColor: AppColor.royalBlue,
-                            unselectedLabelColor: Colors.grey,
-                            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                            unselectedLabelStyle:
-                                TextStyle(fontWeight: FontWeight.bold),
-                            labelColor: Colors.white,
-                            tabs: [
-                              Tab(
-                                child: Text(
-                                  "ABOUT",
-                                  style: TextStyle(
-                                      // fontWeight: FontWeight.bold,
-                                      fontSize: Sizes.dimen_12.sp),
-                                ),
-                              ),
-                              Tab(
-                                child: Text(
-                                  "CHAPTERS",
-                                  style: TextStyle(
-                                      // fontWeight: FontWeight.bold,
-                                      fontSize: Sizes.dimen_12.sp),
-                                ),
-                              ),
-                              Tab(
-                                child: Text(
-                                  "RECOMMENDED",
-                                  style: TextStyle(
-                                      // fontWeight: FontWeight.bold,
-                                      fontSize: Sizes.dimen_12.sp),
-                                ),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                ScaleAnim(
-                                  onTap: () async {
-                                    final DatabaseHelper dbInstance =
-                                        getItInstance<DatabaseHelper>();
-                                    List<Subscribe> subs =
-                                        context.read<SubsCubit>().state.subs;
-                                    Subscribe newSub = Subscribe(
-                                        imageUrl:
-                                            widget.mangaDetails.imageUrl ?? '',
-                                        dateSubscribed:
-                                            DateTime.now().toString(),
-                                        title: widget.mangaDetails.title ?? '',
-                                        mangaUrl:
-                                            widget.mangaDetails.mangaUrl ?? '');
-                                    int indexOfCurrentMangaIfSubbed =
-                                        subs.indexWhere((element) =>
-                                            element.mangaUrl ==
-                                            widget.mangaDetails.mangaUrl);
-                                    if (indexOfCurrentMangaIfSubbed != -1) {
-                                      getItInstance<SnackbarServiceImpl>()
-                                          .showSnack(
-                                        context,
-                                        "${widget.mangaDetails.title} has been removed from subscriptions.",
-                                      );
-                                      subs.removeWhere((element) =>
-                                          element.mangaUrl ==
-                                          widget.mangaDetails.mangaUrl);
-                                      context.read<SubsCubit>().setSubs(subs);
-                                    } else {
-                                      getItInstance<SnackbarServiceImpl>()
-                                          .showSnack(
-                                        context,
-                                        "${widget.mangaDetails.title} has been added to subscriptions.",
-                                      );
-                                      if (!context
-                                          .read<SettingsCubit>()
-                                          .state
-                                          .settings
-                                          .subscribedNotifications) {
-                                        getItInstance<SnackbarServiceImpl>()
-                                            .showSnack(
-                                          context,
-                                          "You will be not notified when ${widget.mangaDetails.title} updates. Enable subscription notifications in settings then resubscribe.",
-                                        );
-                                      } else {
-                                        getItInstance<SnackbarServiceImpl>()
-                                            .showSnack(
-                                          context,
-                                          "You will be  notified when ${widget.mangaDetails.title} updates. To disable subscription notifications turn it off in settings.",
-                                        );
-                                      }
-                                      context
-                                          .read<SubsCubit>()
-                                          .setSubs([...subs, newSub]);
-                                    }
-                                    await getItInstance<GQLRawApiServiceImpl>()
-                                        .subscribe(
-                                            widget.mangaDetails.title ?? '');
-                                    await dbInstance
-                                        .updateOrInsertSubscription(newSub);
-                                  },
-                                  child: BlocBuilder<SubsCubit, SubsState>(
-                                      builder: (context, subsState) {
-                                    int indexOfCurrentMangaIfSubbed =
-                                        subsState.subs.indexWhere((element) =>
-                                            element.mangaUrl ==
-                                            widget.mangaDetails.mangaUrl);
-                                    return Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: indexOfCurrentMangaIfSubbed != -1
-                                          ? Container(
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          Sizes.dimen_10.sp),
-                                                  color: Colors.white),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  'UNSUBSCRIBE',
-                                                  style: TextStyle(
-                                                      fontSize:
-                                                          Sizes.dimen_10.sp,
-                                                      color: AppColor.vulcan,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ),
-                                            )
-                                          : Container(
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          Sizes.dimen_10.sp),
-                                                  color: Colors.white),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  'SUBSCRIBE',
-                                                  style: TextStyle(
-                                                      fontSize:
-                                                          Sizes.dimen_10.sp,
-                                                      color: AppColor.vulcan,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ),
-                                            ),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverAppBar(
+                      expandedHeight: ScreenUtil.screenHeight / 3,
+                      automaticallyImplyLeading: false,
+                      leading: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
+                      ),
+                      title: Text(
+                        widget.mangaDetails.title ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: ThemeText.whiteBodyText2?.copyWith(
+                            fontSize: Sizes.dimen_20.sp,
+                            fontWeight: FontWeight.w900),
+                      ),
+                      systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+                          statusBarIconBrightness: getBrightNess(),
+                          statusBarColor: getOverlayColor()),
+                      actions: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            ScaleAnim(
+                              onTap: () async {
+                                final DatabaseHelper dbInstance =
+                                    getItInstance<DatabaseHelper>();
+                                List<Subscribe> subs =
+                                    context.read<SubsCubit>().state.subs;
+                                Subscribe newSub = Subscribe(
+                                    imageUrl:
+                                        widget.mangaDetails.imageUrl ?? '',
+                                    dateSubscribed: DateTime.now().toString(),
+                                    title: widget.mangaDetails.title ?? '',
+                                    mangaUrl:
+                                        widget.mangaDetails.mangaUrl ?? '');
+                                int indexOfCurrentMangaIfSubbed =
+                                    subs.indexWhere((element) =>
+                                        element.mangaUrl ==
+                                        widget.mangaDetails.mangaUrl);
+                                if (indexOfCurrentMangaIfSubbed != -1) {
+                                  getItInstance<SnackbarServiceImpl>()
+                                      .showSnack(
+                                    context,
+                                    "${widget.mangaDetails.title} has been removed from subscriptions.",
+                                  );
+                                  subs.removeWhere((element) =>
+                                      element.mangaUrl ==
+                                      widget.mangaDetails.mangaUrl);
+                                  context.read<SubsCubit>().setSubs(subs);
+                                } else {
+                                  getItInstance<SnackbarServiceImpl>()
+                                      .showSnack(
+                                    context,
+                                    "${widget.mangaDetails.title} has been added to subscriptions.",
+                                  );
+                                  if (!context
+                                      .read<SettingsCubit>()
+                                      .state
+                                      .settings
+                                      .subscribedNotifications) {
+                                    getItInstance<SnackbarServiceImpl>()
+                                        .showSnack(
+                                      context,
+                                      "You will be not notified when ${widget.mangaDetails.title} updates. Enable subscription notifications in settings then resubscribe.",
                                     );
-                                  }),
-                                ),
-                                ScaleAnim(
-                                  onTap: () {
-                                    String? userDetails =
-                                        getItInstance<SharedServiceImpl>()
-                                            .getGoogleDetails();
-                                    if (userDetails != null) {
-                                      Navigator.pushNamed(
-                                          context, Routes.addToCollection,
-                                          arguments: MangaInfoWithDatum(
-                                              mangaInfo: mangaInfo,
-                                              datum: widget.mangaDetails));
-                                    } else {
-                                      showModalBottomSheet(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ),
-                                          context: context,
-                                          backgroundColor: context.isLightMode()
-                                              ? Colors.white
-                                              : AppColor.vulcan,
-                                          isScrollControlled: true,
-                                          builder: (context) {
-                                            return Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 10.0),
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  ElevatedButton(
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      foregroundColor:
-                                                          context.isLightMode()
-                                                              ? Colors.white
-                                                              : Colors.black,
-                                                      backgroundColor: context
-                                                              .isLightMode()
+                                  } else {
+                                    getItInstance<SnackbarServiceImpl>()
+                                        .showSnack(
+                                      context,
+                                      "You will be  notified when ${widget.mangaDetails.title} updates. To disable subscription notifications turn it off in settings.",
+                                    );
+                                  }
+                                  context
+                                      .read<SubsCubit>()
+                                      .setSubs([...subs, newSub]);
+                                }
+                                await getItInstance<GQLRawApiServiceImpl>()
+                                    .subscribe(widget.mangaDetails.title ?? '');
+                                await dbInstance
+                                    .updateOrInsertSubscription(newSub);
+                              },
+                              child: BlocBuilder<SubsCubit, SubsState>(
+                                  builder: (context, subsState) {
+                                int indexOfCurrentMangaIfSubbed = subsState.subs
+                                    .indexWhere((element) =>
+                                        element.mangaUrl ==
+                                        widget.mangaDetails.mangaUrl);
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(
+                                            Sizes.dimen_10.sp),
+                                        color: Colors.white),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        indexOfCurrentMangaIfSubbed != -1
+                                            ? 'UNSUBSCRIBE'
+                                            : 'SUBSCRIBE',
+                                        style: TextStyle(
+                                            fontSize: Sizes.dimen_10.sp,
+                                            color: AppColor.vulcan,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                            ScaleAnim(
+                              onTap: () {
+                                String? userDetails =
+                                    getItInstance<SharedServiceImpl>()
+                                        .getGoogleDetails();
+                                if (userDetails != null) {
+                                  Navigator.pushNamed(
+                                      context, Routes.addToCollection,
+                                      arguments: MangaInfoWithDatum(
+                                          mangaInfo: mangaInfo,
+                                          datum: widget.mangaDetails));
+                                } else {
+                                  showModalBottomSheet(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                      ),
+                                      context: context,
+                                      backgroundColor: context.isLightMode()
+                                          ? Colors.white
+                                          : AppColor.vulcan,
+                                      isScrollControlled: true,
+                                      builder: (context) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10.0),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  foregroundColor:
+                                                      context.isLightMode()
+                                                          ? Colors.white
+                                                          : Colors.black,
+                                                  backgroundColor:
+                                                      context.isLightMode()
                                                           ? AppColor.vulcan
-                                                          : Colors
-                                                              .white, // foreground
+                                                          : Colors.white,
+                                                ),
+                                                onPressed: () async {
+                                                  print(
+                                                      "Google Sign-In temporarily disabled");
+                                                },
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                        "Sign Up with Google to continue",
+                                                        style: TextStyle(
+                                                            fontSize: Sizes
+                                                                .dimen_18.sp)),
+                                                    SizedBox(
+                                                      width: Sizes.dimen_10.w,
                                                     ),
-                                                    onPressed: () async {
-                                                      // TODO: Fix GoogleSignIn implementation
-                                                      // GoogleSignInAccount?
-                                                      //     googleSignInAccount =
-                                                      //     await getItInstance<
-                                                      //             GoogleSignIn>()
-                                                      //         .signIn();
-                                                      // GoogleSignInAuthentication
-                                                      //     googleSignInAuthentication =
-                                                      //     await googleSignInAccount!
-                                                      //         .authentication;
-                                                      // AuthCredential
-                                                      //     credential =
-                                                      //     GoogleAuthProvider
-                                                      //         .credential(
-                                                      //   accessToken:
-                                                      //       googleSignInAuthentication
-                                                      //           .accessToken,
-                                                      //   idToken:
-                                                      //       googleSignInAuthentication
-                                                      //           .idToken,
-                                                      // );
-                                                      print(
-                                                          "Google Sign-In temporarily disabled");
-                                                      /*
-                                                      UserCredential
-                                                          authResult =
-                                                          await getItInstance<
-                                                                  FirebaseAuth>()
-                                                              .signInWithCredential(
-                                                                  credential);
-                                                      Map<String, dynamic>
-                                                          userData = {
-                                                        "name": authResult
-                                                            .user!.displayName,
-                                                        "email": authResult
-                                                            .user!.email,
-                                                        "profilePicture":
-                                                            authResult
-                                                                .user!.photoURL,
-                                                        "pro": "false"
-                                                      };
-                                                      await getItInstance<
-                                                              SharedServiceImpl>()
-                                                          .saveUserDetails(
-                                                              jsonEncode(
-                                                                  userData));
-                                                      getItInstance<
-                                                              SnackbarServiceImpl>()
-                                                          .showSnack(context,
-                                                              "Sign up successful. A new collection tab has been unlocked. Check it out!");
-                                                      Navigator.pop(context);
-                                                      print(authResult
-                                                          .toString());
-                                                      context
-                                                          .read<
-                                                              ShowCollectionCubit>()
-                                                          .setShowCollection(
-                                                              true);
-                                                      context
-                                                          .read<
-                                                              UserFromGoogleCubit>()
-                                                          .setUser(UserFromGoogle
-                                                              .fromMap(
-                                                                  userData));
-                                                      firestore
-                                                          .FirebaseFirestore
-                                                          firesStoreInstance =
-                                                          getItInstance<
-                                                              firestore
-                                                              .FirebaseFirestore>();
-                                                      await firesStoreInstance
-                                                          .collection(
-                                                              CollectionConsts
-                                                                  .users)
-                                                          .doc(authResult
-                                                              .user!.uid)
-                                                          .set({
-                                                        "details":
-                                                            jsonEncode(userData)
-                                                      });
-                                                      await getItInstance<
-                                                              SharedServiceImpl>()
-                                                          .setFirestoreUserId(
-                                                              authResult
-                                                                  .user!.uid);
-                                                      */
-                                                    },
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Text(
-                                                            "Sign Up with Google to continue",
-                                                            style: TextStyle(
-                                                                fontSize: Sizes
-                                                                    .dimen_18
-                                                                    .sp)),
-                                                        SizedBox(
-                                                          width:
-                                                              Sizes.dimen_10.w,
-                                                        ),
-                                                        Container(
-                                                          width:
-                                                              Sizes.dimen_50.w,
-                                                          height:
-                                                              Sizes.dimen_50.h,
-                                                          decoration: BoxDecoration(
-                                                              shape: BoxShape
-                                                                  .circle,
-                                                              image: DecorationImage(
-                                                                  image: CachedNetworkImageProvider(
-                                                                      "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png"))),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    height: Sizes.dimen_30,
-                                                  ),
-                                                  RichText(
-                                                    text: TextSpan(children: [
-                                                      TextSpan(
-                                                          text:
-                                                              "By continuing you agree to the ",
-                                                          style: TextStyle(
-                                                              color: context
-                                                                      .isLightMode()
-                                                                  ? Colors.black
-                                                                  : Colors
-                                                                      .white)),
-                                                      TextSpan(
-                                                          text:
-                                                              "terms and conditions ",
-                                                          recognizer:
-                                                              TapGestureRecognizer()
-                                                                ..onTap =
-                                                                    () async {
-                                                                  Uri url = Uri.parse(
-                                                                      AppPolicies
-                                                                          .TERMS_LINK);
-                                                                  if (await canLaunchUrl(
-                                                                      url)) {
-                                                                    await launchUrl(
-                                                                        url);
-                                                                  } else {
-                                                                    print(
-                                                                        "Cannot launch");
-                                                                  }
-                                                                },
-                                                          mouseCursor:
-                                                              SystemMouseCursors
-                                                                  .precise,
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: AppColor
-                                                                  .violet)),
-                                                      TextSpan(
-                                                          text:
-                                                              "and acknowledge that you have read the ",
-                                                          style: TextStyle(
-                                                              color: context
-                                                                      .isLightMode()
-                                                                  ? Colors.black
-                                                                  : Colors
-                                                                      .white)),
-                                                      TextSpan(
-                                                          text:
-                                                              "privacy policy.",
-                                                          recognizer:
-                                                              TapGestureRecognizer()
-                                                                ..onTap =
-                                                                    () async {
-                                                                  Uri url = Uri.parse(
-                                                                      AppPolicies
-                                                                          .PRIVACY_LINK);
-                                                                  if (await canLaunchUrl(
-                                                                      url)) {
-                                                                    await launchUrl(
-                                                                        url);
-                                                                  } else {
-                                                                    print(
-                                                                        "Cannot launch");
-                                                                  }
-                                                                },
-                                                          mouseCursor:
-                                                              SystemMouseCursors
-                                                                  .precise,
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: AppColor
-                                                                  .violet)),
-                                                    ]),
-                                                  )
-                                                ],
+                                                    Container(
+                                                      width: Sizes.dimen_50.w,
+                                                      height: Sizes.dimen_50.h,
+                                                      decoration: BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          image: DecorationImage(
+                                                              image: CachedNetworkImageProvider(
+                                                                  "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png"))),
+                                                    )
+                                                  ],
+                                                ),
                                               ),
-                                            );
-                                          });
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: callSvg("assets/web_comic_logo.svg",
-                                        width: Sizes.dimen_18.w,
-                                        height: Sizes.dimen_18.h),
+                                              SizedBox(height: Sizes.dimen_30),
+                                              RichText(
+                                                text: TextSpan(children: [
+                                                  TextSpan(
+                                                      text:
+                                                          "By continuing you agree to the ",
+                                                      style: TextStyle(
+                                                          color: context
+                                                                  .isLightMode()
+                                                              ? Colors.black
+                                                              : Colors.white)),
+                                                  TextSpan(
+                                                      text:
+                                                          "terms and conditions ",
+                                                      recognizer:
+                                                          TapGestureRecognizer()
+                                                            ..onTap = () async {
+                                                              Uri url = Uri.parse(
+                                                                  AppPolicies
+                                                                      .TERMS_LINK);
+                                                              if (await canLaunchUrl(
+                                                                  url)) {
+                                                                await launchUrl(
+                                                                    url);
+                                                              } else {
+                                                                print(
+                                                                    "Cannot launch");
+                                                              }
+                                                            },
+                                                      mouseCursor:
+                                                          SystemMouseCursors
+                                                              .precise,
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color:
+                                                              AppColor.violet)),
+                                                  TextSpan(
+                                                      text:
+                                                          "and acknowledge that you have read the ",
+                                                      style: TextStyle(
+                                                          color: context
+                                                                  .isLightMode()
+                                                              ? Colors.black
+                                                              : Colors.white)),
+                                                  TextSpan(
+                                                      text: "privacy policy.",
+                                                      recognizer:
+                                                          TapGestureRecognizer()
+                                                            ..onTap = () async {
+                                                              Uri url = Uri.parse(
+                                                                  AppPolicies
+                                                                      .PRIVACY_LINK);
+                                                              if (await canLaunchUrl(
+                                                                  url)) {
+                                                                await launchUrl(
+                                                                    url);
+                                                              } else {
+                                                                print(
+                                                                    "Cannot launch");
+                                                              }
+                                                            },
+                                                      mouseCursor:
+                                                          SystemMouseCursors
+                                                              .precise,
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color:
+                                                              AppColor.violet)),
+                                                ]),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      });
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: callSvg("assets/web_comic_logo.svg",
+                                    width: Sizes.dimen_18.w,
+                                    height: Sizes.dimen_18.h),
+                              ),
+                            ),
+                            ScaleAnim(
+                              onTap: () {
+                                Navigator.pushNamed(context, Routes.summary,
+                                    arguments: mangaInfo);
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(Icons.info, color: Colors.white),
+                              ),
+                            ),
+                            ScaleAnim(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                    context, Routes.downloadView,
+                                    arguments: MangaInformationForDownload(
+                                        mangaDetails: widget.mangaDetails,
+                                        chapterList:
+                                            mangaInfo!.data.chapterList,
+                                        colorPalette: _imageAndColor != null
+                                            ? _imageAndColor!.palette
+                                            : PaletteGenerator.fromColors([])));
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child:
+                                    Icon(Icons.download, color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                      elevation: 0.0,
+                      pinned: true,
+                      backgroundColor: Colors.transparent,
+                      flexibleSpace: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Stack(
+                            children: [
+                              Positioned.fill(
+                                child: CachedNetworkImage(
+                                  imageUrl: widget.mangaDetails.imageUrl ?? '',
+                                  fit: BoxFit.cover,
+                                  color: Colors.black.withOpacity(0.5),
+                                  colorBlendMode: BlendMode.darken,
+                                ),
+                              ),
+                              // Optional gradient overlay for nicer look
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  height: 120,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                      colors: [
+                                        Colors.black54,
+                                        Colors.transparent,
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                ScaleAnim(
-                                  onTap: () {
-                                    Navigator.pushNamed(context, Routes.summary,
-                                        arguments: mangaInfo);
-                                  },
-                                  child: Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child:
-                                        Icon(Icons.info, color: Colors.white),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+
+                    // Content section
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title and author
+                            Text(
+                              widget.mangaDetails.title ?? '',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.w900),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(mi.data.author,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(color: Colors.grey)),
+                            const SizedBox(height: 12),
+                            // Genres chips
+                            if (mi.data.genres.isNotEmpty)
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: mi.data.genres
+                                    .map((g) => Chip(
+                                          label: Text(g.genre),
+                                          backgroundColor: context.isLightMode()
+                                              ? Colors.grey.shade200
+                                              : Colors.white10,
+                                        ))
+                                    .toList(),
+                              ),
+                            SizedBox(height: Sizes.dimen_12.h),
+                            // Stats
+                            Row(
+                              children: [
+                                _InfoStat(
+                                    icon: Icons.menu_book_rounded,
+                                    label: 'Chapters',
+                                    value: mi.data.chapterNo),
+                                const SizedBox(width: 12),
+                                _InfoStat(
+                                    icon: Icons.visibility_rounded,
+                                    label: 'Views',
+                                    value: mi.data.views),
+                                const SizedBox(width: 12),
+                                _InfoStat(
+                                    icon: Icons.schedule_rounded,
+                                    label: 'Status',
+                                    value: mi.data.status),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            // Actions
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                          context, Routes.summary,
+                                          arguments: mi);
+                                    },
+                                    icon:
+                                        const Icon(Icons.info_outline_rounded),
+                                    label: const Text('Summary'),
                                   ),
                                 ),
-                                ScaleAnim(
-                                  onTap: () {
-                                    // Download
-                                    Navigator.pushNamed(
-                                        context, Routes.downloadView,
-                                        arguments: MangaInformationForDownload(
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                          context, Routes.downloadView,
+                                          arguments:
+                                              MangaInformationForDownload(
                                             mangaDetails: widget.mangaDetails,
-                                            chapterList:
-                                                mangaInfo!.data.chapterList,
+                                            chapterList: mi.data.chapterList,
                                             colorPalette: _imageAndColor != null
                                                 ? _imageAndColor!.palette
                                                 : PaletteGenerator.fromColors(
-                                                    [])));
-                                  },
-                                  child: Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Icon(Icons.download,
-                                        color: Colors.white),
+                                                    []),
+                                          ));
+                                    },
+                                    icon: const Icon(Icons.download_rounded),
+                                    label: const Text('Download'),
                                   ),
                                 ),
                               ],
-                            )
+                            ),
+                            const SizedBox(height: 16),
+                            Text('Summary',
+                                style: TextStyle(
+                                    fontSize: Sizes.dimen_18.sp,
+                                    fontWeight: FontWeight.w900)),
+                            const SizedBox(height: 6),
+                            Text(
+                              mi.data.description.trim(),
+                              textAlign: TextAlign.justify,
+                            ),
+                            const SizedBox(height: 16),
+                            Text('Chapters',
+                                style: TextStyle(
+                                    fontSize: Sizes.dimen_18.sp,
+                                    fontWeight: FontWeight.w900)),
                           ],
-                          elevation: 0.0,
-                          pinned: true,
-                          backgroundColor: Colors.transparent,
-                          // floating: true,
-                          // expandedHeight: Sizes.dimen_140.h,
-                          flexibleSpace:
-                              LayoutBuilder(builder: (context, constraints) {
-                            // print(constraints.biggest.height);
-                            // if(constraints.biggest.height == Sizes.dimen_128){
-                            //    title.value = widget.mangaDetails.title!;
-                            // } else {
-                            //   title.value = '';
-                            // }
-                            return Stack(
-// alignment: Alignment.center,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: CachedNetworkImage(
-                                          imageUrl:
-                                              widget.mangaDetails.imageUrl ??
-                                                  '',
-                                          fit: BoxFit.fitWidth,
-                                          color: Colors.black.withOpacity(0.7),
-                                          colorBlendMode: BlendMode.darken),
-                                    ),
-                                  ],
-                                ),
-                                constraints.biggest.height >=
-                                        ScreenUtil.screenHeight / 3 -
-                                            kToolbarHeight
-                                    ? Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Container(
-                                          padding: EdgeInsets.only(
-                                            left: Sizes.dimen_14.w,
-                                          ),
-                                          width: ScreenUtil.screenWidth / 2,
-                                          child: Wrap(
-                                            children: [
-                                              Text(
-                                                widget.mangaDetails.title ?? "",
-                                                style: ThemeText.whiteBodyText2
-                                                    ?.copyWith(
-                                                        fontSize:
-                                                            Sizes.dimen_20.sp,
-                                                        fontWeight:
-                                                            FontWeight.w900),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    : Container(),
-                                // constraints.biggest.height >=
-                                //         ScreenUtil.screenHeight / 3 -
-                                //             kToolbarHeight
-                                //     ? Positioned(
-                                //         top: Sizes.dimen_70.h,
-                                //         left: Sizes.dimen_14.w,
-                                //         child: Container(
-                                //           width: ScreenUtil.screenWidth - 10,
-                                //           child: Wrap(
-                                //             clipBehavior: Clip.hardEdge,
-                                //             children: [
-                                //               Text(
-                                //                 mangaInfo!.data.description
-                                //                             .trim()
-                                //                             .length >
-                                //                         300
-                                //                     ? mangaInfo!
-                                //                             .data.description
-                                //                             .trim()
-                                //                             .substring(
-                                //                                 0, 100) +
-                                //                         "..."
-                                //                     : mangaInfo!
-                                //                         .data.description
-                                //                         .trim(),
-                                //                 style: TextStyle(
-                                //                     color: Colors.white),
-                                //               ),
-                                //             ],
-                                //           ),
-                                //         ))
-                                //     : Container(),
-                              ],
-                            );
-                          }),
                         ),
-                      ];
-                    },
-                    body: TabBarView(
-                      children: [
-                        // ABOUT TAB
-                        SingleChildScrollView(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Genres chips
-                              if (mi.data.genres.isNotEmpty)
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: mi.data.genres
-                                      .map((g) => Chip(
-                                            label: Text(g.genre),
-                                            backgroundColor:
-                                                context.isLightMode()
-                                                    ? Colors.grey.shade200
-                                                    : Colors.white10,
-                                          ))
-                                      .toList(),
-                                ),
-                              SizedBox(height: Sizes.dimen_12.h),
-                              // Stats
-                              Row(
-                                children: [
-                                  _InfoStat(
-                                      icon: Icons.menu_book_rounded,
-                                      label: 'Chapters',
-                                      value: mi.data.chapterNo),
-                                  const SizedBox(width: 12),
-                                  _InfoStat(
-                                      icon: Icons.visibility_rounded,
-                                      label: 'Views',
-                                      value: mi.data.views),
-                                  const SizedBox(width: 12),
-                                  _InfoStat(
-                                      icon: Icons.schedule_rounded,
-                                      label: 'Status',
-                                      value: mi.data.status),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Actions
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        Navigator.pushNamed(
-                                            context, Routes.summary,
-                                            arguments: mi);
-                                      },
-                                      icon: const Icon(
-                                          Icons.info_outline_rounded),
-                                      label: const Text('Summary'),
+                      ),
+                    ),
+
+                    // Chapters list
+                    BlocBuilder<SettingsCubit, SettingsState>(
+                      builder: (context, settingsBloc) {
+                        return SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            childCount: mi.data.chapterList.length,
+                            (ctx, index) {
+                              return BlocBuilder<ChaptersReadCubit,
+                                  ChaptersReadState>(
+                                builder: (context, chapterReadState) {
+                                  final isRead = chapterReadState.chaptersRead
+                                          .indexWhere((element) =>
+                                              element.chapterUrl ==
+                                              mi.data.chapterList[index]
+                                                  .chapterUrl) !=
+                                      -1;
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      color: isRead
+                                          ? getTileSelectedColor(
+                                              settingsBloc.settings
+                                                  .drawChapterColorsFromImage,
+                                              context)
+                                          : Colors.transparent,
                                     ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: OutlinedButton.icon(
-                                      onPressed: () {
-                                        Navigator.pushNamed(
-                                            context, Routes.downloadView,
-                                            arguments:
-                                                MangaInformationForDownload(
-                                              mangaDetails: widget.mangaDetails,
-                                              chapterList: mi.data.chapterList,
-                                              colorPalette: _imageAndColor !=
-                                                      null
-                                                  ? _imageAndColor!.palette
-                                                  : PaletteGenerator.fromColors(
-                                                      []),
-                                            ));
+                                    child: ListTile(
+                                      contentPadding:
+                                          EdgeInsets.only(left: Sizes.dimen_4),
+                                      isThreeLine: true,
+                                      onTap: () async {
+                                        final DatabaseHelper dbInstance =
+                                            getItInstance<DatabaseHelper>();
+                                        ChapterRead newChapter = ChapterRead(
+                                            mangaUrl:
+                                                widget.mangaDetails.mangaUrl ??
+                                                    'none',
+                                            chapterUrl: mi.data
+                                                .chapterList[index].chapterUrl);
+                                        RecentlyRead recentlyRead =
+                                            RecentlyRead(
+                                                title:
+                                                    widget.mangaDetails.title ??
+                                                        '',
+                                                mangaUrl: widget.mangaDetails
+                                                        .mangaUrl ??
+                                                    '',
+                                                imageUrl: widget.mangaDetails
+                                                        .imageUrl ??
+                                                    "",
+                                                chapterUrl: mi
+                                                    .data
+                                                    .chapterList[index]
+                                                    .chapterUrl,
+                                                chapterTitle: mi
+                                                    .data
+                                                    .chapterList[index]
+                                                    .chapterTitle,
+                                                mostRecentReadDate:
+                                                    DateTime.now().toString());
+                                        List<RecentlyRead> recents = context
+                                            .read<RecentsCubit>()
+                                            .state
+                                            .recents;
+                                        List<ChapterRead> chaptersRead = context
+                                            .read<ChaptersReadCubit>()
+                                            .state
+                                            .chaptersRead;
+                                        List<RecentlyRead> withoutCurrentRead =
+                                            recents
+                                                .where((element) =>
+                                                    element.mangaUrl !=
+                                                    recentlyRead.mangaUrl)
+                                                .toList();
+                                        List<ChapterRead>
+                                            withoutCurrentChapter = chaptersRead
+                                                .where((element) =>
+                                                    element.chapterUrl !=
+                                                    newChapter.chapterUrl)
+                                                .toList();
+
+                                        context
+                                            .read<RecentsCubit>()
+                                            .setResults([
+                                          ...withoutCurrentRead,
+                                          recentlyRead
+                                        ]);
+                                        context
+                                            .read<ChaptersReadCubit>()
+                                            .setResults([
+                                          ...withoutCurrentChapter,
+                                          newChapter
+                                        ]);
+                                        await dbInstance
+                                            .updateOrInsertChapterRead(
+                                                newChapter);
+
+                                        await dbInstance
+                                            .updateOrInsertRecentlyRead(
+                                                recentlyRead);
+                                        await Navigator.pushNamed(
+                                            context, Routes.mangaReader,
+                                            arguments: ChapterList(
+                                                mangaImage:
+                                                    widget.mangaDetails.imageUrl ??
+                                                        '',
+                                                mangaTitle:
+                                                    widget.mangaDetails.title ??
+                                                        '',
+                                                mangaUrl:
+                                                    widget.mangaDetails.mangaUrl ??
+                                                        '',
+                                                chapterUrl: mi
+                                                    .data
+                                                    .chapterList[index]
+                                                    .chapterUrl,
+                                                chapterTitle: mi
+                                                    .data
+                                                    .chapterList[index]
+                                                    .chapterTitle,
+                                                dateUploaded: mi
+                                                    .data
+                                                    .chapterList[index]
+                                                    .dateUploaded));
                                       },
-                                      icon: const Icon(Icons.download_rounded),
-                                      label: const Text('Download'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Description
-                              Text('Summary',
-                                  style: TextStyle(
-                                      fontSize: Sizes.dimen_18.sp,
-                                      fontWeight: FontWeight.w900)),
-                              const SizedBox(height: 6),
-                              Text(
-                                mi.data.description.trim(),
-                                textAlign: TextAlign.justify,
-                              ),
-                              const SizedBox(height: 16),
-                              Text('Author',
-                                  style: TextStyle(
-                                      fontSize: Sizes.dimen_18.sp,
-                                      fontWeight: FontWeight.w900)),
-                              const SizedBox(height: 6),
-                              Text(mi.data.author),
-                            ],
-                          ),
-                        ),
-                        BlocBuilder<SettingsCubit, SettingsState>(
-                            builder: (context, settingsBloc) {
-                          return Container(
-                            // color: getTileDefaultColor(settingsBloc.settings.drawChapterColorsFromImage, context),
-                            child: ListView.builder(
-                                padding: EdgeInsets.all(0.0),
-                                itemCount: result.isLoading
-                                    ? 1
-                                    : mangaInfo != null
-                                        ? mangaInfo.data.chapterList.length
-                                        : 20,
-                                itemBuilder: (ctx, index) {
-                                  if (result.hasException) {
-                                    return Text(result.exception.toString());
-                                  }
-
-                                  if (result.isLoading) {
-                                    return const ListTile(
-                                      title: SizedBox(
-                                          height: 16,
-                                          child: ShimmerBox(height: 16)),
-                                      subtitle: SizedBox(
-                                          height: 12,
-                                          child: ShimmerBox(
-                                              height: 12, width: 120)),
-                                      leading:
-                                          ShimmerBox(width: 70, height: 50),
-                                    );
-                                  }
-                                  return BlocBuilder<ChaptersReadCubit,
-                                          ChaptersReadState>(
-                                      builder: (context, chapterReadState) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                          color: chapterReadState.chaptersRead
-                                                      .indexWhere((element) =>
-                                                          element.chapterUrl ==
-                                                          mangaInfo!
-                                                              .data
-                                                              .chapterList[
-                                                                  index]
-                                                              .chapterUrl) !=
-                                                  -1
-                                              ? getTileSelectedColor(
-                                                  settingsBloc.settings
-                                                      .drawChapterColorsFromImage,
-                                                  context)
-                                              : Colors.transparent),
-                                      child: ListTile(
-                                        contentPadding: EdgeInsets.only(
-                                            left: Sizes.dimen_4),
-                                        isThreeLine: true,
-                                        onTap: () async {
-                                          final DatabaseHelper dbInstance =
-                                              getItInstance<DatabaseHelper>();
-                                          ChapterRead newChapter = ChapterRead(
-                                              mangaUrl: widget
-                                                      .mangaDetails.mangaUrl ??
-                                                  'none',
-                                              chapterUrl: mangaInfo!
-                                                  .data
-                                                  .chapterList[index]
-                                                  .chapterUrl);
-                                          RecentlyRead recentlyRead =
-                                              RecentlyRead(
-                                                  title: widget
-                                                          .mangaDetails.title ??
-                                                      '',
-                                                  mangaUrl: widget.mangaDetails
-                                                          .mangaUrl ??
-                                                      '',
-                                                  imageUrl:
-                                                      widget.mangaDetails
-                                                              .imageUrl ??
-                                                          "",
-                                                  chapterUrl:
-                                                      mangaInfo
-                                                          .data
-                                                          .chapterList[index]
-                                                          .chapterUrl,
-                                                  chapterTitle:
-                                                      mangaInfo
-                                                          .data
-                                                          .chapterList[index]
-                                                          .chapterTitle,
-                                                  mostRecentReadDate:
-                                                      DateTime.now()
-                                                          .toString());
-                                          List<RecentlyRead> recents = context
-                                              .read<RecentsCubit>()
-                                              .state
-                                              .recents;
-                                          List<ChapterRead> chaptersRead =
-                                              context
-                                                  .read<ChaptersReadCubit>()
-                                                  .state
-                                                  .chaptersRead;
-                                          List<RecentlyRead>
-                                              withoutCurrentRead = recents
-                                                  .where((element) =>
-                                                      element.mangaUrl !=
-                                                      recentlyRead.mangaUrl)
-                                                  .toList();
-                                          List<ChapterRead>
-                                              withoutCurrentChapter =
-                                              chaptersRead
-                                                  .where((element) =>
-                                                      element.chapterUrl !=
-                                                      newChapter.chapterUrl)
-                                                  .toList();
-
-                                          context
-                                              .read<RecentsCubit>()
-                                              .setResults([
-                                            ...withoutCurrentRead,
-                                            recentlyRead
-                                          ]);
-                                          context
-                                              .read<ChaptersReadCubit>()
-                                              .setResults([
-                                            ...withoutCurrentChapter,
-                                            newChapter
-                                          ]);
-                                          await dbInstance
-                                              .updateOrInsertChapterRead(
-                                                  newChapter);
-
-                                          await dbInstance
-                                              .updateOrInsertRecentlyRead(
-                                                  recentlyRead);
-                                          await Navigator.pushNamed(
-                                              context, Routes.mangaReader,
-                                              arguments: ChapterList(
-                                                  mangaImage:
-                                                      widget.mangaDetails.imageUrl ??
-                                                          '',
-                                                  mangaTitle:
-                                                      widget.mangaDetails.title ??
-                                                          '',
-                                                  mangaUrl:
-                                                      widget.mangaDetails.mangaUrl ??
-                                                          '',
-                                                  chapterUrl: mangaInfo
-                                                      .data
-                                                      .chapterList[index]
-                                                      .chapterUrl,
-                                                  chapterTitle: mangaInfo
-                                                      .data
-                                                      .chapterList[index]
-                                                      .chapterTitle,
-                                                  dateUploaded: mangaInfo
-                                                      .data
-                                                      .chapterList[index]
-                                                      .dateUploaded));
-                                        },
-                                        subtitle: Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              0, 16, 0, 0),
-                                          child: Text(
-                                            mangaInfo!.data.chapterList[index]
-                                                .dateUploaded,
-                                            style: TextStyle(
-                                                color: context.isLightMode()
-                                                    ? AppColor.vulcan
-                                                        .withOpacity(0.6)
-                                                    : Color(0xffF4E8C1)),
+                                      subtitle: Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            0, 16, 0, 0),
+                                        child: Text(
+                                          mi.data.chapterList[index]
+                                              .dateUploaded,
+                                          style: TextStyle(
+                                              color: context.isLightMode()
+                                                  ? AppColor.vulcan
+                                                      .withOpacity(0.6)
+                                                  : const Color(0xffF4E8C1)),
+                                        ),
+                                      ),
+                                      leading: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: AspectRatio(
+                                          aspectRatio: 3 / 4,
+                                          child: CachedNetworkImage(
+                                            imageUrl:
+                                                widget.mangaDetails.imageUrl ??
+                                                    '',
+                                            fit: BoxFit.cover,
+                                            placeholder: (_, __) =>
+                                                const ShimmerBox(
+                                                    height: 90, width: 70),
+                                            errorWidget: (_, __, ___) =>
+                                                Container(
+                                                    color:
+                                                        Colors.grey.shade300),
                                           ),
                                         ),
-                                        leading: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          child: AspectRatio(
-                                            aspectRatio: 3 / 4,
-                                            child: CachedNetworkImage(
-                                              imageUrl: widget
-                                                      .mangaDetails.imageUrl ??
-                                                  '',
-                                              fit: BoxFit.cover,
-                                              placeholder: (_, __) =>
-                                                  const ShimmerBox(
-                                                      height: 90, width: 70),
-                                              errorWidget: (_, __, ___) =>
-                                                  Container(
-                                                      color:
-                                                          Colors.grey.shade300),
-                                            ),
-                                          ),
-                                        ),
-                                        title: Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
-                                          child: Text(mangaInfo
-                                                  .data
-                                                  .chapterList[index]
-                                                  .chapterTitle
+                                      ),
+                                      title: Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 8.0),
+                                        child: Text(
+                                          mi.data.chapterList[index].chapterTitle
                                                   .replaceAll("-", " ")
-                                                  .split(" ")[mangaInfo
+                                                  .split(" ")[mi
                                                           .data
                                                           .chapterList[index]
                                                           .chapterTitle
                                                           .split("-")
-                                                          .indexWhere(
-                                                              (element) =>
-                                                                  element ==
-                                                                  "chapter") +
+                                                          .indexWhere((element) =>
+                                                              element ==
+                                                              "chapter") +
                                                       1]
                                                   .replaceFirst("c", "C") +
                                               " " +
-                                              mangaInfo.data.chapterList[index]
-                                                  .chapterTitle
+                                              mi.data.chapterList[index].chapterTitle
                                                   .replaceAll("-", " ")
-                                                  .split(" ")[mangaInfo.data.chapterList[index].chapterTitle.split("-").indexWhere((element) => element == "chapter") + 2]),
+                                                  .split(" ")[mi
+                                                      .data
+                                                      .chapterList[index]
+                                                      .chapterTitle
+                                                      .split("-")
+                                                      .indexWhere(
+                                                          (element) => element == "chapter") +
+                                                  2],
                                         ),
                                       ),
-                                    );
-                                  });
-                                }),
-                          );
-                        }),
-                        Container(
-                          child: GridView.count(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 4.0,
-                            mainAxisSpacing: 4.0,
-                            children: List.generate(
-                                mi.data.recommendations.length, (index) {
-                              return ScaleAnim(
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Recommendations
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
+                        child: Text('Recommended',
+                            style: TextStyle(
+                                fontSize: Sizes.dimen_18.sp,
+                                fontWeight: FontWeight.w900)),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: Sizes.dimen_180 + Sizes.dimen_20,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) {
+                            final rec = mi.data.recommendations[index];
+                            return SizedBox(
+                              width: 140,
+                              child: ScaleAnim(
                                 onTap: () {
                                   Navigator.of(context).pushReplacementNamed(
                                       Routes.mangaInfo,
                                       arguments: newestMMdl.Datum(
-                                          title: mi.data.recommendations[index]
-                                              .title,
-                                          mangaUrl: mi.data
-                                              .recommendations[index].mangaUrl,
-                                          imageUrl: mi
-                                              .data
-                                              .recommendations[index]
-                                              .mangaImage,
-                                          // Use current page's source for recommended items
+                                          title: rec.title,
+                                          mangaUrl: rec.mangaUrl,
+                                          imageUrl: rec.mangaImage,
                                           mangaSource: mi.data.mangaSource));
                                 },
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: Sizes.dimen_120,
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              Sizes.dimen_4),
-                                          child: CachedNetworkImage(
-                                            imageUrl: mi
-                                                .data
-                                                .recommendations[index]
-                                                .mangaImage,
-                                            imageBuilder:
-                                                (context, imageProvider) =>
-                                                    Container(
-                                              decoration: BoxDecoration(
-                                                image: DecorationImage(
-                                                  image: imageProvider,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                            ),
-                                            placeholder: (context, url) =>
-                                                NoAnimationLoading(),
-                                            errorWidget:
-                                                (context, url, error) =>
-                                                    Icon(Icons.error),
-                                          ),
+                                    ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(Sizes.dimen_6),
+                                      child: AspectRatio(
+                                        aspectRatio: 3 / 4,
+                                        child: CachedNetworkImage(
+                                          imageUrl: rec.mangaImage,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) =>
+                                              NoAnimationLoading(),
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons.error),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(
-                                      height: Sizes.dimen_4.h,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 8.0),
-                                      child: Text(
-                                        mi.data.recommendations[index].title
-                                            .trim(),
-                                        maxLines: 1,
-                                        textAlign: TextAlign.start,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: Sizes.dimen_14.sp,
-                                            fontWeight: FontWeight.w700),
-                                      ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      rec.title.trim(),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: Sizes.dimen_14.sp,
+                                          fontWeight: FontWeight.w700),
                                     ),
                                   ],
                                 ),
-                              );
-                            }),
-                          ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: 12),
+                          itemCount: mi.data.recommendations.length,
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  ],
                 ),
               );
             }
