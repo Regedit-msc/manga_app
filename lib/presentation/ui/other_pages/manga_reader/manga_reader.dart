@@ -129,11 +129,42 @@ class _MangaReaderState extends State<MangaReader> {
     final list = data.chapterList ?? [];
     if (list.isEmpty) return null;
     final idx = _findCurrentIndex(data);
-    if (idx == -1) return null;
     final newestFirst = _isNewestFirst(data);
-    final nextIdx = newestFirst ? idx - 1 : idx + 1;
-    if (nextIdx >= 0 && nextIdx < list.length) return list[nextIdx];
-    return null; // no newer chapter
+    if (idx != -1) {
+      final nextIdx = newestFirst ? idx - 1 : idx + 1;
+      if (nextIdx >= 0 && nextIdx < list.length) return list[nextIdx];
+      return null; // no newer chapter
+    }
+
+    // Fallback when current chapter isn't in the list: use numeric compare
+    final currentNum = _parseChapterNumber(data.chapter) ??
+        _parseChapterNumber(_currentChapterUrl);
+    if (currentNum == null) return null;
+    double? candidateNum;
+    int? candidateIdx;
+    for (int i = 0; i < list.length; i++) {
+      final n = _parseChapterNumber(list[i].chapterTitle);
+      if (n == null) continue;
+      // newer = higher chapter number
+      if (n > currentNum) {
+        if (candidateNum == null || n < candidateNum) {
+          candidateNum = n;
+          candidateIdx = i;
+        }
+      }
+    }
+    if (candidateIdx != null) {
+      DebugLogger.logInfo(
+        'Fallback NEXT chose index=$candidateIdx num=$candidateNum for currentNum=$currentNum',
+        category: 'READER_NAV',
+      );
+      return list[candidateIdx];
+    }
+    DebugLogger.logInfo(
+      'Fallback NEXT found no newer chapter for currentNum=$currentNum',
+      category: 'READER_NAV',
+    );
+    return null;
   }
 
   ReaderChapterItem? _getPrevChapter(GetMangaReaderData data) {
@@ -141,11 +172,42 @@ class _MangaReaderState extends State<MangaReader> {
     final list = data.chapterList ?? [];
     if (list.isEmpty) return null;
     final idx = _findCurrentIndex(data);
-    if (idx == -1) return null;
     final newestFirst = _isNewestFirst(data);
-    final prevIdx = newestFirst ? idx + 1 : idx - 1;
-    if (prevIdx >= 0 && prevIdx < list.length) return list[prevIdx];
-    return null; // no older chapter
+    if (idx != -1) {
+      final prevIdx = newestFirst ? idx + 1 : idx - 1;
+      if (prevIdx >= 0 && prevIdx < list.length) return list[prevIdx];
+      return null; // no older chapter
+    }
+
+    // Fallback when current chapter isn't in the list: use numeric compare
+    final currentNum = _parseChapterNumber(data.chapter) ??
+        _parseChapterNumber(_currentChapterUrl);
+    if (currentNum == null) return null;
+    double? candidateNum;
+    int? candidateIdx;
+    for (int i = 0; i < list.length; i++) {
+      final n = _parseChapterNumber(list[i].chapterTitle);
+      if (n == null) continue;
+      // older = lower chapter number
+      if (n < currentNum) {
+        if (candidateNum == null || n > candidateNum) {
+          candidateNum = n;
+          candidateIdx = i;
+        }
+      }
+    }
+    if (candidateIdx != null) {
+      DebugLogger.logInfo(
+        'Fallback PREV chose index=$candidateIdx num=$candidateNum for currentNum=$currentNum',
+        category: 'READER_NAV',
+      );
+      return list[candidateIdx];
+    }
+    DebugLogger.logInfo(
+      'Fallback PREV found no older chapter for currentNum=$currentNum',
+      category: 'READER_NAV',
+    );
+    return null;
   }
 
   // Helper method to safely extract chapter number from string
