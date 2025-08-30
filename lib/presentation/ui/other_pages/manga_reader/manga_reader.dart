@@ -27,6 +27,7 @@ import 'package:webcomic/presentation/ui/loading/loading.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 import 'package:webcomic/data/services/toast/toast_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:webcomic/data/services/debug/debug_logger.dart';
 
 class MangaReader extends StatefulWidget {
   final ChapterList chapterList;
@@ -45,6 +46,8 @@ class _MangaReaderState extends State<MangaReader> {
   final Map<int, TransformationController> _controllers = {};
   late final PageController _pageController;
   bool showAppBar = false;
+  // Track the current chapter URL explicitly to make URL-based matching reliable
+  late String _currentChapterUrl;
 
   // Parse chapter number from strings like "Chapter 12", "Ch. 12.5", "12", "12_extra"
   double? _parseChapterNumber(String raw) {
@@ -57,42 +60,92 @@ class _MangaReaderState extends State<MangaReader> {
     }
   }
 
-  // Find index of current chapter in a chapter list by best-effort numeric compare
+  // Find index of current chapter prioritizing URL match, then title, then numeric compare
   int _findCurrentIndex(GetMangaReaderData data) {
-    final currentNum = _parseChapterNumber(data.chapter);
-    if (data.chapterList == null || data.chapterList!.isEmpty) return -1;
-    // Try perfect title match first
-    final exactIdx = data.chapterList!
-        .indexWhere((e) => e.chapterTitle.trim() == data.chapter.trim());
+    final list = data.chapterList ?? [];
+    if (list.isEmpty) return -1;
+
+    // 1) Try by current URL tracked in state
+    if (_currentChapterUrl.isNotEmpty) {
+      final urlIdx = list.indexWhere((e) => e.chapterUrl == _currentChapterUrl);
+      if (urlIdx != -1) return urlIdx;
+    }
+
+    // 2) Try perfect title match against server-provided current title
+    final exactIdx =
+        list.indexWhere((e) => e.chapterTitle.trim() == data.chapter.trim());
     if (exactIdx != -1) return exactIdx;
 
-    if (currentNum == null) return -1;
-    // Fallback: numeric match
-    for (int i = 0; i < data.chapterList!.length; i++) {
-      final n = _parseChapterNumber(data.chapterList![i].chapterTitle);
-      if (n != null && (n - currentNum).abs() < 1e-9) return i;
+    // 3) Fallback: numeric compare between current chapter title and list items
+    final currentNum = _parseChapterNumber(data.chapter);
+    if (currentNum != null) {
+      for (int i = 0; i < list.length; i++) {
+        final n = _parseChapterNumber(list[i].chapterTitle);
+        if (n != null && (n - currentNum).abs() < 1e-9) return i;
+      }
     }
     return -1;
   }
 
+  // Determine if the list is newest-first (descending numbers) or oldest-first (ascending)
+  bool _isNewestFirst(GetMangaReaderData data) {
+    final list = data.chapterList ?? [];
+    if (list.length < 2) return true; // default to newest-first
+
+    double? firstNum;
+    for (int i = 0; i < list.length; i++) {
+      final n = _parseChapterNumber(list[i].chapterTitle);
+      if (n != null) {
+        if (firstNum == null) {
+          firstNum = n;
+        } else {
+          // Compare the first two numeric chapters we can find in order
+          return firstNum >= n; // true -> descending (newest-first)
+        }
+      }
+    }
+
+    // Fallback: try dates if available (some sources supply date strings)
+    DateTime? _parseDate(String? s) {
+      if (s == null) return null;
+      try {
+        return DateTime.tryParse(s);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    final firstDate = _parseDate(list.first.dateUploaded);
+    final lastDate = _parseDate(list.last.dateUploaded);
+    if (firstDate != null && lastDate != null) {
+      return firstDate.isAfter(lastDate); // true -> first is newer
+    }
+
+    return true; // safe default
+  }
+
   ReaderChapterItem? _getNextChapter(GetMangaReaderData data) {
-    // Assumption: chapterList is sorted descending with newest at index 0
-    if (data.chapterList == null || data.chapterList!.isEmpty) return null;
+    // Next = newer chapter regardless of server list ordering
+    final list = data.chapterList ?? [];
+    if (list.isEmpty) return null;
     final idx = _findCurrentIndex(data);
     if (idx == -1) return null;
-    final nextIdx = idx - 1; // newer chapter (higher number)
-    if (nextIdx >= 0) return data.chapterList![nextIdx];
-    return null; // already at latest
+    final newestFirst = _isNewestFirst(data);
+    final nextIdx = newestFirst ? idx - 1 : idx + 1;
+    if (nextIdx >= 0 && nextIdx < list.length) return list[nextIdx];
+    return null; // no newer chapter
   }
 
   ReaderChapterItem? _getPrevChapter(GetMangaReaderData data) {
-    // Assumption: chapterList is sorted descending with newest at index 0
-    if (data.chapterList == null || data.chapterList!.isEmpty) return null;
+    // Prev = older chapter regardless of server list ordering
+    final list = data.chapterList ?? [];
+    if (list.isEmpty) return null;
     final idx = _findCurrentIndex(data);
     if (idx == -1) return null;
-    final prevIdx = idx + 1; // older chapter (lower number)
-    if (prevIdx < data.chapterList!.length) return data.chapterList![prevIdx];
-    return null; // already at oldest
+    final newestFirst = _isNewestFirst(data);
+    final prevIdx = newestFirst ? idx + 1 : idx - 1;
+    if (prevIdx >= 0 && prevIdx < list.length) return list[prevIdx];
+    return null; // no older chapter
   }
 
   // Helper method to safely extract chapter number from string
@@ -196,6 +249,7 @@ class _MangaReaderState extends State<MangaReader> {
     chapterName.value = widget.chapterList.chapterTitle;
     _pageController = PageController();
     _scrollController.addListener(scrollListener);
+    _currentChapterUrl = widget.chapterList.chapterUrl;
     super.initState();
   }
 
@@ -244,6 +298,10 @@ class _MangaReaderState extends State<MangaReader> {
     String theNextChapterTitle = "",
     dynamic fetchMore,
   }) async {
+    DebugLogger.logInfo(
+      'Navigating to chapter: "$theNextChapterTitle" ($theNextChapterUrl)',
+      category: 'READER_NAV',
+    );
     final DatabaseHelper dbInstance = getItInstance<DatabaseHelper>();
     ChapterRead newChapter = ChapterRead(
         mangaUrl: widget.chapterList.mangaUrl, chapterUrl: theNextChapterUrl);
@@ -256,6 +314,7 @@ class _MangaReaderState extends State<MangaReader> {
         mostRecentReadDate: DateTime.now().toString(),
         mangaSource: widget.chapterList.mangaSource);
     chapterName.value = recentlyRead.chapterTitle;
+    _currentChapterUrl = theNextChapterUrl; // keep URL indexer in sync
     List<RecentlyRead> recents = context.read<RecentsCubit>().state.recents;
     List<ChapterRead> chaptersRead =
         context.read<ChaptersReadCubit>().state.chaptersRead;
@@ -275,6 +334,24 @@ class _MangaReaderState extends State<MangaReader> {
     await fetchMore!(toNewPageOptions(theNextChapterUrl));
     await dbInstance.updateOrInsertChapterRead(newChapter);
     await dbInstance.updateOrInsertRecentlyRead(recentlyRead);
+  }
+
+  void _logChapterTap(String action, GetMangaReaderData data,
+      {ReaderChapterItem? target, String? reason}) {
+    final list = data.chapterList ?? [];
+    final idx = _findCurrentIndex(data);
+    final newestFirst = _isNewestFirst(data);
+    final currentTitle = data.chapter;
+    final currentUrl = _currentChapterUrl;
+    DebugLogger.logInfo(
+      '$action — currentIdx=$idx, listLen=${list.length}, newestFirst=$newestFirst\n'
+      'currentTitle="$currentTitle"\n'
+      'currentUrl=$currentUrl\n'
+      'first="${list.isNotEmpty ? list.first.chapterTitle : ''}" last="${list.isNotEmpty ? list.last.chapterTitle : ''}"\n'
+      '${target != null ? 'targetTitle="${target.chapterTitle}" targetUrl=${target.chapterUrl}' : 'no target'}'
+      '${reason != null ? '\nreason=$reason' : ''}',
+      category: 'READER_NAV',
+    );
   }
 
   Widget checkLast(List<ReaderChapterItem>? chapterList, String chapter,
@@ -359,6 +436,19 @@ class _MangaReaderState extends State<MangaReader> {
               if (mangaToRead != null) {
                 GetMangaReader mangaReader =
                     GetMangaReader.fromMap(mangaToRead);
+                // Log load context: detected order, index, boundaries
+                try {
+                  final idx = _findCurrentIndex(mangaReader.data);
+                  final newestFirst = _isNewestFirst(mangaReader.data);
+                  final list = mangaReader.data.chapterList ?? [];
+                  DebugLogger.logInfo(
+                    'Loaded reader data — idx=$idx, listLen=${list.length}, newestFirst=$newestFirst\n'
+                    'currentTitle="${mangaReader.data.chapter}"\n'
+                    'currentUrl=$_currentChapterUrl\n'
+                    'first="${list.isNotEmpty ? list.first.chapterTitle : ''}" last="${list.isNotEmpty ? list.last.chapterTitle : ''}"',
+                    category: 'READER_NAV',
+                  );
+                } catch (_) {}
                 if (context
                     .read<SettingsCubit>()
                     .state
@@ -465,6 +555,14 @@ class _MangaReaderState extends State<MangaReader> {
                                               onTap: () async {
                                                 final next = _getNextChapter(
                                                     mangaReader.data);
+                                                _logChapterTap(
+                                                  'Next Tap (page end)',
+                                                  mangaReader.data,
+                                                  target: next,
+                                                  reason: next == null
+                                                      ? 'No newer chapter found'
+                                                      : null,
+                                                );
                                                 if (next == null) {
                                                   getItInstance<
                                                           ToastServiceImpl>()
@@ -542,6 +640,14 @@ class _MangaReaderState extends State<MangaReader> {
                                                     final prev =
                                                         _getPrevChapter(
                                                             mangaReader.data);
+                                                    _logChapterTap(
+                                                      'Prev Tap (overlay onTap)',
+                                                      mangaReader.data,
+                                                      target: prev,
+                                                      reason: prev == null
+                                                          ? "You're at the first/oldest chapter"
+                                                          : null,
+                                                    );
                                                     if (prev == null) {
                                                       getItInstance<
                                                               ToastServiceImpl>()
@@ -564,6 +670,14 @@ class _MangaReaderState extends State<MangaReader> {
                                                       final prev =
                                                           _getPrevChapter(
                                                               mangaReader.data);
+                                                      _logChapterTap(
+                                                        'Prev Tap (overlay onPressed)',
+                                                        mangaReader.data,
+                                                        target: prev,
+                                                        reason: prev == null
+                                                            ? "You're at the first/oldest chapter"
+                                                            : null,
+                                                      );
                                                       if (prev == null) {
                                                         getItInstance<
                                                                 ToastServiceImpl>()
@@ -608,6 +722,14 @@ class _MangaReaderState extends State<MangaReader> {
                                                     final next =
                                                         _getNextChapter(
                                                             mangaReader.data);
+                                                    _logChapterTap(
+                                                      'Next Tap (overlay onTap)',
+                                                      mangaReader.data,
+                                                      target: next,
+                                                      reason: next == null
+                                                          ? 'No newer chapter available'
+                                                          : null,
+                                                    );
                                                     if (next == null) {
                                                       getItInstance<
                                                               ToastServiceImpl>()
@@ -630,6 +752,14 @@ class _MangaReaderState extends State<MangaReader> {
                                                       final next =
                                                           _getNextChapter(
                                                               mangaReader.data);
+                                                      _logChapterTap(
+                                                        'Next Tap (overlay onPressed)',
+                                                        mangaReader.data,
+                                                        target: next,
+                                                        reason: next == null
+                                                            ? 'No newer chapter available'
+                                                            : null,
+                                                      );
                                                       if (next == null) {
                                                         getItInstance<
                                                                 ToastServiceImpl>()
