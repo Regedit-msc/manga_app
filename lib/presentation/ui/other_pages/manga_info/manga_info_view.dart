@@ -13,7 +13,6 @@ import 'package:webcomic/data/common/constants/size_constants.dart';
 import 'package:webcomic/data/common/extensions/size_extension.dart';
 import 'package:webcomic/data/common/extensions/theme_extension.dart';
 import 'package:webcomic/data/common/generator/color_generator.dart';
-import 'package:webcomic/data/common/screen_util/screen_util.dart';
 import 'package:webcomic/data/common/svg_util/svg_util.dart';
 import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/local_data_models/chapter_read_model.dart';
@@ -33,7 +32,6 @@ import 'package:webcomic/di/get_it.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/router.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
-import 'package:webcomic/presentation/themes/text.dart';
 import 'package:webcomic/presentation/ui/blocs/chapters_read/chapters_read_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/download/download_cubit.dart';
 import 'package:webcomic/presentation/ui/blocs/recents/recent_manga_bloc.dart';
@@ -212,26 +210,34 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                 child: CustomScrollView(
                   slivers: [
                     SliverAppBar(
-                      expandedHeight: ScreenUtil.screenHeight / 3,
+                      expandedHeight: 80,
+                      floating: false,
+                      pinned: true,
                       automaticallyImplyLeading: false,
                       leading: GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back,
-                          color: Colors.white,
+                          color: context.isLightMode()
+                              ? Colors.black
+                              : Colors.white,
                         ),
                       ),
                       title: Text(
                         widget.mangaDetails.title ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: ThemeText.whiteBodyText2?.copyWith(
-                            fontSize: Sizes.dimen_20.sp,
-                            fontWeight: FontWeight.w900),
+                        style: Theme.of(context)
+                            .appBarTheme
+                            .titleTextStyle
+                            ?.copyWith(
+                                fontSize: Sizes.dimen_18.sp,
+                                fontWeight: FontWeight.w700),
                       ),
-                      systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
-                          statusBarIconBrightness: getBrightNess(),
-                          statusBarColor: getOverlayColor()),
+                      backgroundColor: context.isLightMode()
+                          ? Colors.white
+                          : AppColor.vulcan,
+                      elevation: 1,
                       actions: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -489,7 +495,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                               },
                               child: const Padding(
                                 padding: EdgeInsets.all(8.0),
-                                child: Icon(Icons.info, color: Colors.white),
+                                child:
+                                    Icon(Icons.info, color: AppColor.royalBlue),
                               ),
                             ),
                             ScaleAnim(
@@ -506,164 +513,247 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                               },
                               child: const Padding(
                                 padding: EdgeInsets.all(8.0),
-                                child:
-                                    Icon(Icons.download, color: Colors.white),
+                                child: Icon(Icons.download,
+                                    color: AppColor.royalBlue),
                               ),
                             ),
                           ],
                         )
                       ],
-                      elevation: 0.0,
-                      pinned: true,
-                      backgroundColor: Colors.transparent,
-                      flexibleSpace: LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Stack(
-                            children: [
-                              Positioned.fill(
+                    ),
+
+                    // Main content with image card layout
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Left side - Image card
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
                                 child: CachedNetworkImage(
                                   imageUrl: widget.mangaDetails.imageUrl ?? '',
+                                  width: 120,
+                                  height: 160,
                                   fit: BoxFit.cover,
-                                  color: Colors.black.withOpacity(0.5),
-                                  colorBlendMode: BlendMode.darken,
-                                ),
-                              ),
-                              // Optional gradient overlay for nicer look
-                              Positioned(
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                child: Container(
-                                  height: 120,
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.bottomCenter,
-                                      end: Alignment.topCenter,
-                                      colors: [
-                                        Colors.black54,
-                                        Colors.transparent,
-                                      ],
+                                  placeholder: (context, url) => Container(
+                                    width: 120,
+                                    height: 160,
+                                    color: Colors.grey.shade300,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
                                     ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                    width: 120,
+                                    height: 160,
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(Icons.error),
                                   ),
                                 ),
                               ),
-                            ],
-                          );
-                        },
+                            ),
+
+                            const SizedBox(width: 16),
+
+                            // Right side - Info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Title
+                                  Text(
+                                    widget.mangaDetails.title ?? '',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: Sizes.dimen_20.sp,
+                                        ),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 6),
+
+                                  // Author
+                                  Text(
+                                    mi.data.author,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Colors.grey.shade600,
+                                          fontSize: Sizes.dimen_14.sp,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  // Stats in a compact row
+                                  Row(
+                                    children: [
+                                      _CompactInfoChip(
+                                        icon: Icons.menu_book_rounded,
+                                        label: mi.data.chapterList.length
+                                            .toString(),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      _CompactInfoChip(
+                                        icon: Icons.visibility_rounded,
+                                        label: _formatViews(mi.data.views),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Status chip
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: _getStatusColor(mi.data.status),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      mi.data.status,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
-                    // Content section
+                    // Genres section
+                    if (mi.data.genres.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: mi.data.genres
+                                .map((g) => Chip(
+                                      label: Text(
+                                        g.genre,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                      backgroundColor: context.isLightMode()
+                                          ? Colors.grey.shade200
+                                          : Colors.white10,
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ))
+                                .toList(),
+                          ),
+                        ),
+                      ),
+
+                    // Action buttons
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.all(12.0),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, Routes.summary,
+                                      arguments: mi);
+                                },
+                                icon: const Icon(Icons.info_outline_rounded),
+                                label: const Text('Summary'),
+                                style: ElevatedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, Routes.downloadView,
+                                      arguments: MangaInformationForDownload(
+                                        mangaDetails: widget.mangaDetails,
+                                        chapterList: mi.data.chapterList,
+                                        colorPalette: _imageAndColor != null
+                                            ? _imageAndColor!.palette
+                                            : PaletteGenerator.fromColors([]),
+                                      ));
+                                },
+                                icon: const Icon(Icons.download_rounded),
+                                label: const Text('Download'),
+                                style: OutlinedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Description section
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Title and author
                             Text(
-                              widget.mangaDetails.title ?? '',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.w900),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(mi.data.author,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(color: Colors.grey)),
-                            const SizedBox(height: 12),
-                            // Genres chips
-                            if (mi.data.genres.isNotEmpty)
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: mi.data.genres
-                                    .map((g) => Chip(
-                                          label: Text(g.genre),
-                                          backgroundColor: context.isLightMode()
-                                              ? Colors.grey.shade200
-                                              : Colors.white10,
-                                        ))
-                                    .toList(),
+                              'Summary',
+                              style: TextStyle(
+                                fontSize: Sizes.dimen_18.sp,
+                                fontWeight: FontWeight.w900,
                               ),
-                            SizedBox(height: Sizes.dimen_12.h),
-                            // Stats
-                            Row(
-                              children: [
-                                _InfoStat(
-                                    icon: Icons.menu_book_rounded,
-                                    label: 'Chapters',
-                                    value:
-                                        mi.data.chapterList.length.toString()),
-                                const SizedBox(width: 12),
-                                _InfoStat(
-                                    icon: Icons.visibility_rounded,
-                                    label: 'Views',
-                                    value: mi.data.views),
-                                const SizedBox(width: 12),
-                                _InfoStat(
-                                    icon: Icons.schedule_rounded,
-                                    label: 'Status',
-                                    value: mi.data.status),
-                              ],
                             ),
-                            const SizedBox(height: 16),
-                            // Actions
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.pushNamed(
-                                          context, Routes.summary,
-                                          arguments: mi);
-                                    },
-                                    icon:
-                                        const Icon(Icons.info_outline_rounded),
-                                    label: const Text('Summary'),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {
-                                      Navigator.pushNamed(
-                                          context, Routes.downloadView,
-                                          arguments:
-                                              MangaInformationForDownload(
-                                            mangaDetails: widget.mangaDetails,
-                                            chapterList: mi.data.chapterList,
-                                            colorPalette: _imageAndColor != null
-                                                ? _imageAndColor!.palette
-                                                : PaletteGenerator.fromColors(
-                                                    []),
-                                          ));
-                                    },
-                                    icon: const Icon(Icons.download_rounded),
-                                    label: const Text('Download'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Text('Summary',
-                                style: TextStyle(
-                                    fontSize: Sizes.dimen_18.sp,
-                                    fontWeight: FontWeight.w900)),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             Text(
                               mi.data.description.trim(),
                               textAlign: TextAlign.justify,
+                              style: TextStyle(
+                                fontSize: Sizes.dimen_14.sp,
+                                height: 1.5,
+                              ),
                             ),
-                            const SizedBox(height: 16),
-                            Text('Chapters',
-                                style: TextStyle(
-                                    fontSize: Sizes.dimen_18.sp,
-                                    fontWeight: FontWeight.w900)),
                           ],
+                        ),
+                      ),
+                    ),
+
+                    // Chapters section header
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: Text(
+                          'Chapters',
+                          style: TextStyle(
+                            fontSize: Sizes.dimen_18.sp,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ),
                     ),
@@ -941,46 +1031,75 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
           }),
     );
   }
+
+  // Helper method to format view count
+  String _formatViews(String views) {
+    if (views.isEmpty) return '0';
+
+    // Remove any non-digit characters and parse
+    final numStr = views.replaceAll(RegExp(r'[^\d]'), '');
+    if (numStr.isEmpty) return views;
+
+    final num = int.tryParse(numStr);
+    if (num == null) return views;
+
+    if (num >= 1000000) {
+      return '${(num / 1000000).toStringAsFixed(1)}M';
+    } else if (num >= 1000) {
+      return '${(num / 1000).toStringAsFixed(1)}K';
+    }
+    return num.toString();
+  }
+
+  // Helper method to get status color
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'ongoing':
+        return Colors.blue;
+      case 'hiatus':
+        return Colors.orange;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
 }
 
-class _InfoStat extends StatelessWidget {
+// Compact info chip widget
+class _CompactInfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
-  final String value;
-  const _InfoStat(
-      {required this.icon, required this.label, required this.value});
+
+  const _CompactInfoChip({
+    required this.icon,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        decoration: BoxDecoration(
-          color: isLight ? Colors.grey.shade200 : Colors.white10,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: Theme.of(context).textTheme.labelSmall),
-                  Text(value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontWeight: FontWeight.bold)),
-                ],
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: context.isLightMode() ? Colors.grey.shade200 : Colors.white10,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.grey.shade600),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
