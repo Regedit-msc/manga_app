@@ -25,6 +25,7 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
   importance: Importance.max,
 );
 
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print(message.notification!.title);
 }

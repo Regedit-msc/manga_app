@@ -30,6 +30,15 @@ import 'package:webcomic/presentation/ui/other_pages/categories/category_view.da
 import 'package:webcomic/presentation/ui/other_pages/collections/collections_view.dart';
 import 'package:webcomic/presentation/widgets/app_bottom_nav_bar.dart';
 
+/// flutter_downloader background callback must be a top-level entry-point
+/// so the VM can find it in AOT mode.
+@pragma('vm:entry-point')
+void downloaderCallback(String id, int status, int progress) {
+  final SendPort? send =
+      IsolateNameServer.lookupPortByName('downloader_send_port');
+  send?.send([id, status, progress]);
+}
+
 class BaseView extends StatefulWidget {
   const BaseView({Key? key}) : super(key: key);
 
@@ -94,7 +103,7 @@ class _BaseViewState extends State<BaseView>
 
     context.read<DownloadedCubit>().refresh();
     _bindBackgroundIsolate();
-    FlutterDownloader.registerCallback(downloadCallback);
+    FlutterDownloader.registerCallback(downloaderCallback);
   }
 
   // Bottom nav icon assets moved into AppBottomNavBar widget for cohesion.
@@ -144,20 +153,21 @@ class _BaseViewState extends State<BaseView>
       return;
     }
     _port.listen((dynamic data) {
-      String id = data[0];
-      DownloadTaskStatus status = data[1];
-      int progress = data[2];
+      final String id = data[0] as String;
+      final int rawStatus = data[1] is int ? data[1] as int : 0;
+      final int progress = data[2] is int ? data[2] as int : 0;
+      // Map the raw integer emitted by flutter_downloader into enum safely
+      final DownloadTaskStatus status =
+          (rawStatus >= 0 && rawStatus < DownloadTaskStatus.values.length)
+              ? DownloadTaskStatus.values[rawStatus]
+              : DownloadTaskStatus.undefined;
       if (mounted) {
         context.read<DownloadingCubit>().onTaskUpdate(id, status, progress);
       }
     });
   }
 
-  static void downloadCallback(String id, int status, int progress) {
-    final SendPort? send =
-        IsolateNameServer.lookupPortByName('downloader_send_port');
-    send!.send([id, status, progress]);
-  }
+  // callback moved to top-level (see downloaderCallback above)
 
   @override
   Widget build(BuildContext context) {
