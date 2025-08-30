@@ -28,6 +28,8 @@ import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
 import 'package:webcomic/presentation/ui/loading/loading.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/data/services/toast/toast_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class MangaReader extends StatefulWidget {
   final ChapterList chapterList;
@@ -46,6 +48,55 @@ class _MangaReaderState extends State<MangaReader> {
   final Map<int, TransformationController> _controllers = {};
   late final PageController _pageController;
   bool showAppBar = false;
+
+  // Parse chapter number from strings like "Chapter 12", "Ch. 12.5", "12", "12_extra"
+  double? _parseChapterNumber(String raw) {
+    try {
+      final match = RegExp(r"(\d+(?:\.\d+)?)").firstMatch(raw);
+      if (match != null) return double.tryParse(match.group(0)!);
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Find index of current chapter in a chapter list by best-effort numeric compare
+  int _findCurrentIndex(GetMangaReaderData data) {
+    final currentNum = _parseChapterNumber(data.chapter);
+    if (data.chapterList == null || data.chapterList!.isEmpty) return -1;
+    // Try perfect title match first
+    final exactIdx = data.chapterList!
+        .indexWhere((e) => e.chapterTitle.trim() == data.chapter.trim());
+    if (exactIdx != -1) return exactIdx;
+
+    if (currentNum == null) return -1;
+    // Fallback: numeric match
+    for (int i = 0; i < data.chapterList!.length; i++) {
+      final n = _parseChapterNumber(data.chapterList![i].chapterTitle);
+      if (n != null && (n - currentNum).abs() < 1e-9) return i;
+    }
+    return -1;
+  }
+
+  ReaderChapterItem? _getNextChapter(GetMangaReaderData data) {
+    // Assumption: chapterList is sorted descending with newest at index 0
+    if (data.chapterList == null || data.chapterList!.isEmpty) return null;
+    final idx = _findCurrentIndex(data);
+    if (idx == -1) return null;
+    final nextIdx = idx - 1; // newer chapter (higher number)
+    if (nextIdx >= 0) return data.chapterList![nextIdx];
+    return null; // already at latest
+  }
+
+  ReaderChapterItem? _getPrevChapter(GetMangaReaderData data) {
+    // Assumption: chapterList is sorted descending with newest at index 0
+    if (data.chapterList == null || data.chapterList!.isEmpty) return null;
+    final idx = _findCurrentIndex(data);
+    if (idx == -1) return null;
+    final prevIdx = idx + 1; // older chapter (lower number)
+    if (prevIdx < data.chapterList!.length) return data.chapterList![prevIdx];
+    return null; // already at oldest
+  }
 
   // Helper method to safely extract chapter number from string
   int? extractChapterNumber(String chapterString) {
@@ -231,27 +282,9 @@ class _MangaReaderState extends State<MangaReader> {
 
   Widget checkLast(List<ReaderChapterItem>? chapterList, String chapter,
       GetMangaReader mangaReader) {
-    int? currentChapter = extractChapterNumber(mangaReader.data.chapter);
-    if (currentChapter == null) {
-      // Return empty widget if can't parse current chapter
-      return const SizedBox.shrink();
-    }
-
-    int nextChapter = currentChapter + 1;
-
-    // Check if chapterList exists and has items
-    if (mangaReader.data.chapterList == null ||
-        mangaReader.data.chapterList!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    int? theLastChapter =
-        extractChapterNumber(mangaReader.data.chapterList![0].chapterTitle);
-    if (theLastChapter == null) {
-      // Return empty widget if can't parse last chapter
-      return const SizedBox.shrink();
-    }
-    if (currentChapter < theLastChapter) {
+    final next = _getNextChapter(mangaReader.data);
+    if (next != null) {
+      final nextLabel = formatChapterTitle(next.chapterTitle);
       return ClipRRect(
         borderRadius: BorderRadius.circular(10.0),
         child: Container(
@@ -262,7 +295,9 @@ class _MangaReaderState extends State<MangaReader> {
                 width: Sizes.dimen_140.w,
                 height: Sizes.dimen_50.h,
                 child: CachedNetworkImage(
-                  imageUrl: mangaReader.data.images[1],
+                  imageUrl: mangaReader.data.images.length > 1
+                      ? mangaReader.data.images[1]
+                      : mangaReader.data.images.first,
                   fit: BoxFit.cover,
                   placeholder: (ctx, string) => const Loading(),
                 ),
@@ -270,7 +305,7 @@ class _MangaReaderState extends State<MangaReader> {
               Container(
                 margin: EdgeInsets.only(left: Sizes.dimen_40.w),
                 child: Text(
-                  "Next chapter $nextChapter",
+                  "Next: $nextLabel",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color:
@@ -281,11 +316,8 @@ class _MangaReaderState extends State<MangaReader> {
           ),
         ),
       );
-    } else if (currentChapter == theLastChapter) {
-      return const Text("Last Chapter");
     }
-
-    return Container();
+    return const Text("Last Chapter");
   }
 
   @override
@@ -434,60 +466,23 @@ class _MangaReaderState extends State<MangaReader> {
                                           ? const SizedBox.shrink()
                                           : GestureDetector(
                                               onTap: () async {
-                                                int? theInitialChapter =
-                                                    extractChapterNumber(widget
-                                                        .chapterList
-                                                        .chapterTitle);
-                                                int? theCurrentChapter =
-                                                    extractChapterNumber(
-                                                        mangaReader
-                                                            .data.chapter);
-
-                                                if (theInitialChapter == null ||
-                                                    theCurrentChapter == null) {
-                                                  // Can't parse chapter numbers, skip navigation
+                                                final next = _getNextChapter(
+                                                    mangaReader.data);
+                                                if (next == null) {
+                                                  getItInstance<
+                                                          ToastServiceImpl>()
+                                                      .showToast(
+                                                          "No newer chapter available.",
+                                                          Toast.LENGTH_SHORT);
                                                   return;
                                                 }
-
-                                                int theNextChapter =
-                                                    theCurrentChapter + 1;
-                                                String theNextChapterUrl = widget
-                                                    .chapterList.chapterUrl
-                                                    .replaceAll(
-                                                        theInitialChapter
-                                                            .toString(),
-                                                        theNextChapter
-                                                            .toString());
-                                                String theNextChapterTitle =
-                                                    widget.chapterList
-                                                        .chapterTitle
-                                                        .replaceAll(
-                                                            theInitialChapter
-                                                                .toString(),
-                                                            theNextChapter
-                                                                .toString());
-                                                int? theLastChapter =
-                                                    extractChapterNumber(
-                                                        mangaReader
-                                                                .data
-                                                                .chapterList?[0]
-                                                                .chapterTitle ??
-                                                            '');
-
-                                                if (theLastChapter == null) {
-                                                  // Can't parse last chapter number
-                                                  return;
-                                                }
-
-                                                if (theCurrentChapter <
-                                                    theLastChapter) {
-                                                  await doTheFunStuff(
-                                                      theNextChapterTitle:
-                                                          theNextChapterTitle,
-                                                      theNextChapterUrl:
-                                                          theNextChapterUrl,
-                                                      fetchMore: fetchMore);
-                                                }
+                                                await doTheFunStuff(
+                                                  theNextChapterTitle:
+                                                      next.chapterTitle,
+                                                  theNextChapterUrl:
+                                                      next.chapterUrl,
+                                                  fetchMore: fetchMore,
+                                                );
                                               },
                                               child: ValueListenableBuilder(
                                                 valueListenable: isLoading,
@@ -538,64 +533,27 @@ class _MangaReaderState extends State<MangaReader> {
                                                   children: [
                                                     ScaleAnim(
                                                         onTap: () async {
-                                                          int?
-                                                              theInitialChapter =
-                                                              extractChapterNumber(widget
-                                                                  .chapterList
-                                                                  .chapterTitle);
-                                                          int?
-                                                              theCurrentChapter =
-                                                              extractChapterNumber(
+                                                          final prev =
+                                                              _getPrevChapter(
                                                                   mangaReader
-                                                                      .data
-                                                                      .chapter);
-
-                                                          if (theInitialChapter ==
-                                                                  null ||
-                                                              theCurrentChapter ==
-                                                                  null) return;
-
-                                                          int thePreviousChapter =
-                                                              theCurrentChapter -
-                                                                  1;
-                                                          String thePreviousChapterUrl = widget
-                                                              .chapterList
-                                                              .chapterUrl
-                                                              .replaceAll(
-                                                                  theInitialChapter
-                                                                      .toString(),
-                                                                  thePreviousChapter
-                                                                      .toString());
-                                                          String thePreviousChapterTitle = widget
-                                                              .chapterList
-                                                              .chapterTitle
-                                                              .replaceAll(
-                                                                  theInitialChapter
-                                                                      .toString(),
-                                                                  thePreviousChapter
-                                                                      .toString());
-                                                          int? theFirstChapter = extractChapterNumber(mangaReader
-                                                                  .data
-                                                                  .chapterList?[mangaReader
-                                                                          .data
-                                                                          .chapterList!
-                                                                          .length -
-                                                                      1]
-                                                                  .chapterTitle ??
-                                                              '');
-                                                          if (theFirstChapter ==
-                                                              null) return;
-
-                                                          if (theCurrentChapter >
-                                                              theFirstChapter) {
-                                                            await doTheFunStuff(
-                                                                theNextChapterUrl:
-                                                                    thePreviousChapterUrl,
-                                                                theNextChapterTitle:
-                                                                    thePreviousChapterTitle,
-                                                                fetchMore:
-                                                                    fetchMore);
+                                                                      .data);
+                                                          if (prev == null) {
+                                                            getItInstance<
+                                                                    ToastServiceImpl>()
+                                                                .showToast(
+                                                                    "You're at the first chapter.",
+                                                                    Toast
+                                                                        .LENGTH_SHORT);
+                                                            return;
                                                           }
+                                                          await doTheFunStuff(
+                                                            theNextChapterUrl:
+                                                                prev.chapterUrl,
+                                                            theNextChapterTitle:
+                                                                prev.chapterTitle,
+                                                            fetchMore:
+                                                                fetchMore,
+                                                          );
                                                         },
                                                         child: Icon(
                                                             Icons.arrow_left,
@@ -605,60 +563,27 @@ class _MangaReaderState extends State<MangaReader> {
                                                         width: Sizes.dimen_20),
                                                     ScaleAnim(
                                                         onTap: () async {
-                                                          int?
-                                                              theInitialChapter =
-                                                              extractChapterNumber(widget
-                                                                  .chapterList
-                                                                  .chapterTitle);
-                                                          int?
-                                                              theCurrentChapter =
-                                                              extractChapterNumber(
+                                                          final next =
+                                                              _getNextChapter(
                                                                   mangaReader
-                                                                      .data
-                                                                      .chapter);
-                                                          if (theInitialChapter ==
-                                                                  null ||
-                                                              theCurrentChapter ==
-                                                                  null) return;
-                                                          int theNextChapter =
-                                                              theCurrentChapter +
-                                                                  1;
-                                                          String theNextChapterUrl = widget
-                                                              .chapterList
-                                                              .chapterUrl
-                                                              .replaceAll(
-                                                                  theInitialChapter
-                                                                      .toString(),
-                                                                  theNextChapter
-                                                                      .toString());
-                                                          String theNextChapterTitle = widget
-                                                              .chapterList
-                                                              .chapterTitle
-                                                              .replaceAll(
-                                                                  theInitialChapter
-                                                                      .toString(),
-                                                                  theNextChapter
-                                                                      .toString());
-                                                          int? theLastChapter =
-                                                              extractChapterNumber(
-                                                                  mangaReader
-                                                                          .data
-                                                                          .chapterList?[
-                                                                              0]
-                                                                          .chapterTitle ??
-                                                                      '');
-                                                          if (theLastChapter ==
-                                                              null) return;
-                                                          if (theCurrentChapter <
-                                                              theLastChapter) {
-                                                            await doTheFunStuff(
-                                                                theNextChapterTitle:
-                                                                    theNextChapterTitle,
-                                                                theNextChapterUrl:
-                                                                    theNextChapterUrl,
-                                                                fetchMore:
-                                                                    fetchMore);
+                                                                      .data);
+                                                          if (next == null) {
+                                                            getItInstance<
+                                                                    ToastServiceImpl>()
+                                                                .showToast(
+                                                                    "No newer chapter available.",
+                                                                    Toast
+                                                                        .LENGTH_SHORT);
+                                                            return;
                                                           }
+                                                          await doTheFunStuff(
+                                                            theNextChapterTitle:
+                                                                next.chapterTitle,
+                                                            theNextChapterUrl:
+                                                                next.chapterUrl,
+                                                            fetchMore:
+                                                                fetchMore,
+                                                          );
                                                         },
                                                         child: Icon(
                                                             Icons.arrow_right,
@@ -785,6 +710,100 @@ class _MangaReaderState extends State<MangaReader> {
                                                                     : Colors
                                                                         .white),
                                                           ),
+                                                          // Chapter picker for quick jump
+                                                          GestureDetector(
+                                                            onTap: () async {
+                                                              final list =
+                                                                  mangaReader
+                                                                          .data
+                                                                          .chapterList ??
+                                                                      [];
+                                                              if (list
+                                                                  .isEmpty) {
+                                                                getItInstance<
+                                                                        ToastServiceImpl>()
+                                                                    .showToast(
+                                                                        "No chapters available.",
+                                                                        Toast
+                                                                            .LENGTH_SHORT);
+                                                                return;
+                                                              }
+                                                              final selected =
+                                                                  await showModalBottomSheet<
+                                                                      ReaderChapterItem>(
+                                                                context:
+                                                                    context,
+                                                                isScrollControlled:
+                                                                    true,
+                                                                backgroundColor:
+                                                                    Theme.of(
+                                                                            context)
+                                                                        .cardColor,
+                                                                builder: (ctx) {
+                                                                  return SafeArea(
+                                                                    child:
+                                                                        SizedBox(
+                                                                      height: MediaQuery.of(ctx)
+                                                                              .size
+                                                                              .height *
+                                                                          0.7,
+                                                                      child: ListView
+                                                                          .separated(
+                                                                        itemBuilder:
+                                                                            (c, i) {
+                                                                          final item =
+                                                                              list[i];
+                                                                          return ListTile(
+                                                                            title:
+                                                                                Text(formatChapterTitle(item.chapterTitle)),
+                                                                            subtitle:
+                                                                                Text(item.dateUploaded ?? ''),
+                                                                            onTap: () =>
+                                                                                Navigator.of(ctx).pop(item),
+                                                                          );
+                                                                        },
+                                                                        separatorBuilder:
+                                                                            (_, __) =>
+                                                                                const Divider(height: 1),
+                                                                        itemCount:
+                                                                            list.length,
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              );
+
+                                                              if (selected !=
+                                                                  null) {
+                                                                await doTheFunStuff(
+                                                                  theNextChapterTitle:
+                                                                      selected
+                                                                          .chapterTitle,
+                                                                  theNextChapterUrl:
+                                                                      selected
+                                                                          .chapterUrl,
+                                                                  fetchMore:
+                                                                      fetchMore,
+                                                                );
+                                                              }
+                                                            },
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: Icon(
+                                                                Icons.list_alt,
+                                                                size: Sizes
+                                                                    .dimen_24,
+                                                                color: context
+                                                                        .isLightMode()
+                                                                    ? AppColor
+                                                                        .vulcan
+                                                                    : Colors
+                                                                        .white,
+                                                              ),
+                                                            ),
+                                                          )
                                                         ],
                                                       ),
                                                     ),
