@@ -52,29 +52,17 @@ class _RecentsViewState extends State<RecentsView>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("My comics"),
+        title: const Text("My comics"),
         backgroundColor: context.isLightMode() ? Colors.white : AppColor.vulcan,
         bottom: TabBar(
           isScrollable: true,
           controller: recentsViewController,
           tabs: [
-            Tab(
-              child: Text(
-                "RECENTS",
-              ),
-            ),
-            Tab(
-              child: Text("SUBSCRIPTIONS"),
-            ),
-            Tab(
-              child: Text("UPDATES"),
-            ),
-            Tab(
-              child: Text("DOWNLOADS"),
-            ),
-            Tab(
-              child: Text("NOTIFICATIONS"),
-            ),
+            const Tab(child: Text("RECENTS")),
+            const Tab(child: Text("SUBSCRIPTIONS")),
+            const Tab(child: Text("UPDATES")),
+            const Tab(child: Text("DOWNLOADS")),
+            const Tab(child: Text("NOTIFICATIONS")),
           ],
         ),
       ),
@@ -164,7 +152,7 @@ class _RecentsViewState extends State<RecentsView>
                                                     width: Sizes.dimen_100,
                                                     height: Sizes.dimen_100,
                                                     child:
-                                                        NoAnimationLoading());
+                                                        const NoAnimationLoading());
                                               },
                                             ),
                                           ),

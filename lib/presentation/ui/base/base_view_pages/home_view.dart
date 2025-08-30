@@ -62,7 +62,7 @@ class _HomeViewState extends State<HomeView>
           body: Query(
         options: QueryOptions(
           document: parseString(GET_NEWEST_MANGA),
-          pollInterval: Duration(minutes: 60),
+          pollInterval: const Duration(minutes: 60),
         ),
         builder: (QueryResult result, {refetch, fetchMore}) {
           // if (result.hasException) {
@@ -110,7 +110,7 @@ class _HomeViewState extends State<HomeView>
                                         seconds: settingsBloc
                                             .settings.newMangaSliderDuration),
                                     autoPlayAnimationDuration:
-                                        Duration(milliseconds: 200),
+                                        const Duration(milliseconds: 200),
                                     onPageChanged: (i, reason) {
                                       context
                                           .read<MangaSlideShowCubit>()
@@ -147,10 +147,10 @@ class _HomeViewState extends State<HomeView>
                                         ),
                                       ),
                                       placeholder: (ctx, string) {
-                                        return NoAnimationLoading();
+                                        return const NoAnimationLoading();
                                       },
                                       errorWidget: (context, url, error) =>
-                                          Icon(Icons.error),
+                                          const Icon(Icons.error),
                                     ),
                                   );
                                 },
@@ -172,7 +172,7 @@ class _HomeViewState extends State<HomeView>
                                     context, Routes.mangaSearch);
                               },
                               child: Padding(
-                                  padding: EdgeInsets.all(10.0),
+                                  padding: const EdgeInsets.all(10.0),
                                   child: callSvg("assets/search.svg",
                                       color: Colors.white,
                                       width: Sizes.dimen_32.sp)),
@@ -188,9 +188,9 @@ class _HomeViewState extends State<HomeView>
                           SizedBox(
                             height: Sizes.dimen_10.h,
                           ),
-                          MangaUpdatesHome(),
-                          MostViewedManga(),
-                          MostClickedManga(),
+                          const MangaUpdatesHome(),
+                          const MostViewedManga(),
+                          const MostClickedManga(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
@@ -208,40 +208,42 @@ class _HomeViewState extends State<HomeView>
                           SizedBox(
                             height: Sizes.dimen_2.h,
                           ),
-                          MangaByGenreTabular(genre: "Action"),
-                          MangaByGenreTabular(genre: "Horror"),
-                          MangaByGenreTabular(genre: "Webtoons"),
+                          const MangaByGenreTabular(genre: "Action"),
+                          const MangaByGenreTabular(genre: "Horror"),
+                          const MangaByGenreTabular(genre: "Webtoons"),
                           SingleChildScrollView(
-                            physics: BouncingScrollPhysics(),
+                            physics: const BouncingScrollPhysics(),
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: [
                                 Column(
                                   children: [
-                                    MangaByGenreCard(genre: "Action"),
-                                    MangaByGenreCard(genre: "Martial Arts"),
-                                    MangaByGenreCard(genre: "Tragedy"),
+                                    const MangaByGenreCard(genre: "Action"),
+                                    const MangaByGenreCard(
+                                        genre: "Martial Arts"),
+                                    const MangaByGenreCard(genre: "Tragedy"),
                                   ],
                                 ),
                                 Column(
                                   children: [
-                                    MangaByGenreCard(genre: "Adult"),
-                                    MangaByGenreCard(genre: "Horror"),
-                                    MangaByGenreCard(genre: "Mecha"),
+                                    const MangaByGenreCard(genre: "Adult"),
+                                    const MangaByGenreCard(genre: "Horror"),
+                                    const MangaByGenreCard(genre: "Mecha"),
                                   ],
                                 ),
                                 Column(
                                   children: [
-                                    MangaByGenreCard(genre: "Sports"),
-                                    MangaByGenreCard(genre: "Isekai"),
-                                    MangaByGenreCard(genre: "Love"),
+                                    const MangaByGenreCard(genre: "Sports"),
+                                    const MangaByGenreCard(genre: "Isekai"),
+                                    const MangaByGenreCard(genre: "Love"),
                                   ],
                                 ),
                                 Column(
                                   children: [
-                                    MangaByGenreCard(genre: "Comedy"),
-                                    MangaByGenreCard(genre: "School Life"),
-                                    MangaByGenreCard(genre: "Sci Fi"),
+                                    const MangaByGenreCard(genre: "Comedy"),
+                                    const MangaByGenreCard(
+                                        genre: "School Life"),
+                                    const MangaByGenreCard(genre: "Sci Fi"),
                                   ],
                                 ),
                               ],
