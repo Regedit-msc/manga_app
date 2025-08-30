@@ -48,8 +48,8 @@ query MangaInfo(\$source: String!, \$mangaUrl: String!,) {
 ''';
 
 const String MANGA_READER = '''
-query MangaReader(\$chapterUrl: String!) {
-  getMangaReader(chapterUrl: \$chapterUrl) {
+query MangaReader(\$source: String!, \$chapterUrl: String!) {
+  getMangaReader(source: \$source, chapterUrl: \$chapterUrl) {
     message
     success
     data {

@@ -116,8 +116,9 @@ class _RecentsViewState extends State<RecentsView>
                                             .recents[index].chapterUrl,
                                         chapterTitle: recentState
                                             .recents[index].chapterTitle,
-                                        dateUploaded: recentState.recents[index]
-                                            .mostRecentReadDate));
+                                        dateUploaded: recentState
+                                            .recents[index].mostRecentReadDate,
+                                        mangaSource: null));
                               },
                               child: Container(
                                 decoration: BoxDecoration(

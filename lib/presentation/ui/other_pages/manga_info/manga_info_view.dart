@@ -880,7 +880,8 @@ class _MangaInfoState extends State<MangaInfo> with TickerProviderStateMixin {
                                                 dateUploaded: mi
                                                     .data
                                                     .chapterList[index]
-                                                    .dateUploaded));
+                                                    .dateUploaded,
+                                                mangaSource: mi.data.mangaSource));
                                       },
                                       subtitle: Padding(
                                         padding: const EdgeInsets.fromLTRB(

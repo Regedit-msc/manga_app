@@ -56,7 +56,10 @@ class _MangaReaderState extends State<MangaReader> {
 
   FetchMoreOptions toNewPageOptions(String newChapterUrl) {
     return FetchMoreOptions(
-      variables: {'chapterUrl': newChapterUrl},
+      variables: {
+        'chapterUrl': newChapterUrl,
+        'source': widget.chapterList.mangaSource ?? '',
+      },
       updateQuery: (previousResultData, fetchMoreResultData) {
         return fetchMoreResultData;
       },
@@ -225,6 +228,7 @@ class _MangaReaderState extends State<MangaReader> {
               document: parseString(MANGA_READER),
               variables: {
                 'chapterUrl': widget.chapterList.chapterUrl,
+                'source': widget.chapterList.mangaSource ?? '',
               },
               pollInterval: null,
             ),
@@ -723,7 +727,10 @@ class _MangaReaderState extends State<MangaReader> {
                                                                         .mangaUrl,
                                                                     imageUrl: widget
                                                                         .chapterList
-                                                                        .mangaImage));
+                                                                        .mangaImage,
+                                                                    mangaSource: widget
+                                                                        .chapterList
+                                                                        .mangaSource));
                                                           },
                                                           child: Row(
                                                             mainAxisAlignment:

@@ -167,12 +167,14 @@ class ChapterList {
       required this.dateUploaded,
       required this.mangaUrl,
       required this.mangaImage,
-      required this.mangaTitle});
+      required this.mangaTitle,
+      this.mangaSource});
 
   String chapterUrl;
   String chapterTitle;
   String dateUploaded;
   String mangaUrl;
+  String? mangaSource;
 
   factory ChapterList.fromMap(Map<String, dynamic> json) => ChapterList(
       chapterUrl: json["chapterUrl"],
@@ -180,7 +182,8 @@ class ChapterList {
       dateUploaded: json["dateUploaded"],
       mangaUrl: json["mangaUrl"] ?? "",
       mangaTitle: json["mangaTitle"] ?? '',
-      mangaImage: json["mangaImage"] ?? '');
+      mangaImage: json["mangaImage"] ?? '',
+      mangaSource: json["mangaSource"]);
 
   Map<String, dynamic> toMap() => {
         "chapterUrl": chapterUrl,
@@ -188,7 +191,8 @@ class ChapterList {
         "dateUploaded": dateUploaded,
         "mangaUrl": mangaUrl,
         "mangaTitle": mangaTitle,
-        "mangaImage": mangaImage
+        "mangaImage": mangaImage,
+        "mangaSource": mangaSource
       };
 
   @override
