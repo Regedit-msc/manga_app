@@ -253,105 +253,112 @@ class _HomeViewState extends State<HomeView>
                           child: const QuickSearchBar(),
                         ),
                         const SizedBox(height: 10),
-                        Container(
-                          width: ScreenUtil.screenWidth,
-                          height: Sizes.dimen_250,
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child:
-                                      BlocBuilder<SettingsCubit, SettingsState>(
-                                          builder: (context, settingsBloc) {
-                                    return CarouselSlider.builder(
-                                      options: CarouselOptions(
-                                          height: Sizes.dimen_250,
-                                          viewportFraction: 1.0,
-                                          enlargeCenterPage: false,
-                                          autoPlayCurve: Curves.ease,
-                                          autoPlay: true,
-                                          autoPlayInterval: Duration(
-                                              seconds: settingsBloc.settings
-                                                  .newMangaSliderDuration),
-                                          autoPlayAnimationDuration:
-                                              const Duration(milliseconds: 350),
-                                          onPageChanged: (i, reason) {
-                                            context
-                                                .read<MangaSlideShowCubit>()
-                                                .setIndex(i + 1);
-                                          }),
-                                      itemBuilder: (_, index, __) {
-                                        final item = newestManga.data![index];
-                                        return GestureDetector(
-                                          onTap: () {
-                                            Navigator.of(context).pushNamed(
-                                                Routes.mangaInfo,
-                                                arguments: newestMMdl.Datum(
-                                                    title: item.title,
-                                                    mangaUrl: item.mangaUrl,
-                                                    mangaSource:
-                                                        item.mangaSource,
-                                                    imageUrl: item.imageUrl));
-                                          },
-                                          child: Stack(
-                                            fit: StackFit.expand,
-                                            children: [
-                                              CachedNetworkImage(
-                                                imageUrl: item.imageUrl ?? '',
-                                                fit: BoxFit.cover,
-                                                placeholder: (ctx, _) =>
-                                                    const SizedBox(),
-                                                errorWidget: (ctx, url, err) =>
-                                                    const Icon(Icons.error),
-                                              ),
-                                              Container(
-                                                decoration: const BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    colors: [
-                                                      Colors.transparent,
-                                                      Colors.black54
-                                                    ],
-                                                    begin: Alignment.center,
-                                                    end: Alignment.bottomCenter,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: Container(
+                            width: ScreenUtil.screenWidth,
+                            height: Sizes.dimen_250,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: BlocBuilder<SettingsCubit,
+                                            SettingsState>(
+                                        builder: (context, settingsBloc) {
+                                      return CarouselSlider.builder(
+                                        options: CarouselOptions(
+                                            height: Sizes.dimen_250,
+                                            viewportFraction: 1.0,
+                                            enlargeCenterPage: false,
+                                            autoPlayCurve: Curves.ease,
+                                            autoPlay: true,
+                                            autoPlayInterval: Duration(
+                                                seconds: settingsBloc.settings
+                                                    .newMangaSliderDuration),
+                                            autoPlayAnimationDuration:
+                                                const Duration(
+                                                    milliseconds: 350),
+                                            onPageChanged: (i, reason) {
+                                              context
+                                                  .read<MangaSlideShowCubit>()
+                                                  .setIndex(i + 1);
+                                            }),
+                                        itemBuilder: (_, index, __) {
+                                          final item = newestManga.data![index];
+                                          return GestureDetector(
+                                            onTap: () {
+                                              Navigator.of(context).pushNamed(
+                                                  Routes.mangaInfo,
+                                                  arguments: newestMMdl.Datum(
+                                                      title: item.title,
+                                                      mangaUrl: item.mangaUrl,
+                                                      mangaSource:
+                                                          item.mangaSource,
+                                                      imageUrl: item.imageUrl));
+                                            },
+                                            child: Stack(
+                                              fit: StackFit.expand,
+                                              children: [
+                                                CachedNetworkImage(
+                                                  imageUrl: item.imageUrl ?? '',
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (ctx, _) =>
+                                                      const SizedBox(),
+                                                  errorWidget: (ctx, url,
+                                                          err) =>
+                                                      const Icon(Icons.error),
+                                                ),
+                                                Container(
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        Colors.transparent,
+                                                        Colors.black54
+                                                      ],
+                                                      begin: Alignment.center,
+                                                      end: Alignment
+                                                          .bottomCenter,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              Positioned(
-                                                left: 16,
-                                                right: 16,
-                                                bottom: 16,
-                                                child: Text(
-                                                  item.title ?? '',
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleLarge
-                                                      ?.copyWith(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.w800,
-                                                      ),
+                                                Positioned(
+                                                  left: 16,
+                                                  right: 16,
+                                                  bottom: 16,
+                                                  child: Text(
+                                                    item.title ?? '',
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleLarge
+                                                        ?.copyWith(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                        ),
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                      itemCount: newestManga.data!.length,
-                                    );
-                                  }),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                        itemCount: newestManga.data!.length,
+                                      );
+                                    }),
+                                  ),
                                 ),
-                              ),
-                              const Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Padding(
-                                    padding: EdgeInsets.all(10.0),
-                                    child: SlideShowIndicator(),
-                                  )),
-                            ],
+                                const Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: Padding(
+                                      padding: EdgeInsets.all(10.0),
+                                      child: SlideShowIndicator(),
+                                    )),
+                              ],
+                            ),
                           ),
                         ),
                         Padding(

@@ -14,10 +14,9 @@ class ShimmerBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColor =
-        Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3);
-    final highlight =
-        Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.15);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final baseColor = isLight ? Colors.grey.shade300 : Colors.grey.shade700;
+    final highlight = isLight ? Colors.grey.shade100 : Colors.grey.shade500;
     final child = Container(
       width: width,
       height: height,
@@ -93,34 +92,38 @@ Widget shimmerRows(
     {int count = 5, double imageWidth = 70, double imageHeight = 50}) {
   return Column(
     children: List.generate(
-        count,
-        (i) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              child: Row(
+      count,
+      (i) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Row(
+          children: [
+            ShimmerBox(
+              width: imageWidth,
+              height: imageHeight,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ShimmerBox(
-                      width: imageWidth,
-                      height: imageHeight,
-                      borderRadius: BorderRadius.circular(6)),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ShimmerBox(
-                            height: 16,
-                            width: double.infinity,
-                            borderRadius: BorderRadius.all(Radius.circular(4))),
-                        SizedBox(height: 6),
-                        ShimmerBox(
-                            height: 12,
-                            width: 140,
-                            borderRadius: BorderRadius.all(Radius.circular(4))),
-                      ],
-                    ),
-                  )
+                    height: 16,
+                    width: double.infinity,
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
+                  SizedBox(height: 6),
+                  ShimmerBox(
+                    height: 12,
+                    width: 140,
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
                 ],
               ),
-            )),
+            )
+          ],
+        ),
+      ),
+    ),
   );
 }
