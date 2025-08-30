@@ -12,6 +12,7 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_updates_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
+import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_updates/manga_updates_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/theme/theme_bloc.dart';
@@ -40,8 +41,20 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
           // }
 
           if (result.isLoading) {
-            // return NoAnimationLoading();
-            return const SizedBox();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(8, 4, 4, 4),
+                  child: Text('UPDATES',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                shimmerHorizontalCards(
+                    imageHeight: Sizes.dimen_200,
+                    cardWidth: Sizes.dimen_150,
+                    withTitle: true),
+              ],
+            );
           }
 
           final mangaInfo = result.data?["getMangaPage"];
@@ -81,9 +94,7 @@ class _MangaUpdatesHomeState extends State<MangaUpdatesHome> {
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 10.0,
-                ),
+                const SizedBox(height: 8.0),
                 Container(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,

@@ -20,9 +20,9 @@ import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_click
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/most_viewed.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/quick_search_bar.dart';
 import 'package:webcomic/presentation/ui/base/base_view_pages/widgets/genre_chips_row.dart';
+import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
 import 'package:webcomic/presentation/ui/blocs/manga_slideshow/manga_slideshow_bloc.dart';
 import 'package:webcomic/presentation/ui/blocs/settings/settings_bloc.dart';
-import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
 import 'package:webcomic/presentation/widgets/design/section_header.dart';
 
 class HomeView extends StatefulWidget {
@@ -183,7 +183,53 @@ class _HomeViewState extends State<HomeView>
               // }
 
               if (!_ready || result.isLoading) {
-                return NoAnimationLoading();
+                // Shimmer skeleton layout for Home page while loading
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child:
+                            SizedBox(height: 48, child: ShimmerBox(height: 48)),
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: shimmerBanner(
+                            height: Sizes.dimen_250,
+                            radius: BorderRadius.circular(16)),
+                      ),
+                      const SizedBox(height: 12),
+                      shimmerChips(),
+                      const SizedBox(height: 8),
+                      // Updates
+                      const SectionHeader(title: 'UPDATES'),
+                      shimmerHorizontalCards(
+                          imageHeight: 200, cardWidth: 150, withTitle: true),
+                      const SectionHeader(title: 'Most Viewed Today'),
+                      shimmerHorizontalCards(
+                          imageHeight: 200, cardWidth: 150, withTitle: true),
+                      const SectionHeader(title: 'Most Clicked Today'),
+                      shimmerHorizontalCards(
+                          imageHeight: 200, cardWidth: 150, withTitle: true),
+                      const SectionHeader(title: 'Genres'),
+                      // A couple of tabular rows
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0),
+                        child: shimmerRows(count: 5),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0),
+                        child: shimmerRows(count: 5),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                );
               }
 
               final mangaInfo = result.data?["getNewestManga"];
@@ -309,7 +355,7 @@ class _HomeViewState extends State<HomeView>
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.only(left: 5.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
                           child: Column(
                             children: [
                               SizedBox(

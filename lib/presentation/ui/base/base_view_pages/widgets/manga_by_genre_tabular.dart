@@ -12,6 +12,7 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
+import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
 
 class MangaByGenreTabular extends StatefulWidget {
   final String genre;
@@ -53,8 +54,22 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
           // }
 
           if (result.isLoading) {
-            // return NoAnimationLoading();
-            return const SizedBox();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    widget.genre,
+                    style: TextStyle(
+                        fontSize: Sizes.dimen_16.sp,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                shimmerRows(count: 5),
+              ],
+            );
           }
 
           final mangaInfo = result.data?["getMangaByGenre"];
@@ -92,9 +107,7 @@ class _MangaByGenreTabularState extends State<MangaByGenreTabular> {
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 10.0,
-                ),
+                const SizedBox(height: 8.0),
                 Container(
                   width: ScreenUtil.screenWidth,
                   height: Sizes.dimen_400,

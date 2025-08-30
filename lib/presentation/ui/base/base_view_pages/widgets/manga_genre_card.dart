@@ -11,6 +11,7 @@ import 'package:webcomic/data/graphql/graphql.dart';
 import 'package:webcomic/data/models/manga_by_genre_model.dart';
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/ui/loading/no_animation_loading.dart';
+import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
 
 class MangaByGenreCard extends StatefulWidget {
   final String genre;
@@ -39,8 +40,13 @@ class _MangaByGenreCardState extends State<MangaByGenreCard> {
           // }
 
           if (result.isLoading) {
-            // return NoAnimationLoading();
-            return const SizedBox();
+            return const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: ShimmerBox(
+                  width: 150,
+                  height: 60,
+                  borderRadius: BorderRadius.all(Radius.circular(12))),
+            );
           }
           final mangaInfo = result.data?["getMangaByGenre"];
           if (mangaInfo != null) {

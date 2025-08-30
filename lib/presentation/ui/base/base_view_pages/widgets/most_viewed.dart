@@ -11,6 +11,7 @@ import 'package:webcomic/data/models/most_viewed_model.dart';
 import 'package:webcomic/data/models/newest_manga_model.dart' as newestMMdl;
 import 'package:webcomic/presentation/anims/scale_anim.dart';
 import 'package:webcomic/presentation/themes/colors.dart';
+import 'package:webcomic/presentation/widgets/shimmer/shimmer_widgets.dart';
 
 class MostViewedManga extends StatefulWidget {
   const MostViewedManga({Key? key}) : super(key: key);
@@ -56,8 +57,25 @@ class _MostViewedMangaState extends State<MostViewedManga> {
           // }
 
           if (result.isLoading) {
-            // return NoAnimationLoading();
-            return const SizedBox();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "Most Viewed Today",
+                    style: TextStyle(
+                        fontSize: Sizes.dimen_16.sp,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                shimmerHorizontalCards(
+                    imageHeight: Sizes.dimen_200,
+                    cardWidth: Sizes.dimen_150,
+                    withTitle: true),
+              ],
+            );
           }
 
           final mangaInfo = result.data?["getMostViewedManga"];
@@ -77,9 +95,7 @@ class _MostViewedMangaState extends State<MostViewedManga> {
                         fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(
-                  height: 10.0,
-                ),
+                const SizedBox(height: 8.0),
                 Container(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
