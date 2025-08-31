@@ -413,7 +413,7 @@ class _SearchState extends State<Search> {
                                       arguments: Datum(
                                           mangaUrl: item.mangaUrl,
                                           mangaSource: item.mangaSource,
-                                          imageUrl: item.imageUrl,
+                                          imageUrl: imageUrl,
                                           title: item.title));
                                 },
                               );

@@ -1,7 +1,7 @@
 class ApiConstants {
   ApiConstants._();
   static const String httpLink =
-      "https://50cd310f2368.ngrok-free.app/graphql";
+      "https://manga-raw-scraper.onrender.com/graphql";
   static const String unSplashUrl =
       "https://api.unsplash.com/search/collections";
   static const String unSplashApiHeader =
